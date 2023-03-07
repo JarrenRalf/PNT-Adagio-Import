@@ -1,0 +1,22 @@
+{
+  "timeZone": "America/Los_Angeles",
+  "dependencies": {
+  },
+  "exceptionLogging": "STACKDRIVER",
+  "runtimeVersion": "V8",
+  "sheets": {
+    "macros": [{
+      "menuName": "richmond_applyFullSpreadsheetFormatting",
+      "functionName": "richmond_applyFullSpreadsheetFormatting",
+      "defaultShortcut": "Ctrl+Alt+Shift+1"
+    }, {
+      "menuName": "parksville_applyFullSpreadsheetFormatting",
+      "functionName": "parksville_applyFullSpreadsheetFormatting",
+      "defaultShortcut": "Ctrl+Alt+Shift+2"
+    }, {
+      "menuName": "rupert_applyFullSpreadsheetFormatting",
+      "functionName": "rupert_applyFullSpreadsheetFormatting",
+      "defaultShortcut": "Ctrl+Alt+Shift+3"
+    }]
+  }
+}
