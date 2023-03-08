@@ -1,3 +1,257 @@
+function newFunc_runAll()
+{
+  
+  const spreadsheet = SpreadsheetApp.getActive()
+  importData(spreadsheet)
+  const dataSheet = spreadsheet.getSheetByName('Imported Data')
+  const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet')
+  const numRows_data = dataSheet.getLastRow() - 3;
+  const skus = getSKUs(spreadsheet);
+
+  if (numRows_data > 0)
+  {
+    const data = dataSheet.getSheetValues(4, 1, numRows_data, dataSheet.getLastColumn());
+
+    var richCounts  = [], richCounts_invalid  = [],
+        parksCounts = [], parksCounts_invalid = [],
+        ruptCounts  = [], ruptCounts_invalid  = [],
+        transfers   = [], transfers_invalid   = [];
+
+    for (var sheet = 0; sheet < 14; sheet++)
+    {
+      switch (sheet)
+      {
+        case 0:
+
+          for (var i = 1; i < data[0][0]; i++)
+          {
+            if (isNotBlank(data[i][1]))
+            {
+              if (isNumber(data[i][1]))
+                richCounts.push([data[i][0], data[i][1], '', 'InfoCounts'])
+              else
+                richCounts_invalid.push([data[i][0], data[i][1], '', 'InfoCounts'])
+            }
+          }
+          break;
+        case 1:
+
+          for (var i = 1; i < data[0][2]; i++)
+          {
+            if (isNotBlank(data[i][3]))
+            {
+              if (isNumber(data[i][3]))
+                richCounts.push([data[i][2], data[i][3], '', 'Manual Counts'])
+              else
+                richCounts_invalid.push([data[i][2], data[i][3], '', 'Manual Counts'])
+            }
+          }
+          break;
+        case 2:
+
+          for (var i = 1; i < data[0][4]; i++)
+          {
+            if (isNotBlank(data[i][7]))
+            {
+              if (isNumber(data[i][7]))
+              {
+                if (data[i][7] != data[i][6] && data[i][5] != 'B/O')
+                  parksCounts.push([data[i][4], data[i][7], '', 'Order'])
+              }
+              else
+                parksCounts_invalid.push([data[i][4], data[i][7], '', 'Order'])
+            }
+          }
+          break;
+
+        case 3:
+
+          for (var i = 1; i < data[0][8]; i++)
+          {
+            if (isNotBlank(data[i][10]))
+            {
+              if (isNumber(data[i][10]))
+              {
+                if (data[i][10] != data[i][9])
+                  parksCounts.push([data[i][8], data[i][10], '', 'Shipped'])
+              }
+              else
+                parksCounts_invalid.push([data[i][8], data[i][10], '', 'Shipped'])
+            }
+          }
+          break;
+        case 4:
+
+          for (var i = 1; i < data[0][11]; i++)
+          {
+            if (isNotBlank(data[i][12]))
+            {
+              if (isNumber(data[i][12]))
+                parksCounts.push([data[i][11], data[i][12], '', 'InfoCounts'])
+              else
+                parksCounts_invalid.push([data[i][11], data[i][12], '', 'InfoCounts'])
+            }
+          }
+          break;
+        case 5:
+
+          for (var i = 1; i < data[0][13]; i++)
+          {
+            if (isNotBlank(data[i][14]))
+            {
+              if (isNumber(data[i][14]))
+                parksCounts.push([data[i][13], data[i][14], '', 'Manual Counts'])
+              else
+                parksCounts_invalid.push([data[i][13], data[i][14], '', 'Manual Counts'])
+            }
+          }
+          break;
+        case 6:
+
+          for (var i = 1; i < data[0][22]; i++)
+          {
+            if (isNotBlank(data[i][25]))
+            {
+              if (isNumber(data[i][25]))
+              {
+                if (data[i][25] != data[i][24] && data[i][23] != 'B/O')
+                  ruptCounts.push([data[i][4], data[i][7]], '', 'Order')
+              }
+              else
+                ruptCounts_invalid.push([data[i][22], data[i][25], '', 'Order'])
+            }
+          }
+          break;
+
+        case 7:
+
+          for (var i = 1; i < data[0][26]; i++)
+          {
+            if (isNotBlank(data[i][28]))
+            {
+              if (isNumber(data[i][28]))
+              {
+                if (data[i][28] != data[i][27])
+                  ruptCounts.push([data[i][26], data[i][28], '', 'Shipped'])
+              }
+              else
+                ruptCounts_invalid.push([data[i][26], data[i][28], '', 'Shipped'])
+            }
+          }
+          break;
+        case 8:
+
+          for (var i = 1; i < data[0][29]; i++)
+          {
+            if (isNotBlank(data[i][30]))
+            {
+              if (isNumber(data[i][30]))
+                ruptCounts.push([data[i][29], data[i][30], '', 'InfoCounts'])
+              else
+                ruptCounts_invalid.push([data[i][29], data[i][30], '', 'InfoCounts'])
+            }
+          }
+          break;
+        case 9:
+
+          for (var i = 1; i < data[0][31]; i++)
+          {
+            if (isNotBlank(data[i][32]))
+            {
+              if (isNumber(data[i][32]))
+                ruptCounts.push([data[i][31], data[i][32], '', 'Manual Counts'])
+              else
+                ruptCounts_invalid.push([data[i][31], data[i][32], '', 'Manual Counts'])
+            }
+          }
+          break;
+        case 10:
+
+          for (var i = 1; i < data[0][15]; i++)
+          {
+            if (data[i][17] == 'false')
+            {
+              if (isNumber(data[i][16]) && skus.includes(data[i][15]))
+                transfers.push([data[i][15], data[i][16], '100', '200'])
+              else
+                transfers_invalid.push([data[i][15], data[i][16], '100', '200'])
+            }
+          }
+          break;
+
+        case 11:
+
+          for (var i = 1; i < data[0][18]; i++)
+          {
+            if (data[i][21] == 'false' && isNotBlank(data[i][20]))
+            {
+              if (isNumber(data[i][19]) && skus.includes(data[i][18]))
+                transfers.push([data[i][18], data[i][19], '200', '100'])
+              else
+                transfers_invalid.push([data[i][18], data[i][19], '200', '100'])
+            }
+          }
+          break;
+        case 12:
+
+          for (var i = 1; i < data[0][33]; i++)
+          {
+            if (data[i][35] == 'false')
+            {
+              Logger.log(data[i][33])
+
+              if (isNumber(data[i][34]) && skus.includes(data[i][33]))
+                transfers.push([data[i][33], data[i][34], '100', '300'])
+              else
+                transfers_invalid.push([data[i][33], data[i][34], '100', '300'])
+            }
+          }
+          break;
+        case 13:
+
+          for (var i = 1; i < data[0][36]; i++)
+          {
+            if (data[i][39] == 'false' && isNotBlank(data[i][38]))
+            {
+              if (isNumber(data[i][37]) && skus.includes(data[i][37]))
+                transfers.push([data[i][36], data[i][37], '300', '100'])
+              else
+                transfers_invalid.push([data[i][36], data[i][37], '300', '100'])
+            }
+          }
+          break;
+      }
+    }
+
+    Logger.log(richCounts)
+    Logger.log(richCounts.length)
+    Logger.log(richCounts_invalid)
+    Logger.log(richCounts_invalid.length)
+
+    Logger.log(parksCounts)
+    Logger.log(parksCounts.length)
+    Logger.log(parksCounts_invalid)
+    Logger.log(parksCounts_invalid.length)
+
+    Logger.log(ruptCounts)
+    Logger.log(ruptCounts.length)
+    Logger.log(ruptCounts_invalid)
+    Logger.log(ruptCounts_invalid.length)
+
+    Logger.log(transfers)
+    Logger.log(transfers.length)
+    Logger.log(transfers_invalid)
+    Logger.log(transfers_invalid.length)
+  } 
+  else
+    SpreadsheetApp.getUi().alert('Imported Data is blank.')
+}
+
+function isNotBlank(str)
+{
+  return str !== ''
+}
+
 /**
 * This function gets some of the physical counts done by a particular location based on which google sheet is being analyzed.
 *
@@ -98,10 +352,9 @@ function getPhysicalCounted(sheet, descripCol)
 */
 function getSKUs(spreadsheet)
 {
-  var spreadsheet = SpreadsheetApp.getActive();
   const inventorySheet = spreadsheet.getSheetByName('DataImport');
 
-  return inventorySheet.getSheetValues(2, 7, inventorySheet.getLastRow() - 1, 1);
+  return inventorySheet.getSheetValues(2, 7, inventorySheet.getLastRow() - 1, 1).flat();
 }
 
 /**
@@ -164,114 +417,6 @@ function getStockTransfers(sheet, descripCol, fromLocation, toLocation, isTrites
   var   to_InvalidQty = new Array(num_InvalidQty).fill(toLocation);
   
   return [transpose([sku, qty, from, to]), transpose([sku_InvalidQty, qty_Invalid, from_InvalidQty, to_InvalidQty])];
-}
-
-/**
-* This function imports and sets all of the data needed for the adagio inventory system update.
-*
-* @return {Sheet[]} The richmond, parksville, rupert, and trites data sheets
-* @author Jarren Ralf
-*/
-function importAllData()
-{
-  var     spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  var   richmondSheet = spreadsheet.getSheetByName("Imported Richmond Data (Loc: 100)");
-  var parksvilleSheet = spreadsheet.getSheetByName("Imported Parksville Data (Loc: 200)");
-  var     rupertSheet = spreadsheet.getSheetByName("Imported Rupert Data (Loc: 300)");
-  
-  // Set the IMPORTRANGE formula on all the sheets
-  importData(  richmondSheet);
-  importData(parksvilleSheet);
-  importData(    rupertSheet);
-  
-  // Clear the IMPORTRANGE formula and paste all of the values it retreived
-  pasteValues(  richmondSheet);
-  pasteValues(parksvilleSheet);
-  pasteValues(    rupertSheet);
-  
-  return [richmondSheet, parksvilleSheet, rupertSheet];
-}
-
-/**
-* This function sets the IMPORTRANGE formula besed on the active spreadsheet if there are no sheet variables sent to the function.
-*
-* @param {Sheet} sheet The google sheet with the imported data
-* @author Jarren Ralf
-*/
-function importData(sheet)
-{
-  const DATA_START_ROW  = 4;
-  const DATA_START_COL  = 1;
-  var getSKUs = false;
-  
-  // When clicking the Import Data buttons, the function will be run with 0 arguments
-  if (arguments.length == 0)
-    var sheet = SpreadsheetApp.getActiveSheet(); // Get the active sheet
-  
-  var sheetName = sheet.getSheetName();
-  
-  // Get the appropriate spreadsheet URL in order to set the IMPORTRANGE command, which is based on the active sheet name
-  if (sheetName == "Imported Richmond Data (Loc: 100)")
-    var spreadsheetURL = "https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk";
-  else if (sheetName == "Imported Parksville Data (Loc: 200)")
-    var spreadsheetURL = "https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM";
-  else if (sheetName == "Imported Rupert Data (Loc: 300)")
-    var spreadsheetURL = "https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM";
-  else if (sheetName == "All SKUs")
-  {
-    var spreadsheetURL = "https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM";
-    getSKUs = true;
-  }
-  
-  sheet.getRange(DATA_START_ROW, DATA_START_COL, sheet.getLastRow(), sheet.getLastColumn()).clearContent();
-  setImportRange(sheet, spreadsheetURL, getSKUs);
-}
-
-/**
-* This function imports and sets all of the SKUs.
-*
-* @author Jarren Ralf
-*/
-function importSKUsOnly()
-{
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("All SKUs");
-  importData(sheet);  // Set the IMPORTRANGE formula on the SKU sheet
-  pasteValues(sheet); // Clear the IMPORTRANGE formula and paste all of the values it retreived
-}
-
-/**
-* This function checks if the given input is a number or not.
-*
-* @param  {Object}  num The inputted argument, assumed to be a number.
-* @return {Boolean} Whether the input paramater is a number or not
-* @author Jarren Ralf
-*/
-function isNumber(num)
-{
-  return !(isNaN(parseInt(num)));
-}
-
-/**
-* This function clears the IMPORTRANGE formula on the active sheet (so the command isn't continually using memory)
-* and pastes the values it retrieved on the active sheet.
-*
-* @param {Sheet} sheet The google sheet with the imported data
-* @author Jarren Ralf
-*/
-function pasteValues(sheet)
-{
-  const DATA_START_ROW  = 4;
-  const        NUM_ROWS = 1; // Only one row because the formula only exists at the top of the column
-  const DATA_START_COL  = 1;
-  
-  // When clicking the Set Values buttons, the function will be run with 0 arguments
-  if (arguments.length == 0)
-    var sheet = SpreadsheetApp.getActiveSheet(); // Get the active sheet
-  
-  var range = sheet.getDataRange(); // This grabs all of the data
-  var values = range.getValues();
-  sheet.getRange(DATA_START_ROW, DATA_START_COL, NUM_ROWS, sheet.getLastColumn()).clearContent(); // Clear the formula
-  range.setValues(values);
 }
 
 /**
@@ -354,8 +499,7 @@ function physicalCount(dataSheet, physCountCol, dataCols, isDataImported)
   // If data is already imported (because runAll is being called) skip the additional import
   if (!isDataImported)
   {
-     importData(dataSheet, false);
-    pasteValues(dataSheet);
+    importData(dataSheet);
   }
   
   var counts   = getPhysicalCounted(dataSheet, dataCols[0]); // dataCols[0] = 1 
@@ -428,108 +572,73 @@ function setElapsedTime(startTime)
 }
 
 /**
-* This function sets the IMPORTRANGE fromulas.
+* This function sets the IMPORTRANGE fromulas and then pastes the values on the page, which removes the formula.
 *
-* @param {Sheet}   sheet          The google sheet with the relevant information
-* @param {String}  spreadsheetURL The URL of the google spreadsheet of which to import the ranges
-& @param {Boolean} getSKUs        Determines whether this function is used to get all of the skus or not
+* @param {Sheet} sheet The google sheet with the relevant information
 * @author Jarren Ralf
 */
-function setImportRange(sheet, spreadsheetURL, getSKUs)
+function importData(spreadsheet)
 {
-  const     SHEET_NAME_ROW  =  2;
-  const           DATA_ROW  =  4;
-  const          ORDER_COL  =  1;
-  const        SHIPPED_COL  =  5;
-  const    INFO_COUNTS_COL  =  8;
-  const       RECEIVED_COL  = 12;
-  const  ITEMS_TO_RICH_COL  = 16;
-  const         COUNTS_COLS = [1, 13];
-  const  MANUAL_COUNTS_COLS = [3, 15, 10];
-  
-  var sheetName = sheet.getSheetName();
-  var importRng = [];
-  var formulas  = [[]]; // Initialize the 2-d String array of formulas
+  // When clicking the Import Data buttons, the function will be run with 0 arguments
+  if (arguments.length == 0)
+    var spreadsheet = SpreadsheetApp.getActive()
 
-  // Define pieces of the string that will concatenate to other information to represent the formula
-  var rng01 = "!E4:E\")"; // PARKSVILLE, PRINCE RUPERT | ORDER, SHIPPED, RECEIVED | Description
-  var rng02 = "!J4:J\")"; // PARKSVILLE, PRINCE RUPERT | STATUS                   | Complete or Partial
-  var rng03 = "!G4:G\")"; // PARKSVILLE, PRINCE RUPERT | ORDER, SHIPPED           | Current Stock
-  var rng04 = "!H4:H\")"; // PARKSVILLE, PRINCE RUPERT | ORDER, SHIPPED           | Actual Stock
-  
-  var rng05 = "!I4:I\")"; // PARKSVILLE, PRINCE RUPERT | RECEIVED | Shipped
-  var rng06 = "!B4:B\")"; // PARKSVILLE, PRINCE RUPERT | RECEIVED | Entered By
-  var rng07 = "!L4:L\")"; // PARKSVILLE, PRINCE RUPERT | RECEIVED | Transfered
-  
-  var rng08 = "!D4:D\")"; // RICHMOND, PARKSVILLE, PRINCE RUPERT | ITEMS TO RICHMOND, ITEMS TO TRITES | Description, Counts
-  var rng09 = "!F4:F\")"; // RICHMOND, PARKSVILLE, PRINCE RUPERT | ITEMS TO RICHMOND, ITEMS TO TRITES | Shipped
-  var rng10 = "!H4:H\")"; //           PARKSVILLE, PRINCE RUPERT | ITEMS TO RICHMOND                  | Received By
-  var rng11 = "!I4:I\")"; //           PARKSVILLE, PRINCE RUPERT | ITEMS TO RICHMOND                  | Transfered
-  
-  var rng12 = "!G4:G\")"; // RICHMOND | ITEMS TO RICHMOND, ITEMS TO TRITES | Received By | 
-  var rng13 = "!H4:H\")"; // RICHMOND | ITEMS TO RICHMOND, ITEMS TO TRITES | Transfered
+  const dataSheets = [  spreadsheet.getSheetByName('Imported Richmond Data (Loc: 100)'), 
+                        spreadsheet.getSheetByName('Imported Parksville Data (Loc: 200)'),
+                        spreadsheet.getSheetByName('Imported Rupert Data (Loc: 300)')
+  ]
 
-  var rng14 = "!A4:A\")"; // RICHMOND, PARKSVILLE, PRINCE RUPERT, TRITES | InfoCounts, Manual Counts | Description
-  var rng15 = "!C4:C\")"; // RICHMOND, PARKSVILLE, PRINCE RUPERT, TRITES | InfoCounts, Manual Counts | Counts
+  const formulas = [[[
+    "=ARRAYFORMULA(IF(NOT(REGEXMATCH(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk\", \"InfoCounts!A4:A\"),\" - \")),IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk\", \"InfoCounts!A4:A\"),LEFT(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk\", \"InfoCounts!A4:A\"), FIND(\" - \", IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk\", \"InfoCounts!A4:A\")))))",                                                            // Richmond, SKU
+    "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk\", \"InfoCounts!C4:C\")",     // Richmond, Counts
+    "=ARRAYFORMULA(IF(NOT(REGEXMATCH(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk\", \"Manual Counts!A4:A\"),\" - \")),IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk\", \"Manual Counts!A4:A\"),LEFT(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk\", \"Manual Counts!A4:A\"), FIND(\" - \", IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk\", \"Manual Counts!A4:A\")))))",                                                         // Richmond, SKU
+    "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk\", \"Manual Counts!C4:C\")"]],  // Richmond, Counts
+    [["=ARRAYFORMULA(IF(NOT(REGEXMATCH(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"Order!E4:E\"),\" - \")),IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"Order!E4:E\"),LEFT(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"Order!E4:E\"), FIND(\" - \", IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"Order!E4:E\")))))",                                                                                                                 // Parksville, SKU
+    "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"Order!J4:J\")",          // Parksville, BO
+    "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"Order!G4:G\")",          // Parksville, Current Stock
+    "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"Order!H4:H\")",          // Parksville, Actual Stock
+    "=ARRAYFORMULA(IF(NOT(REGEXMATCH(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"Shipped!E4:E\"),\" - \")),IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"Shipped!E4:E\"),LEFT(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"Shipped!E4:E\"), FIND(\" - \", IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"Shipped!E4:E\")))))",                                                                                                               // Parksville, SKU
+    "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"Shipped!G4:G\")",        // Parksville, Current Stock
+    "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"Shipped!H4:H\")",        // Parksville, Actual Stock
+    "=ARRAYFORMULA(IF(NOT(REGEXMATCH(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"InfoCounts!A4:A\"),\" - \")),IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"InfoCounts!A4:A\"),LEFT(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"InfoCounts!A4:A\"), FIND(\" - \", IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"InfoCounts!A4:A\")))))",                                                            // Parksville, SKU
+    "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"InfoCounts!C4:C\")",     // Parksville, Counts
+    "=ARRAYFORMULA(IF(NOT(REGEXMATCH(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"Manual Counts!A4:A\"),\" - \")),IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"Manual Counts!A4:A\"),LEFT(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"Manual Counts!A4:A\"), FIND(\" - \", IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"Manual Counts!A4:A\")))))",                                                         // Parksville, SKU
+    "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"Manual Counts!C4:C\")",  // Parksville, Counts
+    "=ARRAYFORMULA(IF(NOT(REGEXMATCH(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"Received!E4:E\"),\" - \")),IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"Received!E4:E\"),LEFT(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"Received!E4:E\"), FIND(\" - \", IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"Received!E4:E\")))))",                                                              // Parksville, SKU
+    "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"Received!I4:I\")",       // Parksville, Shipped
+    "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"Received!L4:L\")",       // Parksville, Transfered
+    "=ARRAYFORMULA(IF(NOT(REGEXMATCH(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"ItemsToRichmond!D4:D\"),\" - \")),IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"ItemsToRichmond!D4:D\"),LEFT(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"ItemsToRichmond!D4:D\"), FIND(\" - \", IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"ItemsToRichmond!D4:D\")))))",                                                       // Parksville, SKU
+    "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"ItemsToRichmond!F4:F\")",// Parksville, Shipped
+    "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"ItemsToRichmond!H4:H\")",// Parksville, Received By
+    "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"ItemsToRichmond!I4:I\")"]],// Parksville, Transfered
+    [["=ARRAYFORMULA(IF(NOT(REGEXMATCH(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"Order!E4:E\"),\" - \")),IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"Order!E4:E\"),LEFT(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"Order!E4:E\"), FIND(\" - \", IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"Order!E4:E\")))))",                                                                                                                 // Rupert, SKU
+    "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"Order!J4:J\")",          // Rupert, BO
+    "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"Order!G4:G\")",          // Rupert, Current Stock
+    "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"Order!H4:H\")",          // Rupert, Actual Stock
+    "=ARRAYFORMULA(IF(NOT(REGEXMATCH(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"Shipped!E4:E\"),\" - \")),IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"Shipped!E4:E\"),LEFT(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"Shipped!E4:E\"), FIND(\" - \", IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"Shipped!E4:E\")))))",                                                                                                               // Rupert, SKU
+    "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"Shipped!G4:G\")",        // Rupert, Current Stock
+    "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"Shipped!H4:H\")",        // Rupert, Actual Stock
+    "=ARRAYFORMULA(IF(NOT(REGEXMATCH(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"InfoCounts!A4:A\"),\" - \")),IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"InfoCounts!A4:A\"),LEFT(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"InfoCounts!A4:A\"), FIND(\" - \", IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"InfoCounts!A4:A\")))))",                                                            // Rupert, SKU
+    "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"InfoCounts!C4:C\")",     // Rupert, Counts
+    "=ARRAYFORMULA(IF(NOT(REGEXMATCH(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"Manual Counts!A4:A\"),\" - \")),IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"Manual Counts!A4:A\"),LEFT(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"Manual Counts!A4:A\"), FIND(\" - \", IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"Manual Counts!A4:A\")))))",                                                         // Rupert, SKU
+    "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"Manual Counts!C4:C\")",  // Rupert, Counts
+    "=ARRAYFORMULA(IF(NOT(REGEXMATCH(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"Received!E4:E\"),\" - \")),IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"Received!E4:E\"),LEFT(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"Received!E4:E\"), FIND(\" - \", IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"Received!E4:E\")))))",                                                              // Rupert, SKU
+    "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"Received!I4:I\")",       // Rupert, Shipped
+    "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"Received!L4:L\")",       // Rupert, Transfered
+    "=ARRAYFORMULA(IF(NOT(REGEXMATCH(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"ItemsToRichmond!D4:D\"),\" - \")),IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"ItemsToRichmond!D4:D\"),LEFT(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"ItemsToRichmond!D4:D\"), FIND(\" - \", IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"ItemsToRichmond!D4:D\")))))",                                                       // Rupert, SKU
+    "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"ItemsToRichmond!F4:F\")",// Rupert, Shipped
+    "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"ItemsToRichmond!H4:H\")",// Rupert, Received By
+    "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"ItemsToRichmond!I4:I\")" // Rupert, Transfered
+  ]]]
 
-  var rng16 = "!G10:G\")"; // PARKSVILLE | SKUs
-  
-  if(sheetName == "Imported Richmond Data (Loc: 100)") // For the Richmond store page
+  for (var sheet = 0; sheet < dataSheets.length; sheet++)
   {
-    // Get the sheet names
-    var     richInfoCountsSheet = sheet.getRange(SHEET_NAME_ROW,         COUNTS_COLS[0]).getValue();
-    var   richManualCountsSheet = sheet.getRange(SHEET_NAME_ROW,  MANUAL_COUNTS_COLS[0]).getValue();
-    
-    // Assemble the import range string for each column
-    importRng[ 0] = richInfoCountsSheet     + rng14; 
-    importRng[ 1] = richInfoCountsSheet     + rng15; 
-    importRng[ 2] = richManualCountsSheet   + rng14; 
-    importRng[ 3] = richManualCountsSheet   + rng15; 
+    var numCols = dataSheets[sheet].getLastColumn();
+    dataSheets[sheet].getRange(4, 1, dataSheets[sheet].getLastRow() - 3, numCols).clearContent().offset(0, 0, 1, numCols).setValues(formulas[sheet])
+    var range = dataSheets[sheet].getDataRange();
+    var newValues = range.getValues()
+    range.setNumberFormat('@').setValues(newValues)
   }
-  else if (getSKUs) // Get the skus
-    importRng[0] = sheet.getRange(SHEET_NAME_ROW, ORDER_COL).getValue() + rng16; 
-  else // For Parksville and Rupert because their format is the same
-  {
-    // Get the sheet names
-    var         orderSheet = sheet.getRange(SHEET_NAME_ROW,         ORDER_COL    ).getValue();
-    var       shippedSheet = sheet.getRange(SHEET_NAME_ROW,       SHIPPED_COL    ).getValue();
-    var    infoCountsSheet = sheet.getRange(SHEET_NAME_ROW,   INFO_COUNTS_COL    ).getValue();
-    var  manualCountsSheet = sheet.getRange(SHEET_NAME_ROW, MANUAL_COUNTS_COLS[2]).getValue();
-    var      receivedSheet = sheet.getRange(SHEET_NAME_ROW,      RECEIVED_COL    ).getValue();
-    var   itemsToRichSheet = sheet.getRange(SHEET_NAME_ROW, ITEMS_TO_RICH_COL    ).getValue();
-    
-    // Assemble the import range string for each column
-    importRng[ 0] = orderSheet        + rng01; // Description
-    importRng[ 1] = orderSheet        + rng02; // Complete or Partial
-    importRng[ 2] = orderSheet        + rng03; // Current Stock
-    importRng[ 3] = orderSheet        + rng04; // Actual Stock
-    
-    importRng[ 4] = shippedSheet      + rng01; // Description
-    importRng[ 5] = shippedSheet      + rng03; // Current Stock
-    importRng[ 6] = shippedSheet      + rng04; // Actual Stock
-    
-    importRng[ 7] = infoCountsSheet   + rng14; // Description 
-    importRng[ 8] = infoCountsSheet   + rng15; // Counts      
-    
-    importRng[ 9] = manualCountsSheet + rng14; // Description 
-    importRng[10] = manualCountsSheet + rng15; // Counts      
-    
-    importRng[11] = receivedSheet     + rng01; // Description
-    importRng[12] = receivedSheet     + rng05; // Shipped
-    importRng[13] = receivedSheet     + rng06; // Entered By
-    importRng[14] = receivedSheet     + rng07; // Transfered
-    
-    importRng[15] = itemsToRichSheet  + rng08; // Description
-    importRng[16] = itemsToRichSheet  + rng09; // Shipped
-    importRng[17] = itemsToRichSheet  + rng10; // Received By
-    importRng[18] = itemsToRichSheet  + rng11; // Transfered
-  }
-  
-  // Concatenate the formula
-  for (var i = 0; i < importRng.length; i++)
-    formulas[0][i] = "=IMPORTRANGE(\"" + spreadsheetURL + "\", \"" + importRng[i];
-  
-  sheet.getRange(DATA_ROW, 1, 1, importRng.length).setFormulas(formulas); // Set the formula in the top cell across the whole sheet
 }
 
 /**
