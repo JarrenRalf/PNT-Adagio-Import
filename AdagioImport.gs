@@ -574,7 +574,8 @@ function setElapsedTime(startTime)
 /**
 * This function sets the IMPORTRANGE fromulas and then pastes the values on the page, which removes the formula.
 *
-* @param {Sheet} sheet The google sheet with the relevant information
+* @param {Spreadsheet} spreadsheet : The active spreadsheet
+* @return Returns all of the data pages
 * @author Jarren Ralf
 */
 function importData(spreadsheet)
@@ -631,14 +632,18 @@ function importData(spreadsheet)
     "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM\", \"ItemsToRichmond!I4:I\")" // Rupert, Transfered
   ]]]
 
+  var numCols, range, newValues;
+
   for (var sheet = 0; sheet < dataSheets.length; sheet++)
   {
-    var numCols = dataSheets[sheet].getLastColumn();
+    numCols = dataSheets[sheet].getLastColumn();
     dataSheets[sheet].getRange(4, 1, dataSheets[sheet].getLastRow() - 3, numCols).clearContent().offset(0, 0, 1, numCols).setValues(formulas[sheet])
-    var range = dataSheets[sheet].getDataRange();
-    var newValues = range.getValues()
+    range = dataSheets[sheet].getDataRange();
+    newValues = range.getValues()
     range.setNumberFormat('@').setValues(newValues)
   }
+
+  return dataSheets;
 }
 
 /**
