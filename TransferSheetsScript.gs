@@ -1683,7 +1683,7 @@ function getDay(year, month)
 /**
 * Gets the last row number based on a selected column range values
 *
-* @param {Object[][]} range Takes a 2d array of a single column's values
+* @param {Object[][]} range : Takes a 2d array of a single column's values
 * @returns {Number} The last row number with a value. 
 */
 function getLastRowSpecial(range)
