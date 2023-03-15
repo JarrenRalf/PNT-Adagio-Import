@@ -420,8 +420,10 @@ function resetData()
     const spreadsheet = SpreadsheetApp.getActive();
     const csvData = Utilities.parseCsv(DriveApp.getFilesByName("inventory.csv").next().getBlob().getDataAsString());
     const inflowData = Object.values(Utilities.parseCsv(DriveApp.getFilesByName("inFlow_StockLevels.csv").next().getBlob().getDataAsString()).reduce((acc, val) => {
-      if (acc[val[0]]) acc[val[0]][1] = Number(acc[val[0]][1]) + Number(val[4]); // Sum the quantities if item is in multiple locations
-      else if (val[0].split(" - ").length > 4) acc[val[0]] = [val[0], Number(val[4])]; // Add the item to the new list if it contains the typical google sheets item format with "space - space"
+      // Sum the quantities if item is in multiple locations
+      if (acc[val[0]]) acc[val[0]][1] = (inflow_conversions.hasOwnProperty(val[0])) ? Number(acc[val[0]][1]) + Number(val[4])*inflow_conversions[val[0]] : Number(acc[val[0]][1]) + Number(val[4]); 
+      // Add the item to the new list if it contains the typical google sheets item format with "space - space"
+      else if (val[0].split(" - ").length > 4) acc[val[0]] = [val[0], (inflow_conversions.hasOwnProperty(val[0])) ? Number(val[4])*inflow_conversions[val[0]] : Number(val[4])]; 
       return acc;
     }, {}));
     var isInFlowItem;
