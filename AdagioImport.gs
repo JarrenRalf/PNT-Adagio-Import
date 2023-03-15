@@ -473,15 +473,17 @@ function stockTransfers()
 * @param   {Number}        row     : The   row  number of the timestamp
 * @param   {Number}        col     : The column number of the timestamp
 * @param {Spreadsheet} spreadsheet : The active spreadsheet
-* @param    {Sheet}    adagioSheet : The Adagio Transfer Sheet
+* @param    {Sheet}       sheet    : The sheet to place the timestamp on
 * @returns {String} Returns the formatted date string.
 * @author Jarren Ralf
 */
-function timeStamp(row, col, spreadsheet, adagioSheet)
+function timeStamp(row, col, spreadsheet, sheet, format)
 {
-  var format = "EEE, d MMM yyyy HH:mm:ss";
+  if (arguments.length < 5)
+    format = "EEE, d MMM yyyy HH:mm:ss";
+
   var formattedDate = Utilities.formatDate(new Date(), spreadsheet.getSpreadsheetTimeZone(), format);
   
-  if (arguments.length !== 0) adagioSheet.getRange(row, col).setValue(formattedDate);
+  if (arguments.length !== 0) sheet.getRange(row, col).setValue(formattedDate);
   return formattedDate;
 }

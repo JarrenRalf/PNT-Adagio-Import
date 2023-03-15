@@ -226,7 +226,7 @@ function importInventory()
 
   urls.map((url, i) => {
     SpreadsheetApp.openByUrl(url).getSheetByName('Inventory').clearContents().getRange(1, 1, csvData.length).setNumberFormat('@').setValues(csvData);
-    timeStamp(2, 5 + i*3) 
+    timeStamp(2, 5 + i*3, SpreadsheetApp.getActive(), sheet) 
   })
 
   displayRuntime(startTime, sheet)
@@ -258,7 +258,7 @@ function importUpcs()
 
   urls.map((url, i) => {
     SpreadsheetApp.openByUrl(url).getSheetByName('UPC Database').clearContents().getRange(1, 1, upcData.length, 2).setValues(upcData);
-    timeStamp(3, 5 + i*3) 
+    timeStamp(3, 5 + i*3, SpreadsheetApp.getActive(), sheet) 
   })
 
   ScriptApp.newTrigger('concatManuallyAddedUPCs').timeBased().after(30000).create() // wait 30 seconds before attempting to concatenate manually added UPCs
