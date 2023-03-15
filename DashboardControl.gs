@@ -1301,9 +1301,9 @@ function getTritesCounts()
     const output = inventorySheet.getSheetValues(2, 2, inventorySheet.getLastRow() - 1, 5).filter(e => (isNotBlank(e[4])) ? e[1] < e[4] : false).map(f => [f[0], f[1], f[4]])
     const numItems = output.length;
 
-    tritesCountsSheet.getRange('A4:D').clearContent()
-      .offset(-3, 2, 1, 2).setFormulas([['=COUNTA($D$4:$D$' + (numItems + 3) + ')','=' + numItems + '-$C$1']])
-      .offset(3, -2, numItems, 3).setValues(output)
+    tritesCountsSheet.getRange('A4:C').clearContent()
+      .offset(-3, 1, 1, 1).setValues([[numItems]])
+      .offset(3, -1, numItems, 3).setValues(output)
 
     applyFullRowFormatting(tritesCountsSheet, 4, numItems);
     timeStamp(spreadsheet, 10, 5, adagioSheet, "dd MMM HH:mm")
