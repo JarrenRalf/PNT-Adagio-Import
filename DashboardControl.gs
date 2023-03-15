@@ -1651,7 +1651,7 @@ function parksville_completeReceived()
     const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM/edit#gid=1340095049');
     completeReceived();
-    timeStamp(spreadsheet, 4, 10, adagioSheet, "dd MMM HH:mm")
+    timeStamp(spreadsheet, 6, 10, adagioSheet, "dd MMM HH:mm")
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
   catch (e)
@@ -1676,7 +1676,7 @@ function parksville_completeToRichmond()
     const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM/edit#gid=1340095049');
     completeToRichmond();
-    timeStamp(spreadsheet, 5, 10, adagioSheet, "dd MMM HH:mm")
+    timeStamp(spreadsheet, 7, 10, adagioSheet, "dd MMM HH:mm")
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
   catch (e)
@@ -1701,7 +1701,7 @@ function parksville_print_X_Order()
     const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM/edit#gid=1340095049');
     print_X_Order();
-    timeStamp(spreadsheet, 6, 10, adagioSheet, "dd MMM HH:mm")
+    timeStamp(spreadsheet, 8, 10, adagioSheet, "dd MMM HH:mm"),
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
   catch (e)
@@ -1726,7 +1726,7 @@ function parksville_print_X_Shipped()
     const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM/edit#gid=1340095049');
     print_X_Shipped();
-    timeStamp(spreadsheet, 7, 10, adagioSheet, "dd MMM HH:mm")
+    timeStamp(spreadsheet, 9, 10, adagioSheet, "dd MMM HH:mm")
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
   catch (e)
@@ -1751,7 +1751,7 @@ function parksville_clearInventory()
     const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM/edit#gid=1340095049');
     clearInventory();
-    timeStamp(spreadsheet, 8, 10, adagioSheet, "dd MMM HH:mm")
+    timeStamp(spreadsheet, 4, 10, adagioSheet, "dd MMM HH:mm")
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
   catch (e)
@@ -2024,7 +2024,7 @@ function rupert_completeReceived()
     const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM/edit#gid=407280159');
     completeReceived();
-    timeStamp(spreadsheet, 4, 15, adagioSheet, "dd MMM HH:mm")
+    timeStamp(spreadsheet, 6, 15, adagioSheet, "dd MMM HH:mm")
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
   catch (e)
@@ -2049,7 +2049,7 @@ function rupert_completeToRichmond()
     const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM/edit#gid=407280159');
     completeToRichmond();
-    timeStamp(spreadsheet, 5, 15, adagioSheet, "dd MMM HH:mm")  
+    timeStamp(spreadsheet, 7, 15, adagioSheet, "dd MMM HH:mm")  
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
   catch (e)
@@ -2074,7 +2074,7 @@ function rupert_print_X_Order()
     const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM/edit#gid=407280159');
     print_X_Order();
-    timeStamp(spreadsheet, 6, 15, adagioSheet, "dd MMM HH:mm")
+    timeStamp(spreadsheet, 8, 15, adagioSheet, "dd MMM HH:mm")
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
   catch (e)
@@ -2099,7 +2099,7 @@ function rupert_print_X_Shipped()
     const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM/edit#gid=407280159');
     print_X_Shipped();
-    timeStamp(spreadsheet, 7, 15, adagioSheet, "dd MMM HH:mm")
+    timeStamp(spreadsheet, 9, 15, adagioSheet, "dd MMM HH:mm")
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
   catch (e)
@@ -2124,7 +2124,7 @@ function rupert_clearInventory()
     const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM/edit#gid=407280159');
     clearInventory();
-    timeStamp(spreadsheet, 8, 15, adagioSheet, "dd MMM HH:mm")
+    timeStamp(spreadsheet, 4, 15, adagioSheet, "dd MMM HH:mm")
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
   catch (e)

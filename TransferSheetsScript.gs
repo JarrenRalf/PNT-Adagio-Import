@@ -83,7 +83,14 @@ function addItemsToUpcData()
   {
     const startRow = upcDatabaseSheet.getLastRow() + 1; // The bottom of the list
     copySelectedValues(upcDatabaseSheet, startRow, NUM_COLS, 'upc', false, [manAddedUPCsSheet]); // Move items to UPC Database and the Manually Added UPCs
-    spreadsheet.getSheetByName("Manual Scan").getRange(1, 1).activate();
+
+    if (sheet.getSheetName() === 'Item Search')
+    {
+      const row = sheet.getActiveRange().getRow();
+      populateManualScan(spreadsheet, sheet, row);
+    }
+    else
+      spreadsheet.getSheetByName("Manual Scan").getRange(1, 1).activate();
   }
 }
 
@@ -1044,12 +1051,12 @@ function clearInflowPickList()
  * @author Jarren Ralf
  */
 function clearInventory()
-{   
+{
   const startTime = new Date().getTime();
   const spreadsheet = ss;
   const itemSearchSheet = spreadsheet.getSheetByName('Item Search');
   const  inventorySheet = spreadsheet.getSheetByName('INVENTORY');
-  const numRowsRange = (isRichmondSpreadsheet(spreadsheet)) ? inventorySheet.getRange(1, 7, 1, 3) : inventorySheet.getRange(5, 7, 2, 3);
+  const numRowsRange = (isRichmondSpreadsheet(spreadsheet)) ? inventorySheet.getRange(1, 7, 1, 3) : inventorySheet.getRange(1, 7, 2, 3);
 
   itemSearchSheet.getRange('B1').clearContent(); // Clear the search box on the Item Search page
   numRowsRange.clearContent(); // Clear the number of rows on the inventory page
@@ -1172,7 +1179,7 @@ function completeReceived()
   const sheet = spreadsheet.getSheetByName("Received");
   const numRows = sheet.getLastRow() - START_ROW + 1;
   sheet.getRange(START_ROW, 12, numRows).setValue(true);
-  spreadsheet.getSheetByName('INVENTORY').getRange(1, 7, 1, 3).setValues([['=COUNTIF(Received_Checkbox,FALSE)', dateStamp(undefined, null, null, null, 'dd MMM HH:mm'), getRunTime(startTime)]]);
+  spreadsheet.getSheetByName('INVENTORY').getRange(3, 7, 1, 3).setValues([['=COUNTIF(Received_Checkbox,FALSE)', dateStamp(undefined, null, null, null, 'dd MMM HH:mm'), getRunTime(startTime)]]);
 }
 
 /**
@@ -1201,7 +1208,7 @@ function completeToRichmond()
   }
   
   range.setValues(data); // Set the range with the updated values
-  spreadsheet.getSheetByName('INVENTORY').getRange(2, 7, 1, 3)
+  spreadsheet.getSheetByName('INVENTORY').getRange(4, 7, 1, 3)
     .setValues([['=COUNTIF(ItemsToRichmond_Checkbox,FALSE)', dateStamp(undefined, null, null, null, 'dd MMM HH:mm'), getRunTime(startTime)]]);
 }
 
@@ -1704,7 +1711,7 @@ function getDay(year, month)
 /**
 * Gets the last row number based on a selected column range values
 *
-* @param {Object[][]} range : Takes a 2d array of a single column's values
+* @param {Object[][]} range Takes a 2d array of a single column's values
 * @returns {Number} The last row number with a value. 
 */
 function getLastRowSpecial(range)
@@ -2642,7 +2649,7 @@ function print_X_Order()
 { 
   const startTime = new Date().getTime()
   const spreadsheet = print_X("Order"); 
-  spreadsheet.getSheetByName('INVENTORY').getRange(3, 7, 1, 3).setValues([['=COUNTIF(Order_ActualCounts,">=0")', dateStamp(undefined, null, null, null, 'dd MMM HH:mm'), getRunTime(startTime)]]);
+  spreadsheet.getSheetByName('INVENTORY').getRange(5, 7, 1, 3).setValues([['=COUNTIF(Order_ActualCounts,">=0")', dateStamp(undefined, null, null, null, 'dd MMM HH:mm'), getRunTime(startTime)]]);
 }
 
 /**
@@ -2654,7 +2661,7 @@ function print_X_Shipped()
 {
   const startTime = new Date().getTime()
   const spreadsheet = print_X("Shipped");
-  spreadsheet.getSheetByName('INVENTORY').getRange(4, 7, 1, 3).setValues([['=COUNTIF(Shipped_ActualCounts,">=0")', dateStamp(undefined, null, null, null, 'dd MMM HH:mm'), getRunTime(startTime)]]);
+  spreadsheet.getSheetByName('INVENTORY').getRange(6, 7, 1, 3).setValues([['=COUNTIF(Shipped_ActualCounts,">=0")', dateStamp(undefined, null, null, null, 'dd MMM HH:mm'), getRunTime(startTime)]]);
 }
 
 /**
