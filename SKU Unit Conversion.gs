@@ -78,7 +78,7 @@ function computeConversions_PackageSize()
     const headerValues = headerRange.getValues();
     headerValues[0][0] = "Function Run Time";
     headerValues[0][4] = "Conversion Export";
-    headerValues[1][7] = timeStamp();
+    headerValues[1][7] = timeStamp(spreadsheet);
     headerValues[0][2] = elapsedTime(START_TIME);
     headerRange.setValues(headerValues)
   }
@@ -150,7 +150,7 @@ function computeConversions_Yeti()
     const headerValues = headerRange.getValues();
     headerValues[0][0] = "Function Run Time";
     headerValues[0][4] = "Conversion Export";
-    headerValues[1][7] = timeStamp();
+    headerValues[1][7] = timeStamp(spreadsheet);
     headerValues[0][2] = elapsedTime(START_TIME);
     headerRange.setValues(headerValues)
   }
@@ -446,12 +446,12 @@ function resetData()
     spreadsheet.getSheetByName("DataImport").clearContents().getRange(1, 1, numRows, activeItems[0].length).setNumberFormats(numberFormats).setValues(activeItems);
     
     const runtime = elapsedTime(START_TIME);
-    spreadsheet.getSheetByName('ConvertedExport').getRange(1, 3, 2).setValues([[runtime], [timeStamp()]]); // Elapsed time and timestamp
+    spreadsheet.getSheetByName('ConvertedExport').getRange(1, 3, 2).setValues([[runtime], [timeStamp(spreadsheet)]]); // Elapsed time and timestamp
 
     const timeStampRng = spreadsheet.getSheetByName('Adagio Transfer Sheet').getRange(1, 4, 2, 6);
     const timeStampValues = timeStampRng.getValues();
     timeStampValues[0][5] = runtime + ' seconds';
-    timeStampValues[1][0] = timeStamp();
+    timeStampValues[1][0] = timeStamp(spreadsheet);
     timeStampRng.setValues(timeStampValues); // Elapsed time and timestamp
   }
   catch (e)

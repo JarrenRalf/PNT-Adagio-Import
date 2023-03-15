@@ -295,7 +295,7 @@ function importData(spreadsheet)
   for (var sheet = 0; sheet < dataSheets.length; sheet++) // Loop through the data sheets
   {
     numCols = dataSheets[sheet].getLastColumn();
-    dataSheets[sheet].getRange(4, 1, dataSheets[sheet].getLastRow() - 3, numCols).clearContent().offset(0, 0, 1, numCols).setValues(formulas[sheet]) // Clear the content and set the formulas
+    dataSheets[sheet].getRange(4, 1, dataSheets[sheet].getLastRow() - 2, numCols).clearContent().offset(0, 0, 1, numCols).setValues(formulas[sheet]) // Clear the content and set the formulas
     range = dataSheets[sheet].getDataRange();
     newValues = range.getValues()
     range.setNumberFormat('@').setValues(newValues) // Paste the data values, hence remove the formulas 
@@ -336,7 +336,7 @@ function physCountRich()
   if (richCounts != null)
     adagioSheet.getRange(24, 2, richCounts.length, 4).setValues(richCounts)
 
-  timeStamp(2, 2, spreadsheet, adagioSheet);
+  timeStamp(spreadsheet, 2, 2, adagioSheet);
   setElapsedTime(startTime, adagioSheet);
 }
 
@@ -361,7 +361,7 @@ function physCountPark()
   if (parksCounts != null)
     adagioSheet.getRange(24, 7, parksCounts.length, 4).setValues(parksCounts)
 
-  timeStamp(2, 7, spreadsheet, adagioSheet);
+  timeStamp(spreadsheet, 2, 7, adagioSheet);
   setElapsedTime(startTime, adagioSheet);// To check the ellapsed times
 }
 
@@ -386,7 +386,7 @@ function physCountRupt()
   if (ruptCounts != null)
     adagioSheet.getRange(24, 12, ruptCounts.length, 4).setValues(ruptCounts)
 
-  timeStamp(2, 12, spreadsheet, adagioSheet);
+  timeStamp(spreadsheet, 2, 12, adagioSheet);
   setElapsedTime(startTime, adagioSheet);// To check the ellapsed times
 }
 
@@ -410,24 +410,24 @@ function runAll()
   const richCounts = getPhysicalCounted(richmondImportSheet)
   if (richCounts != null)
     adagioSheet.getRange(24, 2, richCounts.length, 4).setValues(richCounts)
-  timeStamp(2, 2, spreadsheet, adagioSheet);
+  timeStamp(spreadsheet, 2, 2, adagioSheet);
 
   const parksCounts = getPhysicalCounted(parksImportSheet)
   if (parksCounts != null)
     adagioSheet.getRange(24, 7, parksCounts.length, 4).setValues(parksCounts)
-  timeStamp(2, 7, spreadsheet, adagioSheet);
+  timeStamp(spreadsheet, 2, 7, adagioSheet);
 
   const ruptCounts = getPhysicalCounted(rupertImportSheet)
   if (ruptCounts != null)
     adagioSheet.getRange(24, 12, ruptCounts.length, 4).setValues(ruptCounts)
-  timeStamp(2, 12, spreadsheet, adagioSheet);
+  timeStamp(spreadsheet, 2, 12, adagioSheet);
 
   const transfers = getStockTransfers([parksImportSheet, rupertImportSheet], spreadsheet)
   if (transfers != null)
     adagioSheet.getRange(24, 17, transfers.length, 4).setValues(transfers)
-  timeStamp(2, 17, spreadsheet, adagioSheet);
+  timeStamp(spreadsheet, 2, 17, adagioSheet);
 
-  timeStamp(2, 19, spreadsheet, adagioSheet); // Run all timestamp
+  timeStamp(spreadsheet, 2, 19, adagioSheet); // Run all timestamp
   setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
 }
 
@@ -463,27 +463,28 @@ function stockTransfers()
   const transfers = getStockTransfers([parksImportSheet, rupertImportSheet], spreadsheet)
   if (transfers != null)
     adagioSheet.getRange(24, 17, transfers.length, 4).setValues(transfers)
-  timeStamp(2, 17, spreadsheet, adagioSheet);
+  timeStamp(spreadsheet, 2, 17, adagioSheet);
   setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
 }
 
 /**
 * This function creates a formatted date string for the current time and places the timestamp on the Adagio page.
 *
+* @param {Spreadsheet} spreadsheet : The active spreadsheet
 * @param   {Number}        row     : The   row  number of the timestamp
 * @param   {Number}        col     : The column number of the timestamp
-* @param {Spreadsheet} spreadsheet : The active spreadsheet
 * @param    {Sheet}       sheet    : The sheet to place the timestamp on
 * @returns {String} Returns the formatted date string.
 * @author Jarren Ralf
 */
-function timeStamp(row, col, spreadsheet, sheet, format)
+function timeStamp(spreadsheet, row, col, sheet, format)
 {
   if (arguments.length < 5)
     format = "EEE, d MMM yyyy HH:mm:ss";
 
   var formattedDate = Utilities.formatDate(new Date(), spreadsheet.getSpreadsheetTimeZone(), format);
   
-  if (arguments.length !== 0) sheet.getRange(row, col).setValue(formattedDate);
+  if (arguments.length > 3) sheet.getRange(row, col).setValue(formattedDate);
+  
   return formattedDate;
 }
