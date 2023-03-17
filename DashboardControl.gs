@@ -18,6 +18,8 @@ function installedOnEdit(e)
       (row == 1 && col == 4) || (row == 1 && col == 5) || (row == 2 && col == 5) || (row == 3 && col == 5) || (row == 4 && col == 3) || 
       (row == 4 && col == 5) || (row == 5 && col == 3) || (row == 5 && col == 5) || (row == 6 && col == 3) || (row == 6 && col == 5)))))
       searchV2(e, spreadsheet, sheet, row, col)
+    else if (row != rowEnd && row > 8)
+      pasteMultipleSKUsOnSearchPage(range, sheet, spreadsheet)
   }
   else if (sheetName === 'Adagio Transfer Sheet')
   {
@@ -126,6 +128,94 @@ function extendDashboard()
     sheet.hideRows(15, 5);
     range.setValue('Extend Dashboard')
   } 
+}
+
+/**
+ * This function allows the user to paste a list of SKUs in the Item Search and the full description and inventory for each item is populated in the sheet.
+ * 
+ * @param {Range} range : The active range.
+ * @param {Sheet} sheet : The active sheet (Item Search)
+ * @param {Spreadsheet} spreadsheet : The active spreadsheet.
+ * @author Jarren Ralf
+ */
+function pasteMultipleSKUsOnSearchPage(range, sheet, spreadsheet)
+{
+  const values = range.getValues().filter(blank => isNotBlank(blank[0]))
+
+  if (values.length !== 0) // Don't run function if every value is blank, probably means the user pressed the delete key on a large selection
+  {
+    const inventorySheet = spreadsheet.getSheetByName('DataImport');
+    const data = inventorySheet.getSheetValues(2, 1, inventorySheet.getLastRow() - 1, 7);
+    var someSKUsNotFound = false, skus;
+
+    if (values[0][0].toString().includes('-'))
+    {
+      skus = values.map(sku => sku[0].substring(0,4) + sku[0].substring(5,9) + sku[0].substring(10)).map(item => {
+      
+        for (var i = 0; i < data.length; i++)
+        {
+          if (data[i][6] == item.toString().toUpperCase())
+            return data[i]
+        }
+
+        someSKUsNotFound = true;
+
+        return ['SKU Not Found:', item, '', '', '', '', '']
+      });
+    }
+    else
+    {
+      skus = values.map(item => {
+      
+        for (var i = 0; i < data.length; i++)
+        {
+          if (data[i][6] == item[0].toString().toUpperCase())
+            return data[i]
+        }
+
+        someSKUsNotFound = true;
+
+        return ['SKU Not Found:', item[0], '', '', '', '', '']
+      });
+    }
+
+    if (someSKUsNotFound)
+    {
+      const skusNotFound = [];
+      var isSkuFound;
+
+      const skusFound = skus.filter(item => {
+        isSkuFound = item[0] !== 'SKU Not Found:'
+
+        if (!isSkuFound)
+          skusNotFound.push(item)
+
+        return isSkuFound;
+      })
+
+      const numSkusFound = skusFound.length;
+      const numSkusNotFound = skusNotFound.length;
+      const items = [].concat.apply([], [skusNotFound, skusFound]); // Concatenate all of the item values as a 2-D array
+      const numItems = items.length
+      const horizontalAlignments = new Array(numItems).fill(['center', 'left', 'center', 'center', 'center', 'center', 'center'])
+      const WHITE = new Array(7).fill('white')
+      const YELLOW = new Array(7).fill('#ffe599')
+      const colours = [].concat.apply([], [new Array(numSkusNotFound).fill(YELLOW), new Array(numSkusFound).fill(WHITE)]); // Concatenate all of the item values as a 2-D array
+
+      sheet.getRange(9, 1, sheet.getMaxRows() - 2, 7).clearContent().setBackground('white').setFontColor('black').setBorder(true, true, true, true, false, false)
+        .offset(0, 0, numItems, 7)
+          .setFontFamily('Arial').setFontWeight('bold').setFontSize(10).setHorizontalAlignments(horizontalAlignments).setBackgrounds(colours).setValues(items)
+        .offset(numSkusNotFound, 0, numSkusFound, 7).activate()
+    }
+    else // All SKUs were succefully found
+    {
+      const numItems = skus.length
+      const horizontalAlignments = new Array(numItems).fill(['center', 'left', 'center', 'center', 'center', 'center', 'center'])
+
+      sheet.getRange(9, 1, sheet.getMaxRows() - 2, 7).clearContent().setBackground('white').setFontColor('black').offset(0, 0, numItems, 7)
+        .setFontFamily('Arial').setFontWeight('bold').setFontSize(10).setHorizontalAlignments(horizontalAlignments).setValues(skus).activate()
+    }
+  }
 }
 
 /**
