@@ -1699,6 +1699,27 @@ function richmond_manualCounts()
   }
 }
 
+/**
+* This function generate the a list of suggested items that should be pick from Trites and brought back to Moncton street
+*
+* @author Jarren Ralf
+*/
+function richmond_generateSuggestedInflowPick()
+{
+  try
+  {
+    ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk/edit#gid=592450561');
+    generateSuggestedInflowPick()
+  }
+  catch (e)
+  {
+    var error = e['stack'];
+    sendErrorEmail(error)
+    Logger.log(error)
+    throw new Error(error);    
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////// PARKSVILLE /////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

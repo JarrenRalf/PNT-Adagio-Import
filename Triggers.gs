@@ -23,6 +23,7 @@ function createTriggers()
   ScriptApp.newTrigger('richmond_updateUPC_Database').timeBased().atHour(9).everyDays(1).create();
   ScriptApp.newTrigger('richmond_logCountsOnWorkdays').timeBased().atHour(23).everyDays(1).create();
   ScriptApp.newTrigger('richmond_updateSearchData').timeBased().atHour(9).everyDays(1).create();
+  ScriptApp.newTrigger('richmond_generateSuggestedInflowPick').timeBased().atHour(8).everyDays(1).create();
 
   // Parksville
   ScriptApp.newTrigger('parksville_applyFullSpreadsheetFormatting').timeBased().atHour(8).everyDays(1).create();
