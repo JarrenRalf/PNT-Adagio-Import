@@ -730,7 +730,7 @@ function applyFullSpreadsheetFormatting(spreadsheet, sheets)
                                         ['right', 'right', 'right', 'right', 'right', 'right', 'center', 'center', 'center'],
                                         ['right', 'right', 'right', 'right', 'right', 'right', 'center', 'center', 'center'],
                                         new Array(lastCol).fill('center')];
-          sheets[j].getRange(1, 7, 4).setFormulas([ ['=COUNTIF(Received_Checkbox,FALSE)'],
+          sheets[j].getRange(3, 7, 4).setFormulas([ ['=COUNTIF(Received_Checkbox,FALSE)'],
                                                     ['=COUNTIF(ItemsToRichmond_Checkbox,FALSE)'],
                                                     ['=COUNTIF(Order_ActualCounts,">=0")'],
                                                     ['=COUNTIF(Shipped_ActualCounts,">=0")']]);
