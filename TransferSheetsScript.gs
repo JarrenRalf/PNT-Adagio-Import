@@ -159,6 +159,8 @@ function addNewItem()
  */
 function addToInflowPickList(qty)
 {
+  const today = new Date();
+  const numericalDateReference = today.getHours() + today.getMinutes() + today.getSeconds() + today.getMilliseconds();
   const spreadsheet = ss;
   const sheet = (!isRichmondSpreadsheet(spreadsheet)) ? SpreadsheetApp.openById('1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk').getSheetByName('inFlowPick') : 
                                                                                                                     spreadsheet.getSheetByName('inFlowPick');
@@ -181,7 +183,8 @@ function addToInflowPickList(qty)
     
     const     row = Math.min(...firstRows); // This is the smallest starting row number out of all active ranges
     const lastRow = Math.max( ...lastRows); // This is the largest     final row number out of all active ranges
-    const itemVals = [].concat.apply([], itemValues).map(item => ['newRichmondPick', 'Richmond PNT', inflowData.find(description => description === item[0]), '', item[5]])
+    const itemVals = [].concat.apply([], itemValues).map(item => ['newRichmondPick_' + numericalDateReference, 'Richmond PNT', 
+                                          inflowData.find(description => description === item[0]), '', item[5]])
                                                     .filter(itemNotFound => itemNotFound[2] != null)
 
     if (row > 3 && lastRow <= activeSheet.getLastRow())
@@ -208,7 +211,8 @@ function addToInflowPickList(qty)
     
     const     row = Math.min(...firstRows); // This is the smallest starting row number out of all active ranges
     const lastRow = Math.max( ...lastRows); // This is the largest     final row number out of all active ranges
-    const itemVals = [].concat.apply([], itemValues).map(item => ['newSuggestedPick', 'Richmond PNT', inflowData.find(description => description === item[2]), item[0], item[2]])
+    const itemVals = [].concat.apply([], itemValues).map(item => ['newSuggestedPick_' + numericalDateReference, 'Richmond PNT', 
+                                          inflowData.find(description => description === item[2]), item[0], item[2]])
                                                     .filter(itemNotFound => itemNotFound[2] != null)
 
     if (row > 1 && lastRow <= activeSheet.getLastRow())
@@ -234,12 +238,12 @@ function addToInflowPickList(qty)
 
     if (isParksvilleSpreadsheet(spreadsheet))
     {
-      var inFlowOrderNumber = 'newParksvillePick';
+      var inFlowOrderNumber = 'newParksvillePick_' + numericalDateReference;
       var inFlowCustomerName = 'Parksville PNT';
     }
     else
     {
-      var inFlowOrderNumber = 'newRupertPick';
+      var inFlowOrderNumber = 'newRupertPick_' + numericalDateReference;
       var inFlowCustomerName = 'Rupert PNT';
     }
 
@@ -1709,9 +1713,9 @@ function downloadButton(importType)
 {
   var htmlTemplate = HtmlService.createTemplateFromFile('DownloadButton')
   htmlTemplate.inFlowImportType = importType;
-  var html = htmlTemplate.evaluate().setWidth(1).setHeight(1)
+  var html = htmlTemplate.evaluate().setWidth(250).setHeight(75)
   
-  SpreadsheetApp.getUi().showModalDialog(html, ' ');
+  SpreadsheetApp.getUi().showModalDialog(html, 'Export');
 }
 
 /**
@@ -4228,7 +4232,7 @@ function updateSearchData()
 {
   const today = new Date();
   const spreadsheet = ss;
-  const searchDataRng = (isRichmondSpreadsheet(spreadsheet)) ? spreadsheet.getSheetByName("INVENTORY").getRange('B9:C') : spreadsheet.getSheetByName("SearchData").getRange('B1:C');
+  const searchDataRng = (isRichmondSpreadsheet(spreadsheet)) ? spreadsheet.getSheetByName("INVENTORY").getRange('B7:C') : spreadsheet.getSheetByName("SearchData").getRange('B1:C');
   const searchData = searchDataRng.getValues();
   const numItems = searchData.length;
   const countLog = spreadsheet.getSheetByName("Count Log");
