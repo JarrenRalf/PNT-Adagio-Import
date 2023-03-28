@@ -159,8 +159,6 @@ function addNewItem()
  */
 function addToInflowPickList(qty)
 {
-  const today = new Date();
-  const numericalDateReference = today.getHours() + today.getMinutes() + today.getSeconds() + today.getMilliseconds();
   const spreadsheet = ss;
   const sheet = (!isRichmondSpreadsheet(spreadsheet)) ? SpreadsheetApp.openById('1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk').getSheetByName('inFlowPick') : 
                                                                                                                     spreadsheet.getSheetByName('inFlowPick');
@@ -183,8 +181,7 @@ function addToInflowPickList(qty)
     
     const     row = Math.min(...firstRows); // This is the smallest starting row number out of all active ranges
     const lastRow = Math.max( ...lastRows); // This is the largest     final row number out of all active ranges
-    const itemVals = [].concat.apply([], itemValues).map(item => ['newRichmondPick_' + numericalDateReference, 'Richmond PNT', 
-                                          inflowData.find(description => description === item[0]), '', item[5]])
+    const itemVals = [].concat.apply([], itemValues).map(item => ['newRichmondPick', 'Richmond PNT', inflowData.find(description => description === item[0]), '', item[5]])
                                                     .filter(itemNotFound => itemNotFound[2] != null)
 
     if (row > 3 && lastRow <= activeSheet.getLastRow())
@@ -211,8 +208,7 @@ function addToInflowPickList(qty)
     
     const     row = Math.min(...firstRows); // This is the smallest starting row number out of all active ranges
     const lastRow = Math.max( ...lastRows); // This is the largest     final row number out of all active ranges
-    const itemVals = [].concat.apply([], itemValues).map(item => ['newSuggestedPick_' + numericalDateReference, 'Richmond PNT', 
-                                          inflowData.find(description => description === item[2]), item[0], item[2]])
+    const itemVals = [].concat.apply([], itemValues).map(item => ['newSuggestedPick', 'Richmond PNT', inflowData.find(description => description === item[2]), item[0], item[2]])
                                                     .filter(itemNotFound => itemNotFound[2] != null)
 
     if (row > 1 && lastRow <= activeSheet.getLastRow())
@@ -238,12 +234,12 @@ function addToInflowPickList(qty)
 
     if (isParksvilleSpreadsheet(spreadsheet))
     {
-      var inFlowOrderNumber = 'newParksvillePick_' + numericalDateReference;
+      var inFlowOrderNumber = 'newParksvillePick';
       var inFlowCustomerName = 'Parksville PNT';
     }
     else
     {
-      var inFlowOrderNumber = 'newRupertPick_' + numericalDateReference;
+      var inFlowOrderNumber = 'newRupertPick';
       var inFlowCustomerName = 'Rupert PNT';
     }
 
