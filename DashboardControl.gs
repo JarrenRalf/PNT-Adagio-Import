@@ -1365,7 +1365,7 @@ function copySelectedValuesV2(sheet, startRow, numCols)
     }
 
     sheet.getRange(startRow, 1, numItems, numCols).setNumberFormat('@').setValues(itemVals); // Move the item values to the destination sheet
-    applyFullRowFormatting(sheet, startRow, numItems, 4); // Apply the proper formatting
+    applyFullRowFormatting(sheet, startRow, numItems, 7); // Apply the proper formatting
     sheet.getRange(startRow, 3).activate();            // Go to the quantity column on the destination sheet
   }
   else
