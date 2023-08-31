@@ -173,6 +173,80 @@ function addOneMode()
 }
 
 /**
+* This function moves all of the selected values on the item search page to the Manual Counts page on the Richmond, Parksville, and Prince Rupert spreadsheet.
+*
+* @author Jarren Ralf
+*/
+function addToAllManualCountsPages()
+{
+  const spreadsheets =  [SpreadsheetApp.openById('1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM'), // Rupert
+                         SpreadsheetApp.openById('181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM'), // Parksville
+                         ss] // Richmond
+  const itemSearchSheet = spreadsheets[2].getSheetByName('Item Search')
+  var activeRanges = itemSearchSheet.getActiveRangeList().getRanges(); // The selected ranges on the item search sheet
+  var itemValues = [[[]]], firstRows = [], lastRows = [], items, manualCountsSheet, finalRow, startRow;
+  
+  // Find the first row and last row in the the set of all active ranges
+  for (var r = 0; r < activeRanges.length; r++)
+  {
+    firstRows[r] = activeRanges[r].getRow();
+     lastRows[r] = activeRanges[r].getLastRow()
+  }
+  
+  var     row = Math.min(...firstRows); // This is the smallest starting row number out of all active ranges
+  var lastRow = Math.max( ...lastRows); // This is the largest     final row number out of all active ranges
+  var finalDataRow = itemSearchSheet.getLastRow() + 1;
+  var numHeaders = 3;
+
+  if (row > numHeaders && lastRow <= finalDataRow) // If the user has not selected an item, alert them with an error message
+  { 
+    for (var r = 0; r < activeRanges.length; r++)
+      itemValues[r] = itemSearchSheet.getSheetValues(firstRows[r], 2, lastRows[r] - firstRows[r] + 1, 5);
+    
+    var itemVals = [].concat.apply([], itemValues); // Concatenate all of the item values as a 2-D array
+    var numItems = itemVals.length;
+
+    const manualCountsSheets = spreadsheets.map((spreadsheet, store) => {
+
+      switch (store)
+      {
+        case 0: // Rupert
+          items = itemVals.map(u => [u[0], u[4]]);
+          break;
+        case 1: // Parkville
+          items = itemVals.map(u => [u[0], u[3]]);
+          break;
+        case 2: // Richmond
+          items = itemVals.map(u => [u[0], u[2]]);
+          break;
+      }
+
+      manualCountsSheet = spreadsheet.getSheetByName("Manual Counts")
+      finalRow = manualCountsSheet.getLastRow();
+      startRow = (finalRow < 3) ? 4 : finalRow + 1;
+      manualCountsSheet.getRange(startRow, 1, numItems, items[0].length).setNumberFormat('@').setValues(items); // Move the item values to the destination sheet
+      applyFullRowFormatting(manualCountsSheet, startRow, numItems, 7); // Apply the proper formatting
+
+      switch (store)
+      {
+        case 0: // Rupert
+          spreadsheet.toast('Items added to Prince Rupert Manual Counts')
+          break;
+        case 1: // Parkville
+          spreadsheet.toast('Items added to Parksville Manual Counts')
+          break;
+      }
+
+      return manualCountsSheet;
+    })
+
+    manualCountsSheets[2].getRange(startRow, 3).activate()
+  }
+  else
+    SpreadsheetApp.getUi().alert('Please select an item from the list.');
+}
+
+/**
  * This function takes the user's selected items on the Item Search page of the Richmond spreadsheet and it places those items on the inFlowPick page.
  * 
  * @param {Number} qty : If an argument is passed to this function, it is the quantity that a user is entering on the Order page for the inFlow pick list
@@ -1499,7 +1573,7 @@ function copySelectedValues(sheet, startRow, numCols, qtyCol, isInfoCountsPage, 
   var startCol = (isOrderPage) ? 4 : ( (isItemsToRichPage) ? 3 : 1 ); // Set the start column of the range destination based on whether we are doing manual counts or item transfers
 
   if (row > numHeaders && lastRow <= finalDataRow) // If the user has not selected an item, alert them with an error message
-  {   
+  { 
     for (var r = 0; r < activeRanges.length; r++)
     {
          numRows[r] = lastRows[r] - firstRows[r] + 1;
@@ -2028,28 +2102,33 @@ function generateSuggestedInflowPick()
  */
 function getCountedSinceString(lastScannedTime)
 {
-  const countedSince = (new Date().getTime() - lastScannedTime)/(1000) // This is in seconds
-
-  if (countedSince < 60) // Number of seconds in 1 minute
-    return Math.floor(countedSince) + ' seconds ago'
-  else if (countedSince < 3600) // Number of seconds in 1 hour
-    return (Math.floor(countedSince/60) === 1) ? Math.floor(countedSince/60) +  ' minute ago' : Math.floor(countedSince/60) +  ' minutes ago'
-  else if (countedSince < 86400) // Number of seconds in 24 hours
+  if (isNotBlank(lastScannedTime))
   {
-    const numHours = Math.floor(countedSince/3600);
-    const numMinutes = Math.floor((countedSince - numHours*3600)/60);
+    const countedSince = (new Date().getTime() - lastScannedTime)/(1000) // This is in seconds
 
-    return (numHours === 1) ? numHours + ' hour ' + ((numMinutes === 0) ? 'ago' : (numMinutes === 1) ? numMinutes +  ' minute ago' : numMinutes +  ' minutes ago') : 
-      numHours + ' hours ' + ((numMinutes === 0) ? 'ago' : (numMinutes === 1) ? numMinutes +  ' minute ago' : numMinutes +  ' minutes ago');
-  }
-  else // Greater than 24 hours
-  {
-    const numDays = Math.floor(countedSince/86400);
-    const numHours = Math.floor((countedSince - numDays*86400)/3600);
+    if (countedSince < 60) // Number of seconds in 1 minute
+      return Math.floor(countedSince) + ' seconds ago'
+    else if (countedSince < 3600) // Number of seconds in 1 hour
+      return (Math.floor(countedSince/60) === 1) ? Math.floor(countedSince/60) +  ' minute ago' : Math.floor(countedSince/60) +  ' minutes ago'
+    else if (countedSince < 86400) // Number of seconds in 24 hours
+    {
+      const numHours = Math.floor(countedSince/3600);
+      const numMinutes = Math.floor((countedSince - numHours*3600)/60);
 
-    return (numDays === 1) ? numDays + ' day ' + ((numHours === 0) ? 'ago' : (numHours === 1) ? numHours + ' hour ago' : numHours + ' hours ago') : 
-      numDays + ' days ' + ((numHours === 0) ? 'ago' : (numHours === 1) ? numHours + ' hour ago' : numHours + ' hours ago');
+      return (numHours === 1) ? numHours + ' hour ' + ((numMinutes === 0) ? 'ago' : (numMinutes === 1) ? numMinutes +  ' minute ago' : numMinutes +  ' minutes ago') : 
+        numHours + ' hours ' + ((numMinutes === 0) ? 'ago' : (numMinutes === 1) ? numMinutes +  ' minute ago' : numMinutes +  ' minutes ago');
+    }
+    else // Greater than 24 hours
+    {
+      const numDays = Math.floor(countedSince/86400);
+      const numHours = Math.floor((countedSince - numDays*86400)/3600);
+
+      return (numDays === 1) ? numDays + ' day ' + ((numHours === 0) ? 'ago' : (numHours === 1) ? numHours + ' hour ago' : numHours + ' hours ago') : 
+        numDays + ' days ' + ((numHours === 0) ? 'ago' : (numHours === 1) ? numHours + ' hour ago' : numHours + ' hours ago');
+    }
   }
+  else
+    return '1 second ago'
 }
 
 /**
@@ -2306,9 +2385,10 @@ function isNotBlank(value)
  * 
  * @param {Event Object}      e      : An instance of an event object that occurs when the spreadsheet is editted
  * @param {Spreadsheet}  spreadsheet : The spreadsheet that is being edited
+ * @param    {Sheet}       sheet     : The active sheeet.
  * @author Jarren Ralf
  */
-function itemScan(e, spreadsheet)
+function itemScan(e, spreadsheet, sheet)
 {
   if (userHasNotPressedDelete(e.value))
   {
@@ -2349,12 +2429,12 @@ function itemScan(e, spreadsheet)
       }
     }
 
-    if (i === 0)
+    if (i == 0)
     {
       if (upcCode.toString().length > 25)
-        sheet.getRange(1, 1, 1, 2).setValues([['Barcode is Not Found.', '']]);
+        sheet.getRange(1, 1).setValue('Barcode is Not Found.');
       else
-        sheet.getRange(1, 1, 1, 2).setValues([['Barcode:\n\n' + upcCode + '\n\n is NOT FOUND.', '']]);
+        sheet.getRange(1, 1).setValue('Barcode:\n\n' + upcCode + '\n\n is NOT FOUND.');
     }
   }
 }
@@ -2530,7 +2610,7 @@ function manualScan(e, spreadsheet, sheet)
           sheet.getRange(1, 1, 1, 2).setValues([['Item Not Found on Manual Counts page.', '']]);
         else
         {
-          manualCountsPage.getRange(item[2], 3, 1, 3).setNumberFormat('@').setValues([['', '', '']])
+          manualCountsPage.getRange(item[2], 3, 1, 5).setNumberFormat('@').setValues([['', '', '', '', '']])
           sheet.getRange(1, 1, 1, 2).setValues([[item[0]  + '\nwas found on the Manual Counts page at line :\n' + item[2] 
                                                           + '\nCurrent Stock :\n' + item[4] 
                                                           + '\nCurrent Manual Count :\n\nCurrent Running Sum :\n',
@@ -2550,7 +2630,7 @@ function manualScan(e, spreadsheet, sheet)
           sheet.getRange(1, 1, 1, 2).setValues([['Item Not Found on Manual Counts page.', '']]);
         else
         {
-          var range = manualCountsPage.getRange(item[2], 3, 1, 3);
+          var range = manualCountsPage.getRange(item[2], 3, 1, 5);
           var manualCountsValues = range.getValues()
           
           if (isNotBlank(manualCountsValues[0][1]))
@@ -2559,7 +2639,7 @@ function manualScan(e, spreadsheet, sheet)
 
             if (runningSumSplit.length === 1)
             {
-              range.setNumberFormat('@').setValues([['', '', '']])
+              range.setNumberFormat('@').setValues([['', '', '', '', '']])
               manualCountsValues[0][0] = ''
               manualCountsValues[0][1] = ''
               manualCountsValues[0][2] = ''
@@ -2586,7 +2666,7 @@ function manualScan(e, spreadsheet, sheet)
           }
 
           manualCountsValues[0][2] = new Date().getTime()
-          range.setNumberFormats([['#.#', '@', '#']]).setValues(manualCountsValues)
+          range.setNumberFormats([['#.#', '@', '#', '@', '@']]).setValues(manualCountsValues)
           sheet.getRange(1, 1, 1, 2).setValues([[item[0]  + '\nwas found on the Manual Counts page at line :\n' + (item[2]) 
                                                           + '\nCurrent Stock :\n' + item[4]
                                                           + '\nCurrent Manual Count :\n' + manualCountsValues[0][0] 
@@ -2800,7 +2880,7 @@ function manualScan(e, spreadsheet, sheet)
 
         if (quantity_String === 'clear')
         {
-          manualCountsPage.getRange(item[2], 3, 1, 3).setNumberFormat('@').setValues([['', '', '']])
+          manualCountsPage.getRange(item[2], 3, 1, 5).setNumberFormat('@').setValues([['', '', '', '', '']])
           sheet.getRange(1, 1, 1, 2).setValues([[item[0]  + '\nwas found on the Manual Counts page at line :\n' + item[2] 
                                                           + '\nCurrent Stock :\n' + item[4] 
                                                           + '\nCurrent Manual Count :\n\nCurrent Running Sum :\n',
@@ -2985,6 +3065,7 @@ function manualScan(e, spreadsheet, sheet)
           {
             if (item[1].split(' ')[0] === 'was') // The item was already on the manual counts page
             {
+              Logger.log('This is the expected execution.')
               const range = manualCountsPage.getRange(item[2], 3, 1, 3);
               const itemValues = range.getValues()
               const updatedCount = Number(itemValues[0][0]) + quantity;
@@ -3101,7 +3182,6 @@ function moveRow(e, spreadsheet, sheet, sheetName)
                   const richText = transferRow(sheet, shippedSheet, row, rowValues, numCols, false);
                   updateBO(rowRange,rowValues);
                   sheet.getRange(row, 6).setRichTextValue(richText);
-
                 }
                 else
                 {
@@ -3224,8 +3304,17 @@ function moveRow(e, spreadsheet, sheet, sheetName)
 
         if (isReceived == "Rec'd") // The cell is set to "Received"  
         {
-          const dataValidation = dataValidationSheet.getSheetValues(1, 3, lastRow, 1); // These are all the data validation choices of carriers, etc.
-          transferRow(sheet, spreadsheet.getSheetByName("Received"), row, rowValues, numCols, true, undefined, undefined, dataValidation, e);
+          if (shippedQty != 0)
+          {
+            const dataValidation = dataValidationSheet.getSheetValues(1, 3, lastRow, 1); // These are all the data validation choices of carriers, etc.
+            transferRow(sheet, spreadsheet.getSheetByName("Received"), row, rowValues, numCols, true, undefined, undefined, dataValidation, e);
+          }
+          else
+          {
+            rowValues[0][9] = e.oldValue;
+            rowRange.setValues(rowValues)
+            Browser.msgBox('You are unable to receive an item that has a shipped quantity of zero.')
+          }
         }
         else if (value == "Back to Order")
         {
@@ -3249,11 +3338,8 @@ function moveRow(e, spreadsheet, sheet, sheetName)
           }
         }
       }
-      else if (sheetName == "Received") // An edit is occuring on the Received sheet
-      {                               
-        if (value == "Back to Shipped") // The cell is set to "Back to Shipped"  
-          transferRow(sheet, shippedSheet, row, rowValues, numCols, true);
-      }
+      else if (sheetName == "Received" && value == "Back to Shipped") // An edit is occuring on the Received sheet 
+        transferRow(sheet, shippedSheet, row, rowValues, numCols, true);
     }
     else if (col == 11) // Shipped Date Column
     {
@@ -4370,6 +4456,7 @@ function transferRow(fromSheet, sheet, row, rowValues, numCols, isRowDeleted, ro
 
   sheet.getRange(destinationRow,  6).setRichTextValue(richText);                                   // Keep the notes rich text the same
   sheet.getRange(destinationRow, 10).setDataValidation(sheet.getRange(3, 10).getDataValidation()); // Set the correct data validation
+  
   if (isRowDeleted) 
   {
     if (fromSheetName === 'Shipped') // If we are on the shipped page, we need to check if a carrier banner needs to be deleted

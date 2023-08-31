@@ -176,7 +176,7 @@ function elapsedTime(startTime)
 }
 
 /**
-* This function retrieves the conversion data for the j-th conversion at the given location.
+* This function retrieves the conversion data for the j-th conversion at the given store location.
 *
 * @param {Object[][]}           data : The Adagio data
 * @param {Object[][]}     exportData : The set of SKUs and QTYs for the completed conversions of the given location so far
