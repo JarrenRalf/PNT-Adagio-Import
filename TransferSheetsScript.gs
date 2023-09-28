@@ -17,9 +17,13 @@ const inflow_conversions = {
   '10782109038 - Rachel Black We 210/9 X 3/8" X465MDX 900 -  - Raschel Knotless - POUND': 235,
   '24400000 - BLACK RUBBER MATTING RIBBED    3 \' WIDE - ERIKS - Mats & Tables - FOOT': 225,
   '26014025 - GRADE 43 HIGH TEST GALV CHAIN 1/4" -  - Chain - FOOT': 500,
-  '21000001 - CHAIN: PROOF COIL 1/4" Hot Dipped Galv - VANGUARD - Chain - FOOT': 500,
+  '26014516 - GRADE 43 HIGH TEST GALV CHAIN 5/16" -  - Chain - FOOT': 500,
+  '21000001 - CHAIN: PROOF COIL 1/4" Hot Dipped Galv - VANGUARD - Chain - FOOT': 800,
+  '21000002 - CHAIN: PROOF COIL 5/16" Hot Dipped Galv - VANGUARD - Chain - FOOT': 500,
   '21000003 - CHAIN: PROOF COIL 3/8" Hot Dipped Galv - VANGUARD - Chain - FOOT': 400, 
-  '21000004 - CHAIN: PROOF COIL 1/2" Hot Dipped Galv - VANGUARD - Chain - FOOT': 200
+  '21000004 - CHAIN: PROOF COIL 1/2" Hot Dipped Galv - VANGUARD - Chain - FOOT': 200,
+  '21000005 - CHAIN: PROOF COIL 5/8" Hot Dipped Galv - VANGUARD - Chain - FOOT': 150,
+  '21000387 - CHAIN: PROOF COIL 3/16" Hot Dipped Galv - VANGUARD - Chain - FOOT': 1
 }
 
 /**
@@ -2351,7 +2355,7 @@ function insertCarrierNotAssignedBanner()
 
   conditional: if (true)
   {
-    for (var i = sheet.getLastRow() - 1; i >= 3; i--)
+    for (var i = sheet.getLastRow() - 1; i >= 4; i--)
     {
       if (values[i][BANNER_COL] === 'Carrier Not Assigned') // Carrier Not Assigned banner was found!
       {
@@ -2363,10 +2367,12 @@ function insertCarrierNotAssignedBanner()
         bannerRow.push(i + 1); // Determine which row the banner should go
     }
 
-    sheet.insertRowsAfter(bannerRow[0] + 1, 1).setRowHeight(bannerRow[0] + 1, 40).getRange(bannerRow[0] + 1, 1, 1, LAST_COL).clearDataValidations()
+    sheet.insertRowsAfter(bannerRow[0], 1).setRowHeight(bannerRow[0] + 1, 40).getRange(bannerRow[0] + 1, 1, 1, LAST_COL).clearDataValidations()
       .setBackgrounds([[...new Array(LAST_COL - 1).fill('#6d9eeb'), 'white']]).setFontColors([[...new Array(LAST_COL - 2).fill('white'), '#6d9eeb', 'white']])
       .setFontFamily('Arial').setFontSize(14).setFontWeight('bold').setHorizontalAlignment('left').setNumberFormat('@').setVerticalAlignment('middle')
-      .setValues([['Carrier Not Assigned', ...new Array(LAST_COL - 3).fill(null), 'via', '']]);
+      .setValues([['Carrier Not Assigned', ...new Array(LAST_COL - 3).fill(null), 'via', '']])
+      .offset(0, 0, 1, LAST_COL - 1).setBorder(true, true, true, true, false, null)
+      .offset(0, 0, 1, LAST_COL - 2).merge();
   }
 }
 
