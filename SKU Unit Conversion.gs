@@ -21,6 +21,77 @@ function computeConversions()
 }
 
 /**
+* This function searches the Adagio database for items that have negative inventory AND are assembled from one or more components. If it is possible to convert inventory
+* of certain components into an assembled good in order to reduce the number of occurences of negative inventory, then that computation is done for each location.
+*
+* @author Jarren Ralf
+*/
+function computeConversions_Assembly()
+{
+  const START_TIME = new Date().getTime(); // To calculate the elapsed time
+  const    COMPONENT_SKU  = 0;             // For the jth row of the SKUsToWatch, the SKU on the LEFT  (Used as an index for the conversionData array)
+  const    ASSEMBLED_SKU  = 6;             // For the jth row of the SKUsToWatch, the SKU on the RIGHT (Used as an index for the conversionData array)
+  const CONVERSION_FACTOR = 4;             // For the jth row of the SKUsToWatch, the conversion factor
+
+  try
+  {
+    const   spreadsheet = SpreadsheetApp.getActive();
+    const  assemblyData = spreadsheet.getSheetByName("SKUsToWatch_ASSEMBLY").getDataRange().getValues();
+    const   exportSheet = spreadsheet.getSheetByName("ConvertedExport");
+    const errorLogSheet = spreadsheet.getSheetByName("ErrorLog_Assembly");
+    
+    var data = spreadsheet.getSheetByName("DataImport").getDataRange().getValues();
+    var pairOfSKUs = [], skusNotFound = [], uniqueAssemblySKUs = {}, exportData = [[],[],[]];
+
+    // Set the appropriate indices based on the position of the following Strings in the header of the data 
+    const locations = [data[0].indexOf('Richmond'), data[0].indexOf('Parksville'), data[0].indexOf('Rupert')];
+    const SKU = data[0].indexOf('Item #');
+    
+    for (var j = 2; j < assemblyData.length; j++)
+    {
+      // If the conversion factor is blank, then skip this iterate
+      if (isBlank(assemblyData[j][CONVERSION_FACTOR]))
+        continue;
+      
+      for (var i = 1; i < data.length; i++)
+      {
+        if (data[i][SKU] == assemblyData[j][COMPONENT_SKU] || data[i][SKU] == assemblyData[j][ASSEMBLED_SKU]) // Locate both SKUs from the conversion sheet
+           (data[i][SKU] == assemblyData[j][COMPONENT_SKU]) ? pairOfSKUs[0] = i : pairOfSKUs[1] = i;          // Contol the orientation of the pairOfSKUs array
+        
+        if (bothSKUsAreFound(pairOfSKUs)) // Once both of the SKUs are found, then get the conversions for all four locations
+        {
+          [data, exportData] = getConversions_Assembly(data, exportData, assemblyData[j], pairOfSKUs, SKU, CONVERSION_FACTOR, locations, uniqueAssemblySKUs);
+          pairOfSKUs.length = 0; // Empty the array by setting its length equal to 0
+          break;
+        }
+      }
+      if (skuIsNotFound(i, data))
+        skusNotFound.push([assemblyData[j][COMPONENT_SKU], assemblyData[j][ASSEMBLED_SKU]]);
+    }
+
+    skusNotFound.unshift(['One (or both) of the following SKUs have not been found in the Adagio Database', ''],['Component Pieces', 'Assembled Goods']); // Header
+    errorLogSheet.clearContents().getRange(1, 1, skusNotFound.length, 2).setValues(skusNotFound);
+    exportSheet.getRange(8, 2, exportSheet.getLastRow(), 8).clearContent();
+    exportData.map((loc, i) => {if (loc.length !== 0) exportSheet.getRange(8, 2 + 3*i, loc.length, 2).setValues(loc);})
+    
+    const headerRange = exportSheet.getRange(1, 1, 2, 8);
+    const headerValues = headerRange.getValues();
+    headerValues[0][0] = "Function Run Time";
+    headerValues[0][4] = "Conversion Export";
+    headerValues[1][7] = timeStamp(spreadsheet);
+    headerValues[0][2] = elapsedTime(START_TIME);
+    headerRange.setValues(headerValues)
+  }
+  catch (e)
+  {
+    var error = e['stack'];
+    sendErrorEmail(error)
+    Logger.log(error)
+    throw new Error(error);
+  }
+}
+
+/**
 * This function searches the Adagio database for items that have negative inventory AND have multiple packaging sizes. If it is possible to convert inventory
 * of a certain sized packaging into another in order to reduce the number of occurences of negative inventory, then that computation is done for each location.
 *
@@ -55,8 +126,8 @@ function computeConversions_PackageSize()
       
       for (var i = 1; i < data.length; i++)
       {
-        if(data[i][SKU] == conversionData[j][SMALLER_PACK_SKU] || data[i][SKU] == conversionData[j][LARGER_PACK_SKU]) // Locate both SKUs from the conversation sheet
-          (data[i][SKU] == conversionData[j][SMALLER_PACK_SKU]) ? pairOfSKUs[0] = i : pairOfSKUs[1] = i;              // Contol the orientation of the pairOfSKUs array
+        if (data[i][SKU] == conversionData[j][SMALLER_PACK_SKU] || data[i][SKU] == conversionData[j][LARGER_PACK_SKU]) // Locate both SKUs from the conversion sheet
+           (data[i][SKU] == conversionData[j][SMALLER_PACK_SKU]) ? pairOfSKUs[0] = i : pairOfSKUs[1] = i;              // Contol the orientation of the pairOfSKUs array
         
         if (bothSKUsAreFound(pairOfSKUs)) // Once both of the SKUs are found, then get the conversions for all four locations
         {
@@ -236,6 +307,50 @@ function getConversions(data, exportData, conversionData, pairOfSKUs, SKU, CONVE
           exportData[l].push([data[pairOfSKUs[LARGER_PACK]][SKU], data[pairOfSKUs[LARGER_PACK]][locations[l]]]);
         }
       }
+    }
+  }
+
+  return [data, exportData];
+}
+
+/**
+* This function retrieves the conversion data for the j-th conversion at the given store location.
+*
+* @param {Object[][]}           data : The Adagio data
+* @param {Object[][]}     exportData : The set of SKUs and QTYs for the completed conversions of the given location so far
+* @param {Object[]}   conversionData : The conversion data for the j-th item
+* @param {Object[]}       pairOfSKUs : The indices of the Adagio data of which the j-th conversion is based on
+* @param {Number}                SKU : The index position of the SKU in the data array
+* @param {Number}  CONVERSION_FACTOR : The index position of the conversion factor in the data array
+* @param {Number}           location : An array index for the Adagio data which represents which location is being checked for possible conversions
+* @return {Object[][], Object[][]} [data, exportData] : The Adagio data and the set of SKUs and QTYs for the completed conversions of the given location so far (both possibly updated)
+* @author Jarren Ralf
+*/
+function getConversions_Assembly(data, exportData, conversionData, pairOfSKUs, SKU, CONVERSION_FACTOR, locations, uniqueAssemblySKUs)
+{
+  const COMPONENT = 0; // For the jth row of the SKUsToWatch_ASSEMBLY, the SKU on the LEFT  (Used as an index for the pairOfSKUs array)
+  const  ASSEMBLY = 1; // For the jth row of the SKUsToWatch_ASSEMBLY, the SKU on the RIGHT (Used as an index for the pairOfSKUs array)
+
+  for (l = 0; l < locations.length; l++)
+  {
+    data[pairOfSKUs[COMPONENT]][locations[l]] = Number(data[pairOfSKUs[COMPONENT]][locations[l]]) // Make sure this variable is a NUMBER and not a string
+    data[pairOfSKUs [ASSEMBLY]][locations[l]] = Number(data[pairOfSKUs [ASSEMBLY]][locations[l]]) // Make sure this variable is a NUMBER and not a string
+
+    if (isNegative(data[pairOfSKUs[ASSEMBLY]][locations[l]])) // The assembled item is negative
+    {
+      if (!uniqueAssemblySKUs.hasOwnProperty(data[pairOfSKUs[ASSEMBLY]][SKU].toString()))
+        uniqueAssemblySKUs[data[pairOfSKUs[ASSEMBLY]][SKU].toString()] = data[pairOfSKUs[ASSEMBLY]][locations[l]]
+
+      data[pairOfSKUs[COMPONENT]][locations[l]] += data[pairOfSKUs[ASSEMBLY]][locations[l]]*conversionData[CONVERSION_FACTOR];
+      exportData[l].push([data[pairOfSKUs[COMPONENT]][SKU], data[pairOfSKUs[COMPONENT]][locations[l]]]);
+      data[pairOfSKUs[ASSEMBLY]][locations[l]] = 0;
+      exportData[l].push([data[pairOfSKUs[ASSEMBLY]][SKU], data[pairOfSKUs[ASSEMBLY]][locations[l]]]);
+      break
+    }
+    else if (data[pairOfSKUs[ASSEMBLY]][locations[l]] === 0 && uniqueAssemblySKUs.hasOwnProperty(data[pairOfSKUs[ASSEMBLY]][SKU].toString()))
+    {
+      data[pairOfSKUs[COMPONENT]][locations[l]] += uniqueAssemblySKUs[data[pairOfSKUs[ASSEMBLY]][SKU].toString()]*conversionData[CONVERSION_FACTOR];
+      exportData[l].push([data[pairOfSKUs[COMPONENT]][SKU], data[pairOfSKUs[COMPONENT]][locations[l]]]);
     }
   }
 
