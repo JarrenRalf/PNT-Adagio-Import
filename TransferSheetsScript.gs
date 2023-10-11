@@ -1364,6 +1364,9 @@ function clearInventory()
     inventorySheet.getRange('A7:A').activate(); // This line activates the entire first column of the spreadsheet to verify the number of rows of the sheet
     inventorySheet.getRange(7, 1, numRows, data[0].length).setNumberFormat('@').setValues(data);
     numRowsRange.setValues([[numRows, dateStamp(undefined, null, null, null, 'dd MMM HH:mm'), getRunTime(startTime)]]);
+
+    spreadsheet.getSheetByName('Assembly').clearContents();
+    spreadsheet.getSheetByName('UoM Conversion').clearContents();
   }
   else
   {

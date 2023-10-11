@@ -148,7 +148,22 @@ function pasteMultipleSKUsOnSearchPage(range, sheet, spreadsheet)
     const data = inventorySheet.getSheetValues(2, 1, inventorySheet.getLastRow() - 1, 7);
     var someSKUsNotFound = false, skus;
 
-    if (values[0][0].toString().includes('-'))
+    if (values[0][0].toString().includes(' - ')) // Strip the sku from the first part of the google description
+    {
+      skus = values.map(item => {
+      
+        for (var i = 0; i < data.length; i++)
+        {
+          if (data[i][6] == item[0].toString().split(" - ", 1)[0].toUpperCase())
+            return data[i]
+        }
+
+        someSKUsNotFound = true;
+
+        return ['SKU Not Found:', item[0].toString().split(" - ", 1)[0].toUpperCase(), '', '', '', '', '']
+      });
+    }
+    else if (values[0][0].toString().includes('-'))
     {
       skus = values.map(sku => sku[0].substring(0,4) + sku[0].substring(5,9) + sku[0].substring(10)).map(item => {
       
@@ -204,7 +219,8 @@ function pasteMultipleSKUsOnSearchPage(range, sheet, spreadsheet)
 
       sheet.getRange(9, 1, sheet.getMaxRows() - 2, 7).clearContent().setBackground('white').setFontColor('black').setBorder(true, true, true, true, false, false)
         .offset(0, 0, numItems, 7)
-          .setFontFamily('Arial').setFontWeight('bold').setFontSize(10).setHorizontalAlignments(horizontalAlignments).setBackgrounds(colours).setValues(items)
+          .setFontFamily('Arial').setFontWeight('bold').setFontSize(10).setHorizontalAlignments(horizontalAlignments).setBackgrounds(colours)
+          .setBorder(false, null, false, null, false, false).setValues(items)
         .offset(numSkusNotFound, 0, numSkusFound, 7).activate()
     }
     else // All SKUs were succefully found
@@ -213,7 +229,8 @@ function pasteMultipleSKUsOnSearchPage(range, sheet, spreadsheet)
       const horizontalAlignments = new Array(numItems).fill(['center', 'left', 'center', 'center', 'center', 'center', 'center'])
 
       sheet.getRange(9, 1, sheet.getMaxRows() - 2, 7).clearContent().setBackground('white').setFontColor('black').offset(0, 0, numItems, 7)
-        .setFontFamily('Arial').setFontWeight('bold').setFontSize(10).setHorizontalAlignments(horizontalAlignments).setValues(skus).activate()
+        .setFontFamily('Arial').setFontWeight('bold').setFontSize(10).setHorizontalAlignments(horizontalAlignments)
+        .setBorder(false, null, false, null, false, false).setValues(skus).activate()
     }
   }
 }
