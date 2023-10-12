@@ -17,7 +17,7 @@ function installedOnEdit(e)
     if (isSingleColumn && ((row == 1 && col == 2 && (rowEnd == 6 || rowEnd == 1)) || (isSingleRow && (
       (row == 1 && col == 4) || (row == 1 && col == 5) || (row == 2 && col == 5) || (row == 3 && col == 5) || (row == 4 && col == 3) || 
       (row == 4 && col == 5) || (row == 5 && col == 3) || (row == 5 && col == 5) || (row == 6 && col == 3) || (row == 6 && col == 5)))))
-      searchV2(e, spreadsheet, sheet, row, col)
+        searchV2(e, spreadsheet, sheet, row, col)
     else if (row != rowEnd && row > 8)
       pasteMultipleSKUsOnSearchPage(range, sheet, spreadsheet)
   }
@@ -65,47 +65,421 @@ function installedOnEdit(e)
       range.uncheck();
     }
   }
+  else if (sheetName === 'SKUsToWatch_ASSEMBLY' && isSingleRow && isSingleColumn && row === 1 && col === 7)
+    scanAssemblies(range, sheet, spreadsheet)
+  else if (sheetName === 'SKUsToWatch' && isSingleRow && isSingleColumn && row === 1 && (col === 1 || col === 7))
+    scanConversions(range, sheet, spreadsheet, col)
 }
 
 /**
- * This function looks at the dates on the dashboard that represent when the UPC database was last updated on each transfer sheet and changes the font colour
- * to red if it hasn't been updated in a week. Also, it replaces the timestamps with the word "BUTTON".
+ * This function adds a menu item to the spreadsheet with a quick way run one conversion based on the item that the user has selected on either 
+ * the SKUsToWatch or SKUsToWatch_ASSEMBLY sheet.
+ */
+function onOpen()
+{
+  SpreadsheetApp.getUi().createMenu('Conversion').addItem('Convert Selected Item', 'computeOneConversion').addToUi();
+}
+
+/**
+ * This function provides a way for the user to run one conversion based on the item that the user has selected on either 
+ * the SKUsToWatch or SKUsToWatch_ASSEMBLY sheet.
  * 
  * @author Jarren Ralf
  */
-function updateDashboard()
+function computeOneConversion()
 {
-  try
+  const spreadsheet = SpreadsheetApp.getActive();
+  const sheet = spreadsheet.getActiveSheet();
+
+  if (sheet.getSheetName() === 'SKUsToWatch')
   {
-    const today = new Date();
-    const spreadsheet = SpreadsheetApp.getActive();
-    const sheets = spreadsheet.getSheets();
-    const adagioSheet = sheets.shift();
-    const conversionSheet = sheets.shift();
-    const ONE_WEEK  = new Date(today.getFullYear(), today.getMonth(), today.getDate() -  7);
-    const range = adagioSheet.getRange(11, 18, 3);
-    const fontColours = range.getValues().map(date => [(new Date(date[0].split(' on ')[1]) <= ONE_WEEK) ? 'red' : 'black']);
-    range.setFontColors(fontColours);
-    adagioSheet.getRangeList(['E4:E10', 'J4:J11', 'O4:O11', 'E15', 'J15', 'O15']).getRanges().map(range => range.setValue("BUTTON"));
-    adagioSheet.hideRows(15, 5);
-    adagioSheet.getRange('O2').setValue('Extend Dashboard')
+    const range = sheet.getActiveRange()
+    const row = range.getRow()
+    const col = range.getColumn();
+    const lastRow = sheet.getLastRow();
 
-    conversionSheet.getRange(2, 7).uncheck() // Uncheck the checkbox on the ConvertedExport page
-
-    for (var j = 0; j < sheets.length; j++)
+    if (row > 2 && row <= lastRow)
     {
-      if (sheets[j].getSheetName() == 'Imported Richmond Data (Loc: 100)' || sheets[j].getSheetName() == 'Imported Parksville Data (Loc: 200)' || 
-          sheets[j].getSheetName() == 'Imported Rupert Data (Loc: 300)'   || sheets[j].getSheetName() == 'DataImport')
-        sheets[j].hideSheet();
+      if (col < 4) // Converting into a smaller pack size
+      {
+        const packagedItems = sheet.getSheetValues(row, 1, 1, 9)
+        const quantity = sheet.getSheetValues(1, 3, 1, 1)[0][0]
+
+        if (isNotBlank(packagedItems[0][4])) // The conversion factor is NOT blank
+        {
+          if (quantity == 0) // The user didn't not enter the quantity in the cell at the top of the page
+          {
+            // Prompt the user to input how many packages were created
+            const ui = SpreadsheetApp.getUi();
+            const response = ui.prompt('How many ' + packagedItems[0][2] + ' -  ' + packagedItems[0][1] + ' have you created?')
+
+            if (response.getSelectedButton() == ui.Button.OK)
+            {
+              const qty = Number(response.getResponseText()); // The user inputted quantity
+
+              if (isNotBlank(qty) || !isNaN(qty)) // Valid number
+              {
+                const inventorySheet = spreadsheet.getSheetByName('DataImport');
+                const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
+                var convertedItems = []
+
+                for (var j = 0; j < inventory.length; j++)
+                {
+                  if (packagedItems[0][0].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+                  {
+                    convertedItems.push([packagedItems[0][0].toString().toUpperCase(), inventory[j][0] + qty])
+                    break;
+                  }
+                }
+
+                for (var j = 0; j < inventory.length; j++)
+                {
+                  if (packagedItems[0][6].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+                  {
+                    convertedItems.push([packagedItems[0][6].toString().toUpperCase(), inventory[j][0] - qty/packagedItems[0][4]])
+                    break;
+                  }
+                }
+
+                const UoMConversionPage = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk/edit').getSheetByName('UoM Conversion')
+                const row = UoMConversionPage.getLastRow() + 1;
+                const numRows = convertedItems.length;
+                UoMConversionPage.getRange(row, 1, numRows, 2).setNumberFormat('@').setValues(convertedItems)
+                sheet.getRange(1, 1).setValue('Scan Here').offset(0, 2).setValue('0').activate()
+                spreadsheet.toast('added to Richmond UoM Conversion sheet',  + qty + ' units of - ' + packagedItems[0][2] + ' - ' + packagedItems[0][1] + ' package conversions', 120)
+              }
+              else
+              {
+                ui.alert('Please scan item again and enter a valid quantity.')
+                sheet.getRange(1, 1).setValue('Scan Here').offset(0, 2).activate()
+              }
+            }
+            else
+              sheet.getRange(1, 1).setValue('Scan Here').offset(0, 2).activate()
+          }
+          else
+          {
+            const inventorySheet = spreadsheet.getSheetByName('DataImport');
+            const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
+            var convertedItems = [];
+
+            for (var j = 0; j < inventory.length; j++)
+            {
+              if (packagedItems[0][0].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+              {
+                convertedItems.push([packagedItems[0][0].toString().toUpperCase(), inventory[j][0] + quantity])
+                break;
+              }
+            }
+
+            for (var j = 0; j < inventory.length; j++)
+            {
+              if (packagedItems[0][6].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+              {
+                convertedItems.push([packagedItems[0][6].toString().toUpperCase(), inventory[j][0] - quantity/packagedItems[0][4]])
+                break;
+              }
+            }
+
+            const UoMConversionPage = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk/edit').getSheetByName('UoM Conversion')
+            const row = UoMConversionPage.getLastRow() + 1;
+            const numRows = convertedItems.length;
+            UoMConversionPage.getRange(row, 1, numRows, 2).setNumberFormat('@').setValues(convertedItems)
+            sheet.getRange(1, 1).setValue('Scan Here').offset(0, 2).setValue('0').activate()
+            spreadsheet.toast('added to Richmond UoM Conversion sheet',  + quantity + ' units of - ' + packagedItems[0][2] + ' - ' + packagedItems[0][1] + ' package conversions', 120)
+          }
+        }
+        else // The conversion factor is blank
+        {
+          sheet.getRange(1, 1).setValue('Scan Here').activate()
+          spreadsheet.toast('', 'The SKU for the packaging you are converting from is missing.')
+        }
+      }
+      else if (col > 6) // Converting into a larger pack size
+      {
+        const packagedItems = sheet.getSheetValues(row, 1, 1, 9)
+        const quantity = sheet.getSheetValues(1, 9, 1, 1)[0][0]
+        
+        if (isNotBlank(packagedItems[0][4])) // The conversion factor is NOT blank
+        {
+          if (quantity == 0) // The user didn't not enter the quantity in the cell at the top of the page
+          {
+            // Prompt the user to input how many packages were created
+            const ui = SpreadsheetApp.getUi();
+            const response = ui.prompt('How many ' + packagedItems[0][8] + ' -  ' + packagedItems[0][7] + ' have you created?')
+
+            if (response.getSelectedButton() == ui.Button.OK)
+            {
+              const qty = Number(response.getResponseText()); // The user inputted quantity
+
+              if (isNotBlank(qty) || !isNaN(qty)) // Valid number
+              {
+                const inventorySheet = spreadsheet.getSheetByName('DataImport');
+                const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
+                var convertedItems = []
+
+                for (var j = 0; j < inventory.length; j++)
+                {
+                  if (packagedItems[0][6].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+                  {
+                    convertedItems.push([packagedItems[0][6].toString().toUpperCase(), inventory[j][0] + qty])
+                    break;
+                  }
+                }
+
+                for (var j = 0; j < inventory.length; j++)
+                {
+                  if (packagedItems[0][0].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+                  {
+                    convertedItems.push([packagedItems[0][0].toString().toUpperCase(), inventory[j][0] - qty*packagedItems[0][4]])
+                    break;
+                  }
+                }
+
+                const UoMConversionPage = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk/edit').getSheetByName('UoM Conversion')
+                const row = UoMConversionPage.getLastRow() + 1;
+                const numRows = convertedItems.length;
+                UoMConversionPage.getRange(row, 1, numRows, 2).setNumberFormat('@').setValues(convertedItems)
+                sheet.getRange(1, 7).setValue('Scan Here').offset(0, 2).setValue('0').activate()
+                spreadsheet.toast('added to Richmond UoM Conversion sheet',  + qty + ' units of - ' + packagedItems[0][8] + ' - ' + packagedItems[0][7] + ' package conversions', 120)
+              }
+              else
+              {
+                ui.alert('Please scan item again and enter a valid quantity.')
+                sheet.getRange(1, 7).setValue('Scan Here').offset(0, 2).activate()
+              }
+            }
+            else
+              sheet.getRange(1, 7).setValue('Scan Here').offset(0, 2).activate()
+          }
+          else
+          {
+            const inventorySheet = spreadsheet.getSheetByName('DataImport');
+            const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
+            var convertedItems = [];
+
+            for (var j = 0; j < inventory.length; j++)
+            {
+              if (packagedItems[0][6].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+              {
+                convertedItems.push([packagedItems[0][6].toString().toUpperCase(), inventory[j][0] + quantity])
+                break;
+              }
+            }
+
+            for (var j = 0; j < inventory.length; j++)
+            {
+              if (packagedItems[0][0].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+              {
+                convertedItems.push([packagedItems[0][0].toString().toUpperCase(), inventory[j][0] - quantity*packagedItems[0][4]])
+                break;
+              }
+            }
+
+            const UoMConversionPage = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk/edit').getSheetByName('UoM Conversion')
+            const row = UoMConversionPage.getLastRow() + 1;
+            const numRows = convertedItems.length;
+            UoMConversionPage.getRange(row, 1, numRows, 2).setNumberFormat('@').setValues(convertedItems)
+            sheet.getRange(1, 7).setValue('Scan Here').offset(0, 2).setValue('0').activate()
+            spreadsheet.toast('added to Richmond UoM Conversion sheet',  + quantity + ' units of - ' + packagedItems[0][8] + ' - ' + packagedItems[0][7] + ' package conversions', 120)
+          }
+        }
+        else // The conversion factor is blank
+        {
+          sheet.getRange(1, 7).setValue('Scan Here').offset(0, 2).activate()
+          spreadsheet.toast('', 'The SKU for the packaging you are converting from is missing.')
+        }
+      }
+      else
+        Browser.msgBox('Please select either the smaller package or larger package item.')
     }
+    else
+      Browser.msgBox('Please select an item that you want to do a conversion with.')
   }
-  catch (e)
+  else if (sheet.getSheetName() === 'SKUsToWatch_ASSEMBLY')
   {
-    var error = e['stack'];
-    sendErrorEmail(error)
-    Logger.log(error)
-    throw new Error(error);
+    const range = sheet.getActiveRange()
+    const row = range.getRow()
+    const lastRow = sheet.getLastRow();
+
+    if (row > 2 && row <= lastRow)
+    {
+      const sku = sheet.getSheetValues(row, 7, 1, 1)[0][0].toString().toUpperCase()
+
+      if (isNotBlank(sku))
+      {
+        const assemblyItems = sheet.getSheetValues(3, 1, lastRow - 2, 8).filter(item => item[6] == sku)
+        const quantity = sheet.getSheetValues(1, 9, 1, 1)[0][0]
+      
+        if (quantity == 0) // The user didn't not enter the quantity in the cell at the top of the page
+        {
+          // Prompt the user to input how many packages were created
+          const ui = SpreadsheetApp.getUi();
+          const response = ui.prompt('How many ' + assemblyItems[0][7] + ' assemblies have you created?')
+
+          if (response.getSelectedButton() == ui.Button.OK)
+          {
+            const qty = Number(response.getResponseText()); // The user inputted quantity
+
+            if (isNotBlank(qty) || !isNaN(qty)) // Valid number
+            {
+              const inventorySheet = spreadsheet.getSheetByName('DataImport');
+              const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
+              var assembledItems = []
+
+              for (var j = 0; j < inventory.length; j++)
+              {
+                if (assemblyItems[0][6].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+                {
+                  assembledItems.push([assemblyItems[0][6].toString().toUpperCase(), inventory[j][0] + qty*assemblyItems[0][4]])
+                  break;
+                }
+              }
+
+              for (var j = 0; j < inventory.length; j++)
+              {
+                if (assemblyItems[0][0].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+                {
+                  assembledItems.push([assemblyItems[0][0].toString().toUpperCase(), inventory[j][0] - qty*assemblyItems[0][4]])
+                  break;
+                }
+              }
+
+              for (var i = 1; i < assemblyItems.length; i++)
+              {
+                for (var j = 0; j < inventory.length; j++)
+                {
+                  if (assemblyItems[i][0].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+                  {
+                    assembledItems.push([assemblyItems[i][0].toString().toUpperCase(), inventory[j][0] - qty*assemblyItems[i][4]])
+                    break;
+                  }
+                }
+              }
+
+              const assemblyPage = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk/edit').getSheetByName('Assembly')
+              const row = assemblyPage.getLastRow() + 1;
+              const numRows = assembledItems.length;
+              assemblyPage.getRange(row, 1, numRows, 2).setNumberFormat('@').setValues(assembledItems)
+              sheet.getRange(1, 7).setValue('Scan Here').offset(0, 2).setValue('0').activate()
+              spreadsheet.toast('added to Richmond Assembly sheet',  + qty + ' ' + assemblyItems[0][7] + ' assemblies', 120)
+            }
+            else
+            {
+              ui.alert('Please scan item again and enter a valid quantity.')
+              sheet.getRange(1, 7).setValue('Scan Here').activate()
+            }
+          }
+          else
+            sheet.getRange(1, 7).setValue('Scan Here').activate()
+        }
+        else
+        {
+          const inventorySheet = spreadsheet.getSheetByName('DataImport');
+          const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
+          var assembledItems = []
+
+          for (var j = 0; j < inventory.length; j++)
+          {
+            if (assemblyItems[0][6].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+            {
+              assembledItems.push([assemblyItems[0][6].toString().toUpperCase(), inventory[j][0] + quantity*assemblyItems[0][4]])
+              break;
+            }
+          }
+
+          for (var j = 0; j < inventory.length; j++)
+          {
+            if (assemblyItems[0][0].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+            {
+              assembledItems.push([assemblyItems[0][0].toString().toUpperCase(), inventory[j][0] - quantity*assemblyItems[0][4]])
+              break;
+            }
+          }
+
+          for (var i = 1; i < assemblyItems.length; i++)
+          {
+            for (var j = 0; j < inventory.length; j++)
+            {
+              if (assemblyItems[i][0].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+              {
+                assembledItems.push([assemblyItems[i][0].toString().toUpperCase(), inventory[j][0] - quantity*assemblyItems[i][4]])
+                break;
+              }
+            }
+          }
+
+          const assemblyPage = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk/edit').getSheetByName('Assembly')
+          const row = assemblyPage.getLastRow() + 1;
+          const numRows = assembledItems.length;
+          assemblyPage.getRange(row, 1, numRows, 2).setNumberFormat('@').setValues(assembledItems)
+          sheet.getRange(1, 7).setValue('Scan Here').offset(0, 2).setValue('0').activate()
+          spreadsheet.toast('added to Richmond Assembly sheet',  + quantity + ' ' + assemblyItems[0][7] + ' assemblies', 120)
+        }
+      }
+      else
+        Browser.msgBox('Please select an item that you want to do an assembly with.')
+    }
+    else
+      Browser.msgBox('Please select an item that you want to do an assembly with.')
   }
+  else
+    Browser.msgBox('You must either be on the SKUsToWatch or SKUsToWatch_ASSEMBLY sheet to run this function.')
+}
+
+/**
+ * This function moves the selected values on the item search sheet to the desired manual counts page.
+ * 
+ * @param {Sheet}   sheet   : The sheet that the selected items are being moved to.
+ * @param {Number} startRow : The first row of the target sheet where the selected items will be moved to.
+ * @param {Number}  numCols : The number of columns to grab from the item search page and move to the target sheet.
+ * @author Jarren Ralf
+ */
+function copySelectedValuesV2(sheet, startRow, numCols)
+{
+  var  activeSheet = SpreadsheetApp.getActiveSheet();
+  var activeRanges = activeSheet.getActiveRangeList().getRanges(); // The selected ranges on the item search sheet
+  var firstRows = [], lastRows = [], numRows = [], itemValues = [[[]]];
+  
+  // Find the first row and last row in the the set of all active ranges
+  for (var r = 0; r < activeRanges.length; r++)
+  {
+    firstRows[r] = activeRanges[r].getRow();
+     lastRows[r] = activeRanges[r].getLastRow()
+  }
+  
+  var     row = Math.min(...firstRows); // This is the smallest starting row number out of all active ranges
+  var lastRow = Math.max( ...lastRows); // This is the largest     final row number out of all active ranges
+  var finalDataRow = activeSheet.getLastRow() + 1;
+
+  if (row > 8 && lastRow <= finalDataRow) // If the user has not selected an item, alert them with an error message
+  {   
+    for (var r = 0; r < activeRanges.length; r++)
+    {
+         numRows[r] = lastRows[r] - firstRows[r] + 1;
+      itemValues[r] = activeSheet.getSheetValues(firstRows[r], 2, numRows[r], numCols);
+    }
+    
+    var itemVals = [].concat.apply([], itemValues); // Concatenate all of the item values as a 2-D array
+    var numItems = itemVals.length;
+
+    if (numCols === 4) // Rupert
+    {
+      itemVals.map(u => u.splice(1, 2)); // Remove the richmond and parksville counts
+      numCols -= 2;
+    }
+    else if (numCols === 3) // Parksville
+    {
+      itemVals.map(u => u.splice(1, 1)); // Remove the richmond counts column
+      numCols--;
+    }
+
+    sheet.getRange(startRow, 1, numItems, numCols).setNumberFormat('@').setValues(itemVals); // Move the item values to the destination sheet
+    applyFullRowFormatting(sheet, startRow, numItems, 7); // Apply the proper formatting
+    sheet.getRange(startRow, 3).activate();            // Go to the quantity column on the destination sheet
+  }
+  else
+    SpreadsheetApp.getUi().alert('Please select an item from the list.');
 }
 
 /**
@@ -128,6 +502,60 @@ function extendDashboard()
     sheet.hideRows(15, 5);
     range.setValue('Extend Dashboard')
   } 
+}
+
+/**
+ * This function gets the items that have a equal or less inventory in Richmond (Adagio inventory system **combines Moncton Street and Trites) 
+ * than Trites (inFlow inventory system) and sets it on the TritesCounts page.
+ * 
+ * @author Jarren Ralf
+ */
+function getTritesCounts()
+{
+  var startTime = new Date().getTime();
+
+  try
+  {
+    const spreadsheet = SpreadsheetApp.getActive();
+    const inventorySheet = spreadsheet.getSheetByName("DataImport");
+    const tritesCountsSheet = spreadsheet.getSheetByName("Trites Counts");
+    const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
+    const output = inventorySheet.getSheetValues(2, 2, inventorySheet.getLastRow() - 1, 5).filter(e => (isNotBlank(e[4])) ? e[1] < e[4] : false).map(f => [f[0], f[1], f[4]])
+    const numItems = output.length;
+
+    tritesCountsSheet.getRange('A4:C').clearContent()
+      .offset(-3, 1, 1, 1).setValues([[numItems]])
+      .offset(3, -1, numItems, 3).setValues(output)
+
+    applyFullRowFormatting(tritesCountsSheet, 4, numItems);
+    timeStamp(spreadsheet, 10, 5, adagioSheet, "dd MMM HH:mm")
+    
+    setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
+  }
+  catch (e)
+  {
+    var error = e['stack'];
+    sendErrorEmail(error)
+    Logger.log(error)
+    throw new Error(error);
+  }
+}
+
+/**
+* This function moves all of the selected values on the tritesCounts page to the Manual Counts page
+*
+* @author Jarren Ralf
+*/
+function manualCounts_FromTritesCounts()
+{
+  const QTY_COL = 4;
+  const NUM_COLS = 2;
+  
+  var manualCountsSheet = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk/edit#gid=592450561').getSheetByName("Manual Counts");
+  var lastRow = manualCountsSheet.getLastRow();
+  var startRow = (lastRow < 3) ? 4 : lastRow + 1;
+
+  copySelectedValues(manualCountsSheet, startRow, NUM_COLS, QTY_COL, true);
 }
 
 /**
@@ -236,29 +664,341 @@ function pasteMultipleSKUsOnSearchPage(range, sheet, spreadsheet)
 }
 
 /**
- * This function sends an email to Adrian and Jarren to give a heads up that a function in apps script has failed to run.
+ * This function is run when a barcode scan is detected on the SKUsToWatch sheet and the user is intending to convert inventory of the same item from one
+ * packaging size to another. The user is able to create packages of smaller sizes or larger sizes, depending on which column they scan the barcode into.
  * 
- * @param {String} error : The property of the error object that displays the functions and linenumbers that the error occurs at.
+ * @param    {Range}       range    : The active range that the user has scanned a barcode into.
+ * @param    {Sheet}       sheet    : The sheet that the user has scanned a barcode into.
+ * @param {Spreadsheet} spreadsheet : The active spreadsheet.
+ * @param    {Number}       col     : The column number that the scan took place in.
  * @author Jarren Ralf
  */
-function sendErrorEmail(error)
+function scanConversions(range, sheet, spreadsheet, col)
 {
-  if (MailApp.getRemainingDailyQuota() > 3) // Don't try and send an email if the daily quota of emails has been sent
+  spreadsheet.toast('Searching UPC database...', '', 30)
+  const item = Utilities.parseCsv(DriveApp.getFilesByName("BarcodeInput.csv").next().getBlob().getDataAsString()).find(item => item[0] == range.getValue())
+
+  if (item != null)
   {
-    var today = new Date()
-    var formattedError = '<p>' + error.replaceAll(' at ', '<br /> &emsp;&emsp;&emsp;') + '</p>';
-    var templateHtml = HtmlService.createTemplateFromFile('FunctionFailedToRun');
-    templateHtml.dateAndTime = today.toLocaleTimeString() + ' on ' + today.toDateString();
-    templateHtml.scriptURL   = "https://script.google.com/home/projects/178jXC1SLz1GQpIOiNLgRAzE4j4A-F1jt4OatEQ3BLLwaO3nH4rZrRDRm/edit";
-    var emailBody = templateHtml.evaluate().append(formattedError).getContent();
+    spreadsheet.toast('', 'Item Found in UPC Database...')
+    const quantity = range.offset(0, 2).getValue()
+    const packagedItems = range.offset(2, 1 - col, sheet.getLastRow() - 2, 9).getValues().filter(sku => sku[col - 1] == item[1].toString().toUpperCase()) // Values of the row(s) the sku belongs to
     
-    MailApp.sendEmail({      to: 'lb_blitz_allstar@hotmail.com',
-                        subject: 'Adrian\'s Adagio Update Sheet Script Failure', 
-                       htmlBody: emailBody
-    });
+    if (packagedItems != null) // The skus is found on the SKUsToWatch sheet
+    {
+      if (packagedItems.length > 1) // There is more than one instance of the same SKU found
+      {
+        // The user must be prompted which package size they are converting inventory from
+        const ui = SpreadsheetApp.getUi();
+        const response = ui.alert('Which package size are you converting ' + packagedItems[0][col + 1] + ' - '+ packagedItems[0][col] 
+          + ' from?\n\n\nSelect Yes for: ' + packagedItems[0][9 - col] + '\n\nSelect No for: ' + packagedItems[1][9 - col], ui.ButtonSet.YES_NO)
+
+        if (response === ui.Button.YES)
+        {
+          if (isNotBlank(packagedItems[0][4])) // The conversion factor is NOT blank
+          {
+            if (quantity == 0) // The user didn't not enter the quantity in the cell at the top of the page
+            {
+              // Prompt the user to input how many packages were created
+              const ui = SpreadsheetApp.getUi();
+              const response = ui.prompt('How many ' + packagedItems[0][col + 1] + ' -  ' + packagedItems[0][col] + ' have you created?')
+
+              if (response.getSelectedButton() == ui.Button.OK)
+              {
+                const qty = Number(response.getResponseText()); // The user inputted quantity
+
+                if (isNotBlank(qty) || !isNaN(qty)) // Valid number
+                {
+                  const inventorySheet = spreadsheet.getSheetByName('DataImport');
+                  const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
+                  const sku1 = col - 1, sku2 = 7 - col; // Select the appropriate column numbers
+                  const numPackages = (sku2 !== 6) ? qty*packagedItems[0][4] : qty/packagedItems[0][4]; // The appropriate conversion value
+                  var convertedItems = []
+
+                  for (var j = 0; j < inventory.length; j++)
+                  {
+                    if (packagedItems[0][sku1].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+                    {
+                      convertedItems.push([packagedItems[0][sku1].toString().toUpperCase(), inventory[j][0] + qty])
+                      break;
+                    }
+                  }
+
+                  for (var j = 0; j < inventory.length; j++)
+                  {
+                    if (packagedItems[0][sku2].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+                    {
+                      convertedItems.push([packagedItems[0][sku2].toString().toUpperCase(), inventory[j][0] - numPackages])
+                      break;
+                    }
+                  }
+
+                  const UoMConversionPage = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk/edit').getSheetByName('UoM Conversion')
+                  const row = UoMConversionPage.getLastRow() + 1;
+                  const numRows = convertedItems.length;
+                  UoMConversionPage.getRange(row, 1, numRows, 2).setNumberFormat('@').setValues(convertedItems)
+                  range.setValue('Scan Here').activate().offset(0, 2).setValue('0')
+                  spreadsheet.toast('added to Richmond UoM Conversion sheet',  + qty + ' units of - ' + packagedItems[0][col + 1] + ' - ' + packagedItems[0][col] + ' package conversions', 120)
+                }
+                else
+                {
+                  ui.alert('Please scan item again and enter a valid quantity.')
+                  range.setValue('Scan Here').activate()
+                }
+              }
+              else
+                range.setValue('Scan Here').activate()
+            }
+            else
+            {
+              const inventorySheet = spreadsheet.getSheetByName('DataImport');
+              const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
+              const sku1 = col - 1, sku2 = 7 - col;
+              const numPackages = (sku2 !== 6) ? quantity*packagedItems[0][4] : quantity/packagedItems[0][4]; // The appropriate conversion value
+              var convertedItems = [];
+
+              for (var j = 0; j < inventory.length; j++)
+              {
+                if (packagedItems[0][sku1].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+                {
+                  convertedItems.push([packagedItems[0][sku1].toString().toUpperCase(), inventory[j][0] + quantity])
+                  break;
+                }
+              }
+
+              for (var j = 0; j < inventory.length; j++)
+              {
+                if (packagedItems[0][sku2].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+                {
+                  convertedItems.push([packagedItems[0][sku2].toString().toUpperCase(), inventory[j][0] - numPackages])
+                  break;
+                }
+              }
+
+              const UoMConversionPage = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk/edit').getSheetByName('UoM Conversion')
+              const row = UoMConversionPage.getLastRow() + 1;
+              const numRows = convertedItems.length;
+              UoMConversionPage.getRange(row, 1, numRows, 2).setNumberFormat('@').setValues(convertedItems)
+              range.setValue('Scan Here').activate().offset(0, 2).setValue('0')
+              spreadsheet.toast('added to Richmond UoM Conversion sheet',  + quantity + ' units of - ' + packagedItems[0][col + 1] + ' - ' + packagedItems[0][col] + ' package conversions', 120)
+            }
+          }
+          else // The conversion factor is blank
+          {
+            range.setValue('Scan Here').activate()
+            spreadsheet.toast('', 'The SKU for the packaging you are converting from is missing.')
+          }
+        }
+        else if (response === ui.Button.NO)
+        {
+          if (isNotBlank(packagedItems[1][4])) // The conversion factor is NOT blank
+          {
+            if (quantity == 0) // The user didn't not enter the quantity in the cell at the top of the page
+            {
+              // Prompt the user to input how many packages were created
+              const ui = SpreadsheetApp.getUi();
+              const response = ui.prompt('How many ' + packagedItems[1][col + 1] + ' -  ' + packagedItems[1][col] + ' have you created?')
+
+              if (response.getSelectedButton() == ui.Button.OK)
+              {
+                const qty = Number(response.getResponseText()); // The user inputted quantity
+
+                if (isNotBlank(qty) || !isNaN(qty)) // Valid number
+                {
+                  const inventorySheet = spreadsheet.getSheetByName('DataImport');
+                  const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
+                  const sku1 = col - 1, sku2 = 7 - col;
+                  const numPackages = (sku2 !== 6) ? qty*packagedItems[1][4] : qty/packagedItems[1][4];
+                  var convertedItems = []
+
+                  for (var j = 0; j < inventory.length; j++)
+                  {
+                    if (packagedItems[1][sku1].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+                    {
+                      convertedItems.push([packagedItems[1][sku1].toString().toUpperCase(), inventory[j][0] + qty])
+                      break;
+                    }
+                  }
+
+                  for (var j = 0; j < inventory.length; j++)
+                  {
+                    if (packagedItems[1][sku2].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+                    {
+                      convertedItems.push([packagedItems[1][sku2].toString().toUpperCase(), inventory[j][0] - numPackages])
+                      break;
+                    }
+                  }
+
+                  const UoMConversionPage = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk/edit').getSheetByName('UoM Conversion')
+                  const row = UoMConversionPage.getLastRow() + 1;
+                  const numRows = convertedItems.length;
+                  UoMConversionPage.getRange(row, 1, numRows, 2).setNumberFormat('@').setValues(convertedItems)
+                  range.setValue('Scan Here').activate().offset(0, 2).setValue('0')
+                  spreadsheet.toast('added to Richmond UoM Conversion sheet',  + qty + ' units of - ' + packagedItems[1][col + 1] + ' - ' + packagedItems[1][col] + ' package conversions', 120)
+                }
+                else
+                {
+                  ui.alert('Please scan item again and enter a valid quantity.')
+                  range.setValue('Scan Here').activate()
+                }
+              }
+              else
+                range.setValue('Scan Here').activate()
+            }
+            else
+            {
+              const inventorySheet = spreadsheet.getSheetByName('DataImport');
+              const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
+              const sku1 = col - 1, sku2 = 7 - col;
+              const numPackages = (sku2 !== 6) ? quantity*packagedItems[1][4] : quantity/packagedItems[1][4];
+              var convertedItems = [];
+
+              for (var j = 0; j < inventory.length; j++)
+              {
+                if (packagedItems[1][sku1].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+                {
+                  convertedItems.push([packagedItems[1][sku1].toString().toUpperCase(), inventory[j][0] + quantity])
+                  break;
+                }
+              }
+
+              for (var j = 0; j < inventory.length; j++)
+              {
+                if (packagedItems[1][sku2].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+                {
+                  convertedItems.push([packagedItems[1][sku2].toString().toUpperCase(), inventory[j][0] - numPackages])
+                  break;
+                }
+              }
+
+              const UoMConversionPage = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk/edit').getSheetByName('UoM Conversion')
+              const row = UoMConversionPage.getLastRow() + 1;
+              const numRows = convertedItems.length;
+              UoMConversionPage.getRange(row, 1, numRows, 2).setNumberFormat('@').setValues(convertedItems)
+              range.setValue('Scan Here').activate().offset(0, 2).setValue('0')
+              spreadsheet.toast('added to Richmond UoM Conversion sheet',  + quantity + ' units of - ' + packagedItems[1][col + 1] + ' - ' + packagedItems[1][col] + ' package conversions', 120)
+            }
+          }
+          else // The conversion factor is blank
+          {
+            range.setValue('Scan Here').activate()
+            spreadsheet.toast('', 'The SKU for the packaging you are converting from is missing.')
+          }
+        }
+        else // The user has pressed closed on the dialogue box
+        {
+          range.setValue('Scan Here').activate()
+          spreadsheet.toast('Please Scan Again', 'Conversion Cancelled.')
+        }
+      }
+      else // There is only 1 option for conversion
+      {
+        if (isNotBlank(packagedItems[0][4])) // The conversion factor is NOT blank
+        {
+          if (quantity == 0) // The user didn't not enter the quantity in the cell at the top of the page
+          {
+            // Prompt the user to input how many packages were created
+            const ui = SpreadsheetApp.getUi();
+            const response = ui.prompt('How many ' + packagedItems[0][col + 1] + ' -  ' + packagedItems[0][col] + ' have you created?')
+
+            if (response.getSelectedButton() == ui.Button.OK)
+            {
+              const qty = Number(response.getResponseText()); // The user inputted quantity
+
+              if (isNotBlank(qty) || !isNaN(qty)) // Valid number
+              {
+                const inventorySheet = spreadsheet.getSheetByName('DataImport');
+                const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
+                const sku1 = col - 1, sku2 = 7 - col;
+                const numPackages = (sku2 !== 6) ? qty*packagedItems[0][4] : qty/packagedItems[0][4]; // The appropriate conversion value
+                var convertedItems = []
+
+                for (var j = 0; j < inventory.length; j++)
+                {
+                  if (packagedItems[0][sku1].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+                  {
+                    convertedItems.push([packagedItems[0][sku1].toString().toUpperCase(), inventory[j][0] + qty])
+                    break;
+                  }
+                }
+
+                for (var j = 0; j < inventory.length; j++)
+                {
+                  if (packagedItems[0][sku2].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+                  {
+                    convertedItems.push([packagedItems[0][sku2].toString().toUpperCase(), inventory[j][0] - numPackages])
+                    break;
+                  }
+                }
+
+                const UoMConversionPage = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk/edit').getSheetByName('UoM Conversion')
+                const row = UoMConversionPage.getLastRow() + 1;
+                const numRows = convertedItems.length;
+                UoMConversionPage.getRange(row, 1, numRows, 2).setNumberFormat('@').setValues(convertedItems)
+                range.setValue('Scan Here').activate().offset(0, 2).setValue('0')
+                spreadsheet.toast('added to Richmond UoM Conversion sheet',  + qty + ' units of - ' + packagedItems[0][col + 1] + ' - ' + packagedItems[0][col] + ' package conversions', 120)
+              }
+              else
+              {
+                ui.alert('Please scan item again and enter a valid quantity.')
+                range.setValue('Scan Here').activate()
+              }
+            }
+            else
+              range.setValue('Scan Here').activate()
+          }
+          else
+          {
+            const inventorySheet = spreadsheet.getSheetByName('DataImport');
+            const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
+            const sku1 = col - 1, sku2 = 7 - col;
+            const numPackages = (sku2 !== 6) ? quantity*packagedItems[0][4] : quantity/packagedItems[0][4]; // The appropriate conversion value
+            var convertedItems = [];
+
+            for (var j = 0; j < inventory.length; j++)
+            {
+              if (packagedItems[0][sku1].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+              {
+                convertedItems.push([packagedItems[0][sku1].toString().toUpperCase(), inventory[j][0] + quantity])
+                break;
+              }
+            }
+
+            for (var j = 0; j < inventory.length; j++)
+            {
+              if (packagedItems[0][sku2].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+              {
+                convertedItems.push([packagedItems[0][sku2].toString().toUpperCase(), inventory[j][0] - numPackages])
+                break;
+              }
+            }
+
+            const UoMConversionPage = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk/edit').getSheetByName('UoM Conversion')
+            const row = UoMConversionPage.getLastRow() + 1;
+            const numRows = convertedItems.length;
+            UoMConversionPage.getRange(row, 1, numRows, 2).setNumberFormat('@').setValues(convertedItems)
+            range.setValue('Scan Here').activate().offset(0, 2).setValue('0')
+            spreadsheet.toast('added to Richmond UoM Conversion sheet',  + quantity + ' units of - ' + packagedItems[0][col + 1] + ' - ' + packagedItems[0][col] + ' package conversions', 120)
+          }
+        }
+        else // The conversion factor is blank
+        {
+          range.setValue('Scan Here').activate()
+          spreadsheet.toast('', 'The SKU for the packaging you are converting from is missing.')
+        }
+      }
+    }
+    else
+    {
+      range.setValue('Item Missing from SKUsToWatch').activate()
+      spreadsheet.toast('', 'Item Missing from SKUsToWatch')
+    }
   }
   else
-    Logger.log('No email sent because it appears that the daily quota of emails has been met!')
+  {
+    range.setValue('Barcode Not Found').activate()
+    spreadsheet.toast('', 'Barcode Not Found')
+  }
 }
 
 /**
@@ -1335,87 +2075,203 @@ function searchV2V2(e, spreadsheet, sheet, row, col)
 }
 
 /**
- * This function moves the selected values on the item search sheet to the desired manual counts page.
+ * This function sends an email to Adrian and Jarren to give a heads up that a function in apps script has failed to run.
  * 
- * @param {Sheet}   sheet   : The sheet that the selected items are being moved to.
- * @param {Number} startRow : The first row of the target sheet where the selected items will be moved to.
- * @param {Number}  numCols : The number of columns to grab from the item search page and move to the target sheet.
+ * @param {String} error : The property of the error object that displays the functions and linenumbers that the error occurs at.
  * @author Jarren Ralf
  */
-function copySelectedValuesV2(sheet, startRow, numCols)
+function sendErrorEmail(error)
 {
-  var  activeSheet = SpreadsheetApp.getActiveSheet();
-  var activeRanges = activeSheet.getActiveRangeList().getRanges(); // The selected ranges on the item search sheet
-  var firstRows = [], lastRows = [], numRows = [], itemValues = [[[]]];
-  
-  // Find the first row and last row in the the set of all active ranges
-  for (var r = 0; r < activeRanges.length; r++)
+  if (MailApp.getRemainingDailyQuota() > 3) // Don't try and send an email if the daily quota of emails has been sent
   {
-    firstRows[r] = activeRanges[r].getRow();
-     lastRows[r] = activeRanges[r].getLastRow()
-  }
-  
-  var     row = Math.min(...firstRows); // This is the smallest starting row number out of all active ranges
-  var lastRow = Math.max( ...lastRows); // This is the largest     final row number out of all active ranges
-  var finalDataRow = activeSheet.getLastRow() + 1;
-
-  if (row > 8 && lastRow <= finalDataRow) // If the user has not selected an item, alert them with an error message
-  {   
-    for (var r = 0; r < activeRanges.length; r++)
-    {
-         numRows[r] = lastRows[r] - firstRows[r] + 1;
-      itemValues[r] = activeSheet.getSheetValues(firstRows[r], 2, numRows[r], numCols);
-    }
+    var today = new Date()
+    var formattedError = '<p>' + error.replaceAll(' at ', '<br /> &emsp;&emsp;&emsp;') + '</p>';
+    var templateHtml = HtmlService.createTemplateFromFile('FunctionFailedToRun');
+    templateHtml.dateAndTime = today.toLocaleTimeString() + ' on ' + today.toDateString();
+    templateHtml.scriptURL   = "https://script.google.com/home/projects/178jXC1SLz1GQpIOiNLgRAzE4j4A-F1jt4OatEQ3BLLwaO3nH4rZrRDRm/edit";
+    var emailBody = templateHtml.evaluate().append(formattedError).getContent();
     
-    var itemVals = [].concat.apply([], itemValues); // Concatenate all of the item values as a 2-D array
-    var numItems = itemVals.length;
-
-    if (numCols === 4) // Rupert
-    {
-      itemVals.map(u => u.splice(1, 2)); // Remove the richmond and parksville counts
-      numCols -= 2;
-    }
-    else if (numCols === 3) // Parksville
-    {
-      itemVals.map(u => u.splice(1, 1)); // Remove the richmond counts column
-      numCols--;
-    }
-
-    sheet.getRange(startRow, 1, numItems, numCols).setNumberFormat('@').setValues(itemVals); // Move the item values to the destination sheet
-    applyFullRowFormatting(sheet, startRow, numItems, 7); // Apply the proper formatting
-    sheet.getRange(startRow, 3).activate();            // Go to the quantity column on the destination sheet
+    MailApp.sendEmail({      to: 'lb_blitz_allstar@hotmail.com',
+                        subject: 'Adrian\'s Adagio Update Sheet Script Failure', 
+                       htmlBody: emailBody
+    });
   }
   else
-    SpreadsheetApp.getUi().alert('Please select an item from the list.');
+    Logger.log('No email sent because it appears that the daily quota of emails has been met!')
 }
 
 /**
- * This function gets the items that have a equal or less inventory in Richmond (Adagio inventory system **combines Moncton Street and Trites) 
- * than Trites (inFlow inventory system) and sets it on the TritesCounts page.
+ * This function is run when a barcode scan is detected on the SKUsToWatch_ASSEMBLY sheet and the user is intending to increase the inventory of an item that we assemble while 
+ * decreasing the inventory of the component SKUs we used to build the product. 
+ * 
+ * @param    {Range}       range    : The active range that the user has scanned a barcode into.
+ * @param    {Sheet}       sheet    : The sheet that the user has scanned a barcode into.
+ * @param {Spreadsheet} spreadsheet : The active spreadsheet.
+ * @author Jarren Ralf
+ */
+function scanAssemblies(range, sheet, spreadsheet)
+{
+  spreadsheet.toast('Searching UPC database...', '', 30)
+  const item = Utilities.parseCsv(DriveApp.getFilesByName("BarcodeInput.csv").next().getBlob().getDataAsString()).find(item => item[0] == range.getValue())
+
+  if (item != null)
+  {
+    spreadsheet.toast('', 'Item Found in UPC Database...')
+    const quantity = range.offset(0, 2).getValue()
+    const assemblyItems = range.offset(2, -6, sheet.getLastRow() - 2, 8).getValues().filter(sku => sku[6] == item[1].toString().toUpperCase())
+    
+    if (assemblyItems != null)
+    {
+      if (quantity == 0) // The user didn't not enter the quantity in the cell at the top of the page
+      {
+        // Prompt the user to input how many packages were created
+        const ui = SpreadsheetApp.getUi();
+        const response = ui.prompt('How many ' + assemblyItems[0][7] + ' assemblies have you created?')
+
+        if (response.getSelectedButton() == ui.Button.OK)
+        {
+          const qty = Number(response.getResponseText()); // The user inputted quantity
+
+          if (isNotBlank(qty) || !isNaN(qty)) // Valid number
+          {
+            const inventorySheet = spreadsheet.getSheetByName('DataImport');
+            const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
+            var assembledItems = []
+
+            for (var j = 0; j < inventory.length; j++)
+            {
+              if (assemblyItems[0][6].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+              {
+                assembledItems.push([assemblyItems[0][6].toString().toUpperCase(), inventory[j][0] + qty*assemblyItems[0][4]])
+                break;
+              }
+            }
+
+            for (var j = 0; j < inventory.length; j++)
+            {
+              if (assemblyItems[0][0].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+              {
+                assembledItems.push([assemblyItems[0][0].toString().toUpperCase(), inventory[j][0] - qty*assemblyItems[0][4]])
+                break;
+              }
+            }
+
+            for (var i = 1; i < assemblyItems.length; i++)
+            {
+              for (var j = 0; j < inventory.length; j++)
+              {
+                if (assemblyItems[i][0].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+                {
+                  assembledItems.push([assemblyItems[i][0].toString().toUpperCase(), inventory[j][0] - qty*assemblyItems[i][4]])
+                  break;
+                }
+              }
+            }
+
+            const assemblyPage = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk/edit').getSheetByName('Assembly')
+            const row = assemblyPage.getLastRow() + 1;
+            const numRows = assembledItems.length;
+            assemblyPage.getRange(row, 1, numRows, 2).setValues(assembledItems)
+            range.setValue('Scan Here').activate().offset(0, 2).setValue('0')
+            spreadsheet.toast('added to Richmond Assembly sheet',  + qty + ' ' + assemblyItems[0][7] + ' assemblies', 120)
+          }
+          else
+          {
+            ui.alert('Please scan item again and enter a valid quantity.')
+            range.setValue('Scan Here').activate()
+          }
+        }
+        else
+          range.setValue('Scan Here').activate()
+      }
+      else
+      {
+        const inventorySheet = spreadsheet.getSheetByName('DataImport');
+        const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
+        var assembledItems = []
+
+        for (var j = 0; j < inventory.length; j++)
+        {
+          if (assemblyItems[0][6].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+          {
+            assembledItems.push([assemblyItems[0][6].toString().toUpperCase(), inventory[j][0] + quantity*assemblyItems[0][4]])
+            break;
+          }
+        }
+
+        for (var j = 0; j < inventory.length; j++)
+        {
+          if (assemblyItems[0][0].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+          {
+            assembledItems.push([assemblyItems[0][0].toString().toUpperCase(), inventory[j][0] - quantity*assemblyItems[0][4]])
+            break;
+          }
+        }
+
+        for (var i = 1; i < assemblyItems.length; i++)
+        {
+          for (var j = 0; j < inventory.length; j++)
+          {
+            if (assemblyItems[i][0].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+            {
+              assembledItems.push([assemblyItems[i][0].toString().toUpperCase(), inventory[j][0] - quantity*assemblyItems[i][4]])
+              break;
+            }
+          }
+        }
+
+        const assemblyPage = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk/edit').getSheetByName('Assembly')
+        const row = assemblyPage.getLastRow() + 1;
+        const numRows = assembledItems.length;
+        assemblyPage.getRange(row, 1, numRows, 2).setValues(assembledItems)
+        range.setValue('Scan Here').activate().offset(0, 2).setValue('0')
+        spreadsheet.toast('added to Richmond Assembly sheet',  + quantity + ' ' + assemblyItems[0][7] + ' assemblies', 120)
+      }
+    }
+    else
+    {
+      range.setValue('Assembled Item Not Found').activate()
+      spreadsheet.toast('', 'Assembled Item Not Found')
+    }
+  }
+  else
+  {
+    range.setValue('Barcode Not Found').activate()
+    spreadsheet.toast('', 'Barcode Not Found')
+  }
+}
+
+/**
+ * This function looks at the dates on the dashboard that represent when the UPC database was last updated on each transfer sheet and changes the font colour
+ * to red if it hasn't been updated in a week. Also, it replaces the timestamps with the word "BUTTON".
  * 
  * @author Jarren Ralf
  */
-function getTritesCounts()
+function updateDashboard()
 {
-  var startTime = new Date().getTime();
-
   try
   {
+    const today = new Date();
     const spreadsheet = SpreadsheetApp.getActive();
-    const inventorySheet = spreadsheet.getSheetByName("DataImport");
-    const tritesCountsSheet = spreadsheet.getSheetByName("Trites Counts");
-    const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
-    const output = inventorySheet.getSheetValues(2, 2, inventorySheet.getLastRow() - 1, 5).filter(e => (isNotBlank(e[4])) ? e[1] < e[4] : false).map(f => [f[0], f[1], f[4]])
-    const numItems = output.length;
+    const sheets = spreadsheet.getSheets();
+    const adagioSheet = sheets.shift();
+    const conversionSheet = sheets.shift();
+    const ONE_WEEK  = new Date(today.getFullYear(), today.getMonth(), today.getDate() -  7);
+    const range = adagioSheet.getRange(11, 18, 3);
+    const fontColours = range.getValues().map(date => [(new Date(date[0].split(' on ')[1]) <= ONE_WEEK) ? 'red' : 'black']);
+    range.setFontColors(fontColours);
+    adagioSheet.getRangeList(['E4:E10', 'J4:J11', 'O4:O11', 'E15', 'J15', 'O15']).getRanges().map(range => range.setValue("BUTTON"));
+    adagioSheet.hideRows(15, 5);
+    adagioSheet.getRange('O2').setValue('Extend Dashboard')
 
-    tritesCountsSheet.getRange('A4:C').clearContent()
-      .offset(-3, 1, 1, 1).setValues([[numItems]])
-      .offset(3, -1, numItems, 3).setValues(output)
+    conversionSheet.getRange(2, 7).uncheck() // Uncheck the checkbox on the ConvertedExport page
 
-    applyFullRowFormatting(tritesCountsSheet, 4, numItems);
-    timeStamp(spreadsheet, 10, 5, adagioSheet, "dd MMM HH:mm")
-    
-    setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
+    for (var j = 0; j < sheets.length; j++)
+    {
+      if (sheets[j].getSheetName() == 'Imported Richmond Data (Loc: 100)' || sheets[j].getSheetName() == 'Imported Parksville Data (Loc: 200)' || 
+          sheets[j].getSheetName() == 'Imported Rupert Data (Loc: 300)'   || sheets[j].getSheetName() == 'DataImport')
+        sheets[j].hideSheet();
+    }
   }
   catch (e)
   {
@@ -1424,23 +2280,6 @@ function getTritesCounts()
     Logger.log(error)
     throw new Error(error);
   }
-}
-
-/**
-* This function moves all of the selected values on the tritesCounts page to the Manual Counts page
-*
-* @author Jarren Ralf
-*/
-function manualCounts_FromTritesCounts()
-{
-  const QTY_COL = 4;
-  const NUM_COLS = 2;
-  
-  var manualCountsSheet = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk/edit#gid=592450561').getSheetByName("Manual Counts");
-  var lastRow = manualCountsSheet.getLastRow();
-  var startRow = (lastRow < 3) ? 4 : lastRow + 1;
-
-  copySelectedValues(manualCountsSheet, startRow, NUM_COLS, QTY_COL, true);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

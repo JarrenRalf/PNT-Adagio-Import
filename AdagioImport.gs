@@ -9,7 +9,7 @@ function getPhysicalCounted(sheet)
 {
   const numRows = sheet.getLastRow() - 2;
   const invalidCounts = [];  
-  var values_infoCounts = [], values_manualCounts = [], values_order = [], values_shipped = []; 
+  var values_infoCounts = [], values_manualCounts = [], values_order = [], values_shipped = [], values_UoM_Conversion = [], values_assembly = [];
 
   if (sheet.getSheetName() !== 'Imported Richmond Data (Loc: 100)') // Parksville and Rupert spreadsheets also have an Order and Shipped page that need to be analyzed
   {
@@ -68,7 +68,37 @@ function getPhysicalCounted(sheet)
     }).map(w => [w[0], w[2], '', 'Shipped']);
   }
   else
+  {
+    const numRows_UoM_Conversion = getLastRowSpecial(sheet.getSheetValues(4, 6, numRows, 1));
+    const numRows_assembly = getLastRowSpecial(sheet.getSheetValues(4, 8, numRows, 1));
     var col = 2;
+
+    if (numRows_UoM_Conversion) // If false, that would mean that lastRow is zero and hence there are no counts to worry about
+    { 
+      values_UoM_Conversion = sheet.getSheetValues(4, 5, numRows_UoM_Conversion, 2).filter(v => {
+        if (Number(v[1]) >= 0) // Check if the quantity non negative
+          return true
+        else
+        {
+          invalidCounts.push([v[0], v[1], '', 'UoM Conversion'])
+          return false
+        }
+      }).map(w => [w[0], w[1], '', 'UoM Conversion']);
+    }
+
+    if (numRows_assembly) // If false, that would mean that lastRow is zero and hence there are no counts to worry about
+    { 
+      values_assembly = sheet.getSheetValues(4, 7, numRows_assembly, 2).filter(v => {
+        if (Number(v[1]) >= 0) // Check if the quantity non negative
+          return true
+        else
+        {
+          invalidCounts.push([v[0], v[1], '', 'Assembly'])
+          return false
+        }
+      }).map(w => [w[0], w[1], '', 'Assembly']);
+    }
+  }
 
   const infoCounts_qty = sheet.getSheetValues(4, col, numRows, 1);
   const manualCounts_qty = sheet.getSheetValues(4, col + 2, numRows, 1);
@@ -122,11 +152,11 @@ function getPhysicalCounted(sheet)
   if (invalidCounts.length) // Check if there are any invalid counts
   {
     invalidCounts.push(['', '', '', '']) // This row is used to separated valid counts from the invalid and therefore it allows the user use the ctrl + A command to select the valid counts
-    return invalidCounts.concat(values_order, values_shipped, values_infoCounts, values_manualCounts)
+    return invalidCounts.concat(values_UoM_Conversion, values_assembly, values_order, values_shipped, values_infoCounts, values_manualCounts)
   }
   else
   {  
-    const counts = values_order.concat(values_shipped, values_infoCounts, values_manualCounts)
+    const counts = values_UoM_Conversion.concat(values_assembly, values_order, values_shipped, values_infoCounts, values_manualCounts)
 
     if (counts.length)
       return counts
@@ -251,7 +281,10 @@ function importData(spreadsheet)
     "=ARRAYFORMULA(IF(NOT(REGEXMATCH(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk\", \"InfoCounts!A4:A\"),\" - \")),TRIM(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk\", \"InfoCounts!A4:A\")),TRIM(LEFT(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk\", \"InfoCounts!A4:A\"), FIND(\" - \", IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk\", \"InfoCounts!A4:A\"))))))",                                                            // Richmond, SKU
     "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk\", \"InfoCounts!C4:C\")",     // Richmond, Counts
     "=ARRAYFORMULA(IF(NOT(REGEXMATCH(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk\", \"Manual Counts!A4:A\"),\" - \")),TRIM(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk\", \"Manual Counts!A4:A\")),TRIM(LEFT(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk\", \"Manual Counts!A4:A\"), FIND(\" - \", IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk\", \"Manual Counts!A4:A\"))))))",                                                         // Richmond, SKU
-    "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk\", \"Manual Counts!C4:C\")"]],  // Richmond, Counts
+    "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk\", \"Manual Counts!C4:C\")",  // Richmond, Counts
+    "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk\", \"UoM Conversion!A1:B\")",  // Richmond, SKU
+    "",
+    "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk\", \"Assembly!A1:B\")", ""]], // Richmond, SKU
     [["=ARRAYFORMULA(IF(NOT(REGEXMATCH(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"Order!E4:E\"),\" - \")),TRIM(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"Order!E4:E\")),TRIM(LEFT(IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"Order!E4:E\"), FIND(\" - \", IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"Order!E4:E\"))))))",                                                                                                                 // Parksville, SKU
     "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"Order!J4:J\")",          // Parksville, BO
     "=IMPORTRANGE(\"https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM\", \"Order!G4:G\")",          // Parksville, Current Stock
