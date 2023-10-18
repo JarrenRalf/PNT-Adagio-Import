@@ -65,10 +65,20 @@ function installedOnEdit(e)
       range.uncheck();
     }
   }
-  else if (sheetName === 'SKUsToWatch_ASSEMBLY' && isSingleRow && isSingleColumn && row === 1 && col === 7)
-    scanAssemblies(range, sheet, spreadsheet)
-  else if (sheetName === 'SKUsToWatch' && isSingleRow && isSingleColumn && row === 1 && (col === 1 || col === 7))
-    scanConversions(range, sheet, spreadsheet, col)
+  else if (sheetName === 'SKUsToWatch_ASSEMBLY')
+  {
+    if (isSingleRow && isSingleColumn && row === 1 && col === 7)
+      scanAssemblies(range, sheet, spreadsheet)
+    else if (isSingleColumn && row > 2 && (col === 2 || col === 8))
+      stripDescriptions(range)
+  }
+  else if (sheetName === 'SKUsToWatch')
+  {
+    if (isSingleRow && isSingleColumn && row === 1 && col === 7)
+      scanConversions(range, sheet, spreadsheet, col)
+    else if (isSingleColumn && row > 2 && (col === 2 || col === 8))
+      stripDescriptions(range)
+  }
 }
 
 /**
@@ -660,6 +670,147 @@ function pasteMultipleSKUsOnSearchPage(range, sheet, spreadsheet)
         .setFontFamily('Arial').setFontWeight('bold').setFontSize(10).setHorizontalAlignments(horizontalAlignments)
         .setBorder(false, null, false, null, false, false).setValues(skus).activate()
     }
+  }
+}
+
+/**
+ * This function is run when a barcode scan is detected on the SKUsToWatch_ASSEMBLY sheet and the user is intending to increase the inventory of an item that we assemble while 
+ * decreasing the inventory of the component SKUs we used to build the product. 
+ * 
+ * @param    {Range}       range    : The active range that the user has scanned a barcode into.
+ * @param    {Sheet}       sheet    : The sheet that the user has scanned a barcode into.
+ * @param {Spreadsheet} spreadsheet : The active spreadsheet.
+ * @author Jarren Ralf
+ */
+function scanAssemblies(range, sheet, spreadsheet)
+{
+  spreadsheet.toast('Searching UPC database...', '', 30)
+  const item = Utilities.parseCsv(DriveApp.getFilesByName("BarcodeInput.csv").next().getBlob().getDataAsString()).find(item => item[0] == range.getValue())
+
+  if (item != null)
+  {
+    spreadsheet.toast('', 'Item Found in UPC Database...')
+    const quantity = range.offset(0, 2).getValue()
+    const assemblyItems = range.offset(2, -6, sheet.getLastRow() - 2, 8).getValues().filter(sku => sku[6] == item[1].toString().toUpperCase())
+    
+    if (assemblyItems != null)
+    {
+      if (quantity == 0) // The user didn't not enter the quantity in the cell at the top of the page
+      {
+        // Prompt the user to input how many packages were created
+        const ui = SpreadsheetApp.getUi();
+        const response = ui.prompt('How many ' + assemblyItems[0][7] + ' assemblies have you created?')
+
+        if (response.getSelectedButton() == ui.Button.OK)
+        {
+          const qty = Number(response.getResponseText()); // The user inputted quantity
+
+          if (isNotBlank(qty) || !isNaN(qty)) // Valid number
+          {
+            const inventorySheet = spreadsheet.getSheetByName('DataImport');
+            const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
+            var assembledItems = []
+
+            for (var j = 0; j < inventory.length; j++)
+            {
+              if (assemblyItems[0][6].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+              {
+                assembledItems.push([assemblyItems[0][6].toString().toUpperCase(), inventory[j][0] + qty*assemblyItems[0][4]])
+                break;
+              }
+            }
+
+            for (var j = 0; j < inventory.length; j++)
+            {
+              if (assemblyItems[0][0].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+              {
+                assembledItems.push([assemblyItems[0][0].toString().toUpperCase(), inventory[j][0] - qty*assemblyItems[0][4]])
+                break;
+              }
+            }
+
+            for (var i = 1; i < assemblyItems.length; i++)
+            {
+              for (var j = 0; j < inventory.length; j++)
+              {
+                if (assemblyItems[i][0].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+                {
+                  assembledItems.push([assemblyItems[i][0].toString().toUpperCase(), inventory[j][0] - qty*assemblyItems[i][4]])
+                  break;
+                }
+              }
+            }
+
+            const assemblyPage = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk/edit').getSheetByName('Assembly')
+            const row = assemblyPage.getLastRow() + 1;
+            const numRows = assembledItems.length;
+            assemblyPage.getRange(row, 1, numRows, 2).setValues(assembledItems)
+            range.setValue('Scan Here').activate().offset(0, 2).setValue('0')
+            spreadsheet.toast('added to Richmond Assembly sheet',  + qty + ' ' + assemblyItems[0][7] + ' assemblies', 120)
+          }
+          else
+          {
+            ui.alert('Please scan item again and enter a valid quantity.')
+            range.setValue('Scan Here').activate()
+          }
+        }
+        else
+          range.setValue('Scan Here').activate()
+      }
+      else
+      {
+        const inventorySheet = spreadsheet.getSheetByName('DataImport');
+        const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
+        var assembledItems = []
+
+        for (var j = 0; j < inventory.length; j++)
+        {
+          if (assemblyItems[0][6].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+          {
+            assembledItems.push([assemblyItems[0][6].toString().toUpperCase(), inventory[j][0] + quantity*assemblyItems[0][4]])
+            break;
+          }
+        }
+
+        for (var j = 0; j < inventory.length; j++)
+        {
+          if (assemblyItems[0][0].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+          {
+            assembledItems.push([assemblyItems[0][0].toString().toUpperCase(), inventory[j][0] - quantity*assemblyItems[0][4]])
+            break;
+          }
+        }
+
+        for (var i = 1; i < assemblyItems.length; i++)
+        {
+          for (var j = 0; j < inventory.length; j++)
+          {
+            if (assemblyItems[i][0].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
+            {
+              assembledItems.push([assemblyItems[i][0].toString().toUpperCase(), inventory[j][0] - quantity*assemblyItems[i][4]])
+              break;
+            }
+          }
+        }
+
+        const assemblyPage = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk/edit').getSheetByName('Assembly')
+        const row = assemblyPage.getLastRow() + 1;
+        const numRows = assembledItems.length;
+        assemblyPage.getRange(row, 1, numRows, 2).setValues(assembledItems)
+        range.setValue('Scan Here').activate().offset(0, 2).setValue('0')
+        spreadsheet.toast('added to Richmond Assembly sheet',  + quantity + ' ' + assemblyItems[0][7] + ' assemblies', 120)
+      }
+    }
+    else
+    {
+      range.setValue('Assembled Item Not Found').activate()
+      spreadsheet.toast('', 'Assembled Item Not Found')
+    }
+  }
+  else
+  {
+    range.setValue('Barcode Not Found').activate()
+    spreadsheet.toast('', 'Barcode Not Found')
   }
 }
 
@@ -2101,144 +2252,35 @@ function sendErrorEmail(error)
 }
 
 /**
- * This function is run when a barcode scan is detected on the SKUsToWatch_ASSEMBLY sheet and the user is intending to increase the inventory of an item that we assemble while 
- * decreasing the inventory of the component SKUs we used to build the product. 
+ * This function is run when their are values pasted in either of the description columns on the SKUsToWatch or SKUsToWatch_ASSEMBLY. 
+ * It removes the SKU from the google description and moves it to the left cell, as well as the UoM and moves it to the right cell.
  * 
- * @param    {Range}       range    : The active range that the user has scanned a barcode into.
- * @param    {Sheet}       sheet    : The sheet that the user has scanned a barcode into.
- * @param {Spreadsheet} spreadsheet : The active spreadsheet.
- * @author Jarren Ralf
+ * @param {Range} range : The active range
  */
-function scanAssemblies(range, sheet, spreadsheet)
+function stripDescriptions(range)
 {
-  spreadsheet.toast('Searching UPC database...', '', 30)
-  const item = Utilities.parseCsv(DriveApp.getFilesByName("BarcodeInput.csv").next().getBlob().getDataAsString()).find(item => item[0] == range.getValue())
+  var splitDescription, sku, uom;
 
-  if (item != null)
-  {
-    spreadsheet.toast('', 'Item Found in UPC Database...')
-    const quantity = range.offset(0, 2).getValue()
-    const assemblyItems = range.offset(2, -6, sheet.getLastRow() - 2, 8).getValues().filter(sku => sku[6] == item[1].toString().toUpperCase())
-    
-    if (assemblyItems != null)
+  const descriptions = range.getValues().map(descrip => {
+    splitDescription = descrip[0].split(' - ')
+    if (splitDescription.length > 2)
     {
-      if (quantity == 0) // The user didn't not enter the quantity in the cell at the top of the page
-      {
-        // Prompt the user to input how many packages were created
-        const ui = SpreadsheetApp.getUi();
-        const response = ui.prompt('How many ' + assemblyItems[0][7] + ' assemblies have you created?')
+      sku = splitDescription.shift()
+      uom = splitDescription.pop()
+      splitDescription.pop()
+      splitDescription.pop()
 
-        if (response.getSelectedButton() == ui.Button.OK)
-        {
-          const qty = Number(response.getResponseText()); // The user inputted quantity
-
-          if (isNotBlank(qty) || !isNaN(qty)) // Valid number
-          {
-            const inventorySheet = spreadsheet.getSheetByName('DataImport');
-            const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
-            var assembledItems = []
-
-            for (var j = 0; j < inventory.length; j++)
-            {
-              if (assemblyItems[0][6].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
-              {
-                assembledItems.push([assemblyItems[0][6].toString().toUpperCase(), inventory[j][0] + qty*assemblyItems[0][4]])
-                break;
-              }
-            }
-
-            for (var j = 0; j < inventory.length; j++)
-            {
-              if (assemblyItems[0][0].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
-              {
-                assembledItems.push([assemblyItems[0][0].toString().toUpperCase(), inventory[j][0] - qty*assemblyItems[0][4]])
-                break;
-              }
-            }
-
-            for (var i = 1; i < assemblyItems.length; i++)
-            {
-              for (var j = 0; j < inventory.length; j++)
-              {
-                if (assemblyItems[i][0].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
-                {
-                  assembledItems.push([assemblyItems[i][0].toString().toUpperCase(), inventory[j][0] - qty*assemblyItems[i][4]])
-                  break;
-                }
-              }
-            }
-
-            const assemblyPage = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk/edit').getSheetByName('Assembly')
-            const row = assemblyPage.getLastRow() + 1;
-            const numRows = assembledItems.length;
-            assemblyPage.getRange(row, 1, numRows, 2).setValues(assembledItems)
-            range.setValue('Scan Here').activate().offset(0, 2).setValue('0')
-            spreadsheet.toast('added to Richmond Assembly sheet',  + qty + ' ' + assemblyItems[0][7] + ' assemblies', 120)
-          }
-          else
-          {
-            ui.alert('Please scan item again and enter a valid quantity.')
-            range.setValue('Scan Here').activate()
-          }
-        }
-        else
-          range.setValue('Scan Here').activate()
-      }
-      else
-      {
-        const inventorySheet = spreadsheet.getSheetByName('DataImport');
-        const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
-        var assembledItems = []
-
-        for (var j = 0; j < inventory.length; j++)
-        {
-          if (assemblyItems[0][6].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
-          {
-            assembledItems.push([assemblyItems[0][6].toString().toUpperCase(), inventory[j][0] + quantity*assemblyItems[0][4]])
-            break;
-          }
-        }
-
-        for (var j = 0; j < inventory.length; j++)
-        {
-          if (assemblyItems[0][0].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
-          {
-            assembledItems.push([assemblyItems[0][0].toString().toUpperCase(), inventory[j][0] - quantity*assemblyItems[0][4]])
-            break;
-          }
-        }
-
-        for (var i = 1; i < assemblyItems.length; i++)
-        {
-          for (var j = 0; j < inventory.length; j++)
-          {
-            if (assemblyItems[i][0].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
-            {
-              assembledItems.push([assemblyItems[i][0].toString().toUpperCase(), inventory[j][0] - quantity*assemblyItems[i][4]])
-              break;
-            }
-          }
-        }
-
-        const assemblyPage = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk/edit').getSheetByName('Assembly')
-        const row = assemblyPage.getLastRow() + 1;
-        const numRows = assembledItems.length;
-        assemblyPage.getRange(row, 1, numRows, 2).setValues(assembledItems)
-        range.setValue('Scan Here').activate().offset(0, 2).setValue('0')
-        spreadsheet.toast('added to Richmond Assembly sheet',  + quantity + ' ' + assemblyItems[0][7] + ' assemblies', 120)
-      }
+      return [sku, splitDescription.join(' - '), uom]
     }
     else
-    {
-      range.setValue('Assembled Item Not Found').activate()
-      spreadsheet.toast('', 'Assembled Item Not Found')
-    }
-  }
-  else
-  {
-    range.setValue('Barcode Not Found').activate()
-    spreadsheet.toast('', 'Barcode Not Found')
-  }
+      return descrip
+  })
+
+  const numCols = descriptions[0].length
+
+  if (numCols === 3)
+    range.offset(0, -1, descriptions.length, numCols).setNumberFormat('@').setHorizontalAlignment('center').setFontColor('black').setFontFamily('Arial').setFontSize(10)
+      .setFontWeight('normal').setBackground('white').setVerticalAlignment('middle').setBorder(false, null, false, null, false, false).setValues(descriptions)
 }
 
 /**
