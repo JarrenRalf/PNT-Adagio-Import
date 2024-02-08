@@ -172,7 +172,7 @@ function getAllCounts()
     sheet.getRange(13, 2, sheet.getLastRow() - 12, 14).clearContent()
 
   urls.map((url, i) => {
-    log = SpreadsheetApp.openByUrl(url).getSheetByName('Scan Log').getDataRange().getValues().map(v => (v[1]) ? [v[0].split(' - ', 1)[0], v[1]] : null);
+    log = SpreadsheetApp.openByUrl(url).getSheetByName('Scan Log').getDataRange().getValues().map(v => (v[1]) ? [v[0].split(' - ').pop(), v[1]] : null);
 
     if (log[0] !== null)
     {
@@ -243,14 +243,15 @@ function importUpcs()
   const sheet = SpreadsheetApp.getActiveSheet()
   const urls = sheet.getRange(9, 5, 1, 13).getRichTextValues()[0].map(v => v.getLinkUrl()).filter(u => u);
   const inventory = Utilities.parseCsv(DriveApp.getFilesByName("inventory.csv").next().getBlob().getDataAsString());
+  const sku = inventory[0].indexOf('Item #')
 
   // Replace the csvData with the Adagio descriptions and current stock values
   const upcData = Utilities.parseCsv(DriveApp.getFilesByName("BarcodeInput.csv").next().getBlob().getDataAsString()).filter(v => {
     return inventory.filter(u => {
-      isInAdagioDatabase = ((u[6] == v[1].toString().toUpperCase()) && containsOnlyNumbers(v[0])); // Match the SKU and remove strings
+      isInAdagioDatabase = ((u[sku] == v[1].toString().toUpperCase()) && containsOnlyNumbers(v[0])); // Match the SKU and remove strings
       if (!isInAdagioDatabase) return isInAdagioDatabase; // If the SKU isn't found in the Adagio database, return false
       // Move the Description to column 2 as well as concatenate the current stock
-      v[1] = (u[10] !== 'A') ? 'This Item is Not Active in Adagio: ' + u[1] + ' - Current Stock:' + u[2] : u[1] + ' - Current Stock:' + u[2] ; 
+      v[1] = u[1] + ' - Current Stock:' + u[2] ; 
       v.splice(2) // Remove the last two columns from the UPC data
       return isInAdagioDatabase;
     }).length != 0; // Keep only the items in the UPC database that have found a matching sku in Adagio

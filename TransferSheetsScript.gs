@@ -78,8 +78,8 @@ function addItemsToUpcData()
       {
         const item = values[0].split(' - ');
         const upc = response.getResponseText();
-        manAddedUPCsSheet.getRange(manAddedUPCsSheet.getLastRow() + 1, 1, 1, 5).setNumberFormat('@').setValues([[item[0], upc, item[4], values[0], '']]);
-        upcDatabaseSheet.getRange(upcDatabaseSheet.getLastRow() + 1, 1, 1, NUM_COLS).setNumberFormat('@').setValues([[upc, item[4], values[0], values[4]]]);
+        manAddedUPCsSheet.getRange(manAddedUPCsSheet.getLastRow() + 1, 1, 1, 5).setNumberFormat('@').setValues([[item[item.length - 1], upc, item[item.length - 2], values[0], '']]);
+        upcDatabaseSheet.getRange(upcDatabaseSheet.getLastRow() + 1, 1, 1, NUM_COLS).setNumberFormat('@').setValues([[upc, item[item.length - 2], values[0], values[4]]]);
         barcodeInputRange.activate();
       }
     }
@@ -179,7 +179,7 @@ function addOneMode()
 */
 function addToAllManualCountsPages()
 {
-  const spreadsheets =  [SpreadsheetApp.openById('1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM'), // Rupert
+  const spreadsheets =  [SpreadsheetApp.openById('1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c'), // Rupert
                          SpreadsheetApp.openById('181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM'), // Parksville
                          ss] // Richmond
   const itemSearchSheet = spreadsheets[2].getSheetByName('Item Search')
@@ -262,7 +262,7 @@ function addToInflowPickList(qty)
   const firstRows = [], lastRows = [], itemValues = [];
 
   const inflowData = Utilities.parseCsv(DriveApp.getFilesByName("inFlow_StockLevels.csv").next().getBlob().getDataAsString())
-    .filter(item => item[0].split(" - ").length > 4).map(descrip => descrip[0])
+    .filter(item => item[0].split(' - ').length > 4).map(descrip => descrip[0])
 
   if (activeSheet.getSheetName() === 'Item Search')
   {
@@ -395,7 +395,7 @@ function addToOppositeStoreShippedPage()
 
     if (isParksvilleSpreadsheet(spreadsheet))
     {
-      var targetSpreadsheet = SpreadsheetApp.openById('1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM');
+      var targetSpreadsheet = SpreadsheetApp.openById('1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c');
       var branch_location = 'Rupert'
     }
     else
@@ -1336,30 +1336,29 @@ function clearInventory()
   
   dateStamp(3, 8, 1, itemSearchSheet); // Place a dateStamp on the item Search page
   
-  const csvData = Utilities.parseCsv(DriveApp.getFilesByName("inventory.csv").next().getBlob().getDataAsString());
-  const header = csvData.shift(); // Remove the header
-  const activeItems = csvData.filter(item => item[10] === 'A').sort(sortByCategories) // Remove the inactive items and sort by the categories
-  const numRows = activeItems.unshift(header); // Add the header back to the top of the array
+  const items = Utilities.parseCsv(DriveApp.getFilesByName("inventory.csv").next().getBlob().getDataAsString());
+  const numRows = items.length;
+  const sku = items[0].indexOf('Item #')
+  const tritesQty = items[0].indexOf('Trites')
   const inflowData = Object.values(Utilities.parseCsv(DriveApp.getFilesByName("inFlow_StockLevels.csv").next().getBlob().getDataAsString()).reduce((acc, val) => {
     // Sum the quantities if item is in multiple locations
     if (acc[val[0]]) acc[val[0]][1] = (inflow_conversions.hasOwnProperty(val[0])) ? Number(acc[val[0]][1]) + Number(val[4])*inflow_conversions[val[0]] : Number(acc[val[0]][1]) + Number(val[4]); 
     // Add the item to the new list if it contains the typical google sheets item format with "space - space"
-    else if (val[0].split(" - ").length > 4) acc[val[0]] = [val[0], (inflow_conversions.hasOwnProperty(val[0])) ? Number(val[4])*inflow_conversions[val[0]] : Number(val[4])]; 
+    else if (val[0].split(' - ').length > 4) acc[val[0]] = [val[0], (inflow_conversions.hasOwnProperty(val[0])) ? Number(val[4])*inflow_conversions[val[0]] : Number(val[4])]; 
     return acc;
   }, {}));
   var isInFlowItem;
 
   if (isRichmondSpreadsheet(spreadsheet))
   {
-    const data = activeItems.map(col => {
-      isInFlowItem = inflowData.find(description => description[0].split(" - ", 1)[0] == col[6])
-      col[5] = (isInFlowItem) ? isInFlowItem[1] : ''; // Add Trites inventory values if they are found in inFlow
-      col = [col[0], col[1], null, col[2], col[3], col[4], col[5], col[6], col[7]] // Remove the On Transfer Sheet, Comments 3 (Categories), and Active Item columns
+    const data = items.map(col => {
+      isInFlowItem = inflowData.find(description => description[0].split(' - ').pop() == col[sku]) // Inflow sku at back
+      col[tritesQty] = (isInFlowItem) ? isInFlowItem[1] : ''; // Add Trites inventory values if they are found in inFlow
 
-      return col
+      return [col[0], col[1], null, col[2], col[3], col[4], col[5], col[sku], col[6]]
     }) 
 
-    data[0][6] = "Trites (inFlow)";
+    data[0][tritesQty + 1] = "Trites (inFlow)";
     inventorySheet.getRange('A8:I').clearContent();
     inventorySheet.getRange('A7:A').activate(); // This line activates the entire first column of the spreadsheet to verify the number of rows of the sheet
     inventorySheet.getRange(7, 1, numRows, data[0].length).setNumberFormat('@').setValues(data);
@@ -1370,24 +1369,23 @@ function clearInventory()
   }
   else
   {
-    activeItems.map(col => {
-      isInFlowItem = inflowData.find(description => description[0].split(" - ", 1)[0] == col[6])
-      col[5] = (isInFlowItem) ? isInFlowItem[1] : ''; // Add Trites inventory values if they are found in inFlow
-      col.splice(9) // Slice off the Comments 3 (Categories) and Active Item columns
+    const data = items.map(col => {
+      isInFlowItem = inflowData.find(description => description[0].split(' - ').pop() == col[sku]) // Inflow sku at back
+      col[tritesQty] = (isInFlowItem) ? isInFlowItem[1] : ''; // Add Trites inventory values if they are found in inFlow
 
-      return col
+      return [col[0], col[1], col[2], col[3], col[4], col[5], col[sku], col[6], col[7]]
     }) 
 
-    activeItems[0][5] = "Trites (inFlow)";
+    data[0][tritesQty] = "Trites (inFlow)";
     inventorySheet.getRange('A10:I').clearContent();
     inventorySheet.getRange('A9:A').activate(); // This line activates the entire first column of the spreadsheet to verify the number of rows of the sheet
-    inventorySheet.getRange(9, 1, numRows, activeItems[0].length).setNumberFormat('@').setValues(activeItems);
+    inventorySheet.getRange(9, 1, numRows, data[0].length).setNumberFormat('@').setValues(data);
     const date1 = dateStamp(undefined, null, null, null, 'dd MMM HH:mm');
     const runTime1 = getRunTime(startTime);
     numRowsRange.setValues([[numRows, date1, runTime1],[null, null, null]]); // The number of active items from Adagio, including "No TS"
     
     const startTime2 = new Date().getTime();
-    const searchData = activeItems.filter(e => e[8] !== "No TS").map(f => [f[0], f[1], null, f[2], f[3], f[4], f[5]]); // Remove "No TS" items and keep units, descriptions and inventory
+    const searchData = data.filter(e => e[8] !== "No TS").map(f => [f[0], f[1], null, f[2], f[3], f[4], f[5]]); // Remove "No TS" items and keep units, descriptions and inventory
     const numItems = searchData.length;
     spreadsheet.getSheetByName('SearchData').clearContents().getRange(1, 1, numItems, searchData[0].length).setNumberFormat('@').setValues(searchData);
     numRowsRange.setValues([[numRows, date1, runTime1],[numItems, dateStamp(undefined, null, null, null, 'dd MMM HH:mm'), getRunTime(startTime2)]]);
@@ -1412,7 +1410,7 @@ function clearManualCounts()
     const numCols = sheet.getLastColumn();
     const rowStart = numHeaders + 1;
     const items = sheet.getSheetValues(rowStart, 1, numItems, numCols);
-    const nonCountedItems = items.filter(count => count[2] === '' || count[0].split(' - ', 1)[0] === 'MAKE_NEW_SKU'); // These are the items that have not been counted
+    const nonCountedItems = items.filter(count => count[2] === '' || count[0].split(' - ').pop() === 'MAKE_NEW_SKU'); // These are the items that have not been counted
     const numRemainingItems = nonCountedItems.length;
 
     if (numItems !== numRemainingItems) // If there are some items that have been counted, enter this code block
@@ -1618,16 +1616,16 @@ function copySelectedValues(sheet, startRow, numCols, qtyCol, isInfoCountsPage, 
             if (ui.Button.OK === response.getSelectedButton())
             {
               item = response.getResponseText().split(' - ');
-              item[0] = 'MAKE_NEW_SKU';
+              item[item.length - 1] = 'MAKE_NEW_SKU';
               itemJoined = item.join(' - ')
               response2 = ui.prompt('Item Not Found', 'Please scan the barcode for:\n\n' + itemJoined +'.', ui.ButtonSet.OK_CANCEL)
 
               if (ui.Button.OK === response2.getSelectedButton())
               {
                 upc = response2.getResponseText();
-                upcTemporaryValues.push(['MAKE_NEW_SKU', upc, item[4], itemJoined])
-                itemTemporaryValues.push([item[4], itemJoined, '', ''])
-                return [upc, item[4], itemJoined, '']
+                upcTemporaryValues.push(['MAKE_NEW_SKU', upc, item[item.length - 2], itemJoined])
+                itemTemporaryValues.push([item[item.length - 2], itemJoined, '', ''])
+                return [upc, item[item.length - 2], itemJoined, '']
               }
               else
               {
@@ -1654,8 +1652,8 @@ function copySelectedValues(sheet, startRow, numCols, qtyCol, isInfoCountsPage, 
             {
               item = u[0].split(' - ');
               upc = response.getResponseText();
-              upcTemporaryValues.push([item[0], upc, item[4], u[0]])
-              return [upc, item[4], u[0], u[1]]
+              upcTemporaryValues.push([item[item.length - 1], upc, item[item.length - 2], u[0]])
+              return [upc, item[item.length - 2], u[0], u[1]]
             }
             else
             {
@@ -1676,16 +1674,16 @@ function copySelectedValues(sheet, startRow, numCols, qtyCol, isInfoCountsPage, 
             if (ui.Button.OK === response.getSelectedButton())
             {
               item = response.getResponseText().split(' - ');
-              item[0] = 'MAKE_NEW_SKU';
+              item[item.length - 1] = 'MAKE_NEW_SKU';
               itemJoined = item.join(' - ')
               response2 = ui.prompt('Item Not Found', 'Please scan the barcode for:\n\n' + itemJoined +'.', ui.ButtonSet.OK_CANCEL)
 
               if (ui.Button.OK === response2.getSelectedButton())
               {
                 upc = response2.getResponseText();
-                itemTemporaryValues.push([item[4], itemJoined, '', ''])
+                itemTemporaryValues.push([item[item.length - 2], itemJoined, '', ''])
                 upcTemporaryValues.push(['MAKE_NEW_SKU', upc, item[4], itemJoined])
-                return [upc, item[4], itemJoined, '']
+                return [upc, item[item.length - 2], itemJoined, '']
               }
               else
               {
@@ -1711,7 +1709,7 @@ function copySelectedValues(sheet, startRow, numCols, qtyCol, isInfoCountsPage, 
             if (ui.Button.OK === response.getSelectedButton())
             {
               upc = response.getResponseText();
-              upcTemporaryValues.push([u[1].split(' - ', 1)[0], upc, u[0], u[1]])
+              upcTemporaryValues.push([u[1].split(' - ').pop(), upc, u[0], u[1]])
               return [upc, u[0], u[1], u[3]]
             }
             else
@@ -1814,7 +1812,7 @@ function countsRemaining()
     {
       if (fullInventory[i][1] === '' || fullInventory[i][1] < ONE_YEAR)
       {
-        countsLeft.push([fullInventory[i][0].split(' - ', 1)[0], fullInventory[i][0], fullInventory[i][1]]);
+        countsLeft.push([fullInventory[i][0].split(' - ').pop(), fullInventory[i][0], fullInventory[i][1]]);
         formats.push(['@', '@', 'dd MMM yyy'])
       }
     }
@@ -2035,7 +2033,7 @@ function generateSuggestedInflowPick()
   const inventorySheet = spreadsheet.getSheetByName("INVENTORY");
 
   Utilities.parseCsv(DriveApp.getFilesByName("inFlow_StockLevels.csv").next().getBlob().getDataAsString()).map(item =>{
-    if (item[0].split(" - ").length > 4) // If there are more than 4 "space-dash-space" strings within the inFlow description, then that item is recognized in Adagio 
+    if (item[0].split(' - ').length > 4) // If there are more than 4 "space-dash-space" strings within the inFlow description, then that item is recognized in Adagio 
     {
       for (var i = 0; i < suggestedValues.length; i++)
         if (suggestedValues[i][0] == item[0]) // The ith item of the suggested inFlowPick page was found in the inFlow csv, therefore break the for loop
@@ -2313,7 +2311,7 @@ function getPhysicalCounted_CountLog(sheets, DATE, recentCounts)
 
           if (j === recentCounts.length) // The item was not found in the recent counts, therefore add it to the log
           {
-            sku = data[i][0].split(" - ", 1)[0]; 
+            sku = data[i][0].split(' - ').pop(); 
 
             if (sku != data[i][0]) // Only log counted items that appear to be skus (based on the formatting of the string " - ")
               countedItems.push([sku, data[i][0], sheetName, DATE]);
@@ -2969,8 +2967,8 @@ function manualScan(e, spreadsheet, sheet)
             const marriedItem = item[0].split(' - ');
             const upcDatabaseSheet = spreadsheet.getSheetByName("UPC Database");
             const manAddedUPCsSheet = spreadsheet.getSheetByName("Manually Added UPCs");
-            manAddedUPCsSheet.getRange(manAddedUPCsSheet.getLastRow() + 1, 1, 1, 4).setNumberFormat('@').setValues([[marriedItem[0], upc, marriedItem[4], item[0]]]);
-            upcDatabaseSheet.getRange(upcDatabaseSheet.getLastRow() + 1, 1, 1, 4).setNumberFormat('@').setValues([[upc, marriedItem[4], item[0], item[4]]]); 
+            manAddedUPCsSheet.getRange(manAddedUPCsSheet.getLastRow() + 1, 1, 1, 4).setNumberFormat('@').setValues([[marriedItem[marriedItem.length - 1], upc, marriedItem[marriedItem.length - 2], item[0]]]);
+            upcDatabaseSheet.getRange(upcDatabaseSheet.getLastRow() + 1, 1, 1, 4).setNumberFormat('@').setValues([[upc, marriedItem[marriedItem.length - 2], item[0], item[4]]]); 
             barcodeInputRange.setValue('UPC Code has been added to the database temporarily.')
             spreadsheet.getSheetByName("Manual Scan").getRange(1, 1).activate();
           }
@@ -3401,7 +3399,7 @@ function moveRow(e, spreadsheet, sheet, sheetName)
       else if (sheetName == "Received" && value == "Back to Shipped") // An edit is occuring on the Received sheet 
         transferRow(sheet, shippedSheet, row, rowValues, numCols, true);
     }
-    else if (col == 11) // Shipped Date Column
+    else if (sheetName == "Shipped" && col == 11 && row > 3) // Shipped Date Column
     {
       var oldValue = e.oldValue;
 
@@ -3411,7 +3409,7 @@ function moveRow(e, spreadsheet, sheet, sheetName)
         Browser.msgBox('Please don\'t edit this cell.');
       }
     }
-    else if (col == 9)
+    else if (sheetName == "Order" && col == 9)
     {
       var qty = range.getValue().toString().toLowerCase().split(' ')
 
@@ -4046,8 +4044,8 @@ function search(e, spreadsheet, sheet)
               const columnIndex = (isParksvilleSpreadsheet(spreadsheet)) ? [4, 3, 5, 6] : [5, 3, 4, 6]; // This makes sure the current stock reference on the Order sheet is correct
               const orderSheet = spreadsheet.getSheetByName('Order');
               const shippedSheet = spreadsheet.getSheetByName('Shipped');
-              const orderedItems =   orderSheet.getSheetValues(4, 5,   orderSheet.getLastRow() - 3, 1).map(u => u[0].split(' - ', 1)); // The items on the order sheet
-              const shippedItems = shippedSheet.getSheetValues(4, 5, shippedSheet.getLastRow() - 3, 1).map(u => u[0].split(' - ', 1)); // The items on the shipped sheet
+              const orderedItems =   orderSheet.getSheetValues(4, 5,   orderSheet.getLastRow() - 3, 1).map(u => u[0].split(' - ').pop()); // The items on the order sheet
+              const shippedItems = shippedSheet.getSheetValues(4, 5, shippedSheet.getLastRow() - 3, 1).map(u => u[0].split(' - ').pop()); // The items on the shipped sheet
               const data = searchDataSheet.getSheetValues(2, 1, searchDataSheet.getLastRow() - 1, 7);
               const backgroundColours = [], fontColours = [], secondOutput = [];
               var isOnOrderPage, isOnShippedPage;
@@ -4056,7 +4054,7 @@ function search(e, spreadsheet, sheet)
               {
                 for (var o = 0; o < orderedItems.length; o++) // Check if the item is on the order page
                 {
-                  if (orderedItems[o][0] === data[itemIndices[i]][1].split(' - ', 1)[0])
+                  if (orderedItems[o] === data[itemIndices[i]][1].split(' - ').pop())
                   {
                     isOnOrderPage = true
                     break;
@@ -4065,7 +4063,7 @@ function search(e, spreadsheet, sheet)
                 }
                 for (var s = 0; s < shippedItems.length; s++) // Check if the item is on the shipped page
                 {
-                  if (shippedItems[s][0] === data[itemIndices[i]][1].split(' - ', 1)[0])
+                  if (shippedItems[s] === data[itemIndices[i]][1].split(' - ').pop())
                   {
                     isOnShippedPage = true
                     break;
@@ -4185,7 +4183,7 @@ function search(e, spreadsheet, sheet)
               const item = sheet.getSheetValues(row, 1, 1, 4)[0]
               const upcDatabaseSheet = spreadsheet.getSheetByName("UPC Database");
               const manAddedUPCsSheet = spreadsheet.getSheetByName("Manually Added UPCs");
-              manAddedUPCsSheet.getRange(manAddedUPCsSheet.getLastRow() + 1, 1, 1, 4).setNumberFormat('@').setValues([[item[1].split(' - ', 1)[0], value[1], item[0], item[1]]]);
+              manAddedUPCsSheet.getRange(manAddedUPCsSheet.getLastRow() + 1, 1, 1, 4).setNumberFormat('@').setValues([[item[1].split(' - ').pop(), value[1], item[0], item[1]]]);
               upcDatabaseSheet.getRange(upcDatabaseSheet.getLastRow() + 1, 1, 1, 4).setNumberFormat('@').setValues([[value[1], item[0], item[1], item[3]]]); 
               populateManualScan(spreadsheet, sheet, row)
             }
@@ -4210,7 +4208,7 @@ function search(e, spreadsheet, sheet)
             {
               const item = sheet.getSheetValues(row, 1, 1, 2)[0]
               const newItem = item[1].split(' - ')
-              newItem[0] = 'MAKE_NEW_SKU'
+              newItem[newItem.length - 1] = 'MAKE_NEW_SKU'
               item[1] = newItem.join(' - ')
               const upcDatabaseSheet = spreadsheet.getSheetByName("UPC Database");
               const manAddedUPCsSheet = spreadsheet.getSheetByName("Manually Added UPCs");
@@ -4243,7 +4241,12 @@ function search(e, spreadsheet, sheet)
   }
   else if (row > 3) // multiple rows are being edited
   {
+    spreadsheet.toast('Searching...')
+    const startTime = new Date().getTime();
+    const searchResultsDisplayRange = sheet.getRange(1, 1); // The range that will display the number of items found by the search
+    const functionRunTimeRange = sheet.getRange(2, 1, 2);   // The range that will display the runtimes for the search and formatting                                                                      
     const values = range.getValues().filter(blank => isNotBlank(blank[0]))
+    sheet.getRange(1, 2, 1, 2).clearContent(); // Clear the search bar
 
     if (values.length !== 0) // Don't run function if every value is blank, probably means the user pressed the delete key on a large selection
     {
@@ -4260,13 +4263,13 @@ function search(e, spreadsheet, sheet)
           
             for (var i = 0; i < data.length; i++)
             {
-              if (data[i][7] == item[0].toString().split(" - ", 1)[0].toUpperCase())
+              if (data[i][7] == item[0].toString().split(' - ').pop().toUpperCase())
                 return [data[i][0], data[i][1], '', data[i][3], data[i][4], data[i][5], data[i][6]]
             }
 
             someSKUsNotFound = true;
 
-            return ['SKU Not Found:', item[0].toString().split(" - ", 1)[0].toUpperCase(), '', '', '', '', '']
+            return ['SKU Not Found:', item[0].toString().split(' - ').pop().toUpperCase(), '', '', '', '', '']
           });
         }
         else if (values[0][0].toString().includes('-')) // The SKU contains dashes because that's the convention from Adagio
@@ -4299,6 +4302,53 @@ function search(e, spreadsheet, sheet)
             return ['SKU Not Found:', item[0], '', '', '', '', '']
           });
         }
+
+        if (someSKUsNotFound)
+        {
+          const skusNotFound = [];
+          var isSkuFound;
+
+          const skusFound = skus.filter(item => {
+            isSkuFound = item[0] !== 'SKU Not Found:'
+
+            if (!isSkuFound)
+              skusNotFound.push(item)
+
+            return isSkuFound;
+          })
+
+          const numSkusFound = skusFound.length;
+          const numSkusNotFound = skusNotFound.length;
+          const items = [].concat.apply([], [skusNotFound, skusFound]); // Concatenate all of the item values as a 2-D array
+          const numItems = items.length
+          const horizontalAlignments = new Array(numItems).fill(['center', 'left', 'center', 'center', 'center', 'center', 'center'])
+          const fontSizes = new Array(numItems).fill([10, 10, 10, 10, 10, 10, 10])
+          const YELLOW = new Array(7).fill('#ffe599');
+          const WHITE = new Array(7).fill('white');
+          const colours = [].concat.apply([], [new Array(numSkusNotFound).fill(YELLOW), new Array(numSkusFound).fill(WHITE)]); // Concatenate all of the item values as a 2-D array
+
+          sheet.getRange(4, 1, MAX_NUM_ITEMS, 8).clearContent().setBackground('white').setFontColor('black').setBorder(true, true, true, true, false, false)
+            .offset(0, 0, numItems, 7)
+              .setFontFamily('Arial').setFontWeight('bold').setFontSizes(fontSizes).setHorizontalAlignments(horizontalAlignments).setVerticalAlignment('middle')
+              .setBackgrounds(colours).setBorder(null, null, false, null, false, false).setValues(items)
+            .offset((numSkusFound != 0) ? numSkusNotFound : 0, 0, (numSkusFound != 0) ? numSkusFound : numSkusNotFound, 8).activate();
+
+          (numSkusFound !== 1) ? searchResultsDisplayRange.setValue(numSkusFound + " results found.") : searchResultsDisplayRange.setValue(numSkusFound + " result found.");
+        }
+        else // All SKUs were succefully found
+        {
+          const numItems = skus.length
+          const horizontalAlignments = new Array(numItems).fill(['center', 'left', 'center', 'center', 'center', 'center', 'center'])
+          const fontSizes = new Array(numItems).fill([10, 10, 10, 10, 10, 10, 10])
+
+          sheet.getRange(4, 1, MAX_NUM_ITEMS, 8).clearContent().setBackground('white').setFontColor('black')
+            .offset(0, 0, numItems, 7).setFontFamily('Arial').setFontWeight('bold').setFontSizes(fontSizes).setHorizontalAlignments(horizontalAlignments).setVerticalAlignment('middle')
+              .setBorder(null, null, false, null, false, false).setValues(skus).activate();
+
+          (numItems !== 1) ? searchResultsDisplayRange.setValue(numItems + " results found.") : searchResultsDisplayRange.setValue(numItems + " result found.");
+        }
+
+        functionRunTimeRange.setValue((new Date().getTime() - startTime)/1000 + " s");
       }
       else // Parksville or Rupert
       {
@@ -4311,13 +4361,13 @@ function search(e, spreadsheet, sheet)
           
             for (var i = 0; i < data.length; i++)
             {
-              if (data[i][6] == item[0].toString().split(" - ", 1)[0].toUpperCase())
-                return [data[i][0], data[i][1], '', ...columnIndex.map(col => data[i][col])]
+              if (data[i][6] == item[0].toString().split(' - ').pop().toUpperCase())
+                return [data[i][0], data[i][1], '', ...columnIndex.map(col => data[i][col]), '']
             }
 
             someSKUsNotFound = true;
 
-            return ['SKU Not Found:', item[0].toString().split(" - ", 1)[0].toUpperCase(), '', '', '', '', '']
+            return ['SKU Not Found:', item[0].toString().split(' - ').pop().toUpperCase(), '', '', '', '', '', '']
           });
         }
         else if (values[0][0].toString().includes('-'))
@@ -4327,12 +4377,12 @@ function search(e, spreadsheet, sheet)
             for (var i = 0; i < data.length; i++)
             {
               if (data[i][6] == item.toString().toUpperCase())
-                return [data[i][0], data[i][1], '',  ...columnIndex.map(col => data[i][col])]
+                return [data[i][0], data[i][1], '',  ...columnIndex.map(col => data[i][col]), '']
             }
 
             someSKUsNotFound = true;
 
-            return ['SKU Not Found:', item, '', '', '', '', '']
+            return ['SKU Not Found:', item, '', '', '', '', '', '']
           });
         }
         else
@@ -4342,55 +4392,158 @@ function search(e, spreadsheet, sheet)
             for (var i = 0; i < data.length; i++)
             {
               if (data[i][6] == item[0].toString().toUpperCase())
-                return [data[i][0], data[i][1], '', ...columnIndex.map(col => data[i][col])]
+                return [data[i][0], data[i][1], '', ...columnIndex.map(col => data[i][col]), '']
             }
 
             someSKUsNotFound = true;
 
-            return ['SKU Not Found:', item[0], '', '', '', '', '']
+            return ['SKU Not Found:', item[0], '', '', '', '', '', '']
           });
         }
-      }
 
-      if (someSKUsNotFound)
-      {
-        const skusNotFound = [];
-        var isSkuFound;
+        if (someSKUsNotFound)
+        {
+          const skusNotFound = [];
+          var isSkuFound;
 
-        const skusFound = skus.filter(item => {
-          isSkuFound = item[0] !== 'SKU Not Found:'
+          const skusFound = skus.filter(item => {
+            isSkuFound = item[0] !== 'SKU Not Found:'
 
-          if (!isSkuFound)
-            skusNotFound.push(item)
+            if (!isSkuFound)
+              skusNotFound.push(item)
 
-          return isSkuFound;
-        })
+            return isSkuFound;
+          })
 
-        const numSkusFound = skusFound.length;
-        const numSkusNotFound = skusNotFound.length;
-        const items = [].concat.apply([], [skusNotFound, skusFound]); // Concatenate all of the item values as a 2-D array
-        const numItems = items.length
-        const horizontalAlignments = new Array(numItems).fill(['center', 'left', 'center', 'center', 'center', 'center', 'center'])
-        const WHITE = new Array(7).fill('white')
-        const YELLOW = new Array(7).fill('#ffe599')
-        const colours = [].concat.apply([], [new Array(numSkusNotFound).fill(YELLOW), new Array(numSkusFound).fill(WHITE)]); // Concatenate all of the item values as a 2-D array
+          const orderSheet = spreadsheet.getSheetByName('Order');
+          const shippedSheet = spreadsheet.getSheetByName('Shipped');
+          const orderedItems =   orderSheet.getSheetValues(4, 5,   orderSheet.getLastRow() - 3, 1).map(u => u[0].split(' - ').pop().toString().toUpperCase()); // The items on the order sheet
+          const shippedItems = shippedSheet.getSheetValues(4, 5, shippedSheet.getLastRow() - 3, 1).map(u => u[0].split(' - ').pop().toString().toUpperCase()); // The items on the shipped sheet
+          const backgroundColours = [], fontColours = [];
+          var isOnOrderPage, isOnShippedPage;
 
-        sheet.getRange(4, 1, MAX_NUM_ITEMS, 8).clearContent().setBackground('white').setFontColor('black').setBorder(true, true, true, true, false, false)
-          .offset(0, 0, numItems, 7)
-            .setFontFamily('Arial').setFontWeight('bold').setFontSize(10).setHorizontalAlignments(horizontalAlignments).setBackgrounds(colours)
-            .setBorder(null, null, false, null, false, false).setValues(items)
-          .offset((numSkusFound != 0) ? numSkusNotFound : 0, 0, (numSkusFound != 0) ? numSkusFound : numSkusNotFound, 7).activate()
-      }
-      else // All SKUs were succefully found
-      {
-        const numItems = skus.length
-        const horizontalAlignments = new Array(numItems).fill(['center', 'left', 'center', 'center', 'center', 'center', 'center'])
+          for (var i = 0; i < skusFound.length; i++) // Loop through the skus that were pasted
+          {
+            for (var o = 0; o < orderedItems.length; o++) // Check if the item is on the order page
+            {
+              if (orderedItems[o] === skusFound[i][1].split(' - ').pop().toString().toUpperCase())
+              {
+                isOnOrderPage = true
+                break;
+              }
+              isOnOrderPage = false;
+            }
+            for (var s = 0; s < shippedItems.length; s++) // Check if the item is on the shipped page
+            {
+              if (shippedItems[s] === skusFound[i][1].split(' - ').pop().toString().toUpperCase())
+              {
+                isOnShippedPage = true
+                break;
+              }
+              isOnShippedPage = false;
+            }
 
-        sheet.getRange(4, 1, MAX_NUM_ITEMS, 8).clearContent().setBackground('white').setFontColor('black').offset(0, 0, numItems, 7)
-          .setFontFamily('Arial').setFontWeight('bold').setFontSize(10).setHorizontalAlignments(horizontalAlignments)
-          .setBorder(null, null, false, null, false, false).setValues(skus).activate()
+            if (isOnShippedPage)
+            {
+              skusFound[i][7] = 'SHIPPED - On it\'s way';
+              backgroundColours.push([...new Array(8).fill('#cc0000')]) // Highlight red
+              fontColours.push([...new Array(8).fill('yellow')])        // Yellow font
+            }
+            else if (isOnOrderPage)
+            {
+              skusFound[i][7] = 'Already on OrderSheet';
+              backgroundColours.push([...new Array(8).fill('yellow')]) // Highlight yellow
+              fontColours.push([...new Array(8).fill('#cc0000')])      // Red font
+            }
+            else // The item is neither on the shipped nor the ordered page
+            {
+              backgroundColours.push([...new Array(8).fill('white')])
+              fontColours.push([...new Array(8).fill('black')])
+            }
+          }
+
+          const numSkusFound = skusFound.length;
+          const numSkusNotFound = skusNotFound.length;
+          const items = [].concat.apply([], [skusNotFound, skusFound]); // Concatenate all of the item values as a 2-D array
+          const numItems = items.length
+          const horizontalAlignments = new Array(numItems).fill(['center', 'left', 'center', 'center', 'center', 'center', 'center', 'center'])
+          const fontSizes = new Array(numItems).fill([10, 10, 10, 10, 10, 10, 10, 12])
+          const YELLOW = new Array(8).fill('#ffe599')
+          const BLACK = new Array(8).fill('black')
+          const colours = [].concat.apply([], [new Array(numSkusNotFound).fill(YELLOW), backgroundColours]); // Concatenate all of the item values as a 2-D array
+          fontColours.unshift(...new Array(numSkusNotFound).fill(BLACK))
+
+          sheet.getRange(4, 1, MAX_NUM_ITEMS, 8).clearContent().setBackground('white').setFontColor('black').setBorder(true, true, true, true, false, false)
+            .offset(0, 0, numItems, 8)
+              .setFontFamily('Arial').setFontWeight('bold').setFontSizes(fontSizes).setHorizontalAlignments(horizontalAlignments).setVerticalAlignment('middle')
+              .setBackgrounds(colours).setFontColors(fontColours).setBorder(null, null, false, null, false, false).setValues(items)
+            .offset((numSkusFound != 0) ? numSkusNotFound : 0, 0, (numSkusFound != 0) ? numSkusFound : numSkusNotFound, 8).activate();
+
+          (numSkusFound !== 1) ? searchResultsDisplayRange.setValue(numSkusFound + " results found.") : searchResultsDisplayRange.setValue(numSkusFound + " result found.");
+        }
+        else // All SKUs were succefully found
+        {
+          const numItems = skus.length
+          const horizontalAlignments = new Array(numItems).fill(['center', 'left', 'center', 'center', 'center', 'center', 'center', 'center'])
+          const fontSizes = new Array(numItems).fill([10, 10, 10, 10, 10, 10, 10, 12])
+          const orderSheet = spreadsheet.getSheetByName('Order');
+          const shippedSheet = spreadsheet.getSheetByName('Shipped');
+          const orderedItems =   orderSheet.getSheetValues(4, 5,   orderSheet.getLastRow() - 3, 1).map(u => u[0].split(' - ').pop().toString().toUpperCase()); // The items on the order sheet
+          const shippedItems = shippedSheet.getSheetValues(4, 5, shippedSheet.getLastRow() - 3, 1).map(u => u[0].split(' - ').pop().toString().toUpperCase()); // The items on the shipped sheet
+          const backgroundColours = [], fontColours = [];
+          var isOnOrderPage, isOnShippedPage;
+
+          for (var i = 0; i < skus.length; i++) // Loop through the skus that were pasted
+          {
+            for (var o = 0; o < orderedItems.length; o++) // Check if the item is on the order page
+            {
+              if (orderedItems[o] === skus[i][1].split(' - ').pop().toString().toUpperCase())
+              {
+                isOnOrderPage = true
+                break;
+              }
+              isOnOrderPage = false;
+            }
+            for (var s = 0; s < shippedItems.length; s++) // Check if the item is on the shipped page
+            {
+              if (shippedItems[s] === skus[i][1].split(' - ').pop().toString().toUpperCase())
+              {
+                isOnShippedPage = true
+                break;
+              }
+              isOnShippedPage = false;
+            }
+
+            if (isOnShippedPage)
+            {
+              skus[i][7] = 'SHIPPED - On it\'s way';
+              backgroundColours.push([...new Array(8).fill('#cc0000')]) // Highlight red
+              fontColours.push([...new Array(8).fill('yellow')])        // Yellow font
+            }
+            else if (isOnOrderPage)
+            {
+              skus[i][7] = 'Already on OrderSheet';
+              backgroundColours.push([...new Array(8).fill('yellow')]) // Highlight yellow
+              fontColours.push([...new Array(8).fill('#cc0000')])      // Red font
+            }
+            else // The item is neither on the shipped nor the ordered page
+            {
+              backgroundColours.push([...new Array(8).fill('white')])
+              fontColours.push([...new Array(8).fill('black')])
+            }
+          }
+
+          sheet.getRange(4, 1, MAX_NUM_ITEMS, 8).clearContent().setBackground('white').setFontColor('black')
+            .offset(0, 0, numItems, 8).setFontFamily('Arial').setFontWeight('bold').setFontSizes(fontSizes).setHorizontalAlignments(horizontalAlignments).setVerticalAlignment('middle')
+              .setBackgrounds(backgroundColours).setFontColors(fontColours).setBorder(null, null, false, null, false, false).setValues(skus).activate();
+
+          (numItems !== 1) ? searchResultsDisplayRange.setValue(numItems + " results found.") : searchResultsDisplayRange.setValue(numItems + " result found.");
+        }
+
+        functionRunTimeRange.setValues([[null], [(new Date().getTime() - startTime)/1000 + " s"]]);
       }
     }
+    spreadsheet.toast('Searching Complete.')
   }
 }
 
@@ -4494,7 +4647,7 @@ function transferRow(fromSheet, sheet, row, rowValues, numCols, isRowDeleted, ro
     sheet.insertRowAfter(3);
     applyFullRowFormatting(sheet, destinationRow, 1, numCols); // Make sure all the formatting is correct
     
-    if (eventObject.oldValue == undefined || eventObject.oldValue.split(" - ", 1)[0] != "Direct") // If the shipment is direct then make the Transfered column checked (won't show up on Adagio update page)
+    if (eventObject.oldValue == undefined || eventObject.oldValue.split(' - ', 1)[0] != "Direct") // If the shipment is direct then make the Transfered column checked (won't show up on Adagio update page)
       sheet.getRange(destinationRow, 12).insertCheckboxes(); // Unchecked
     else
     {
@@ -4737,7 +4890,7 @@ function updateSearchData()
   {
     for (var j = 0; j < numNewCounts; j++)
     {
-      if (searchData[i][0].split(" - ", 1)[0].toString() == mostRecentCounts[j][0])
+      if (searchData[i][0].split(' - ').pop().toString() == mostRecentCounts[j][0])
         searchData[i][1] = mostRecentCounts[j][3];
     }
   }

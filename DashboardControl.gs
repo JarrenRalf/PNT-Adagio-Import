@@ -592,13 +592,13 @@ function pasteMultipleSKUsOnSearchPage(range, sheet, spreadsheet)
       
         for (var i = 0; i < data.length; i++)
         {
-          if (data[i][6] == item[0].toString().split(" - ", 1)[0].toUpperCase())
+          if (data[i][6] == item[0].toString().split(' - ').pop().toUpperCase())
             return data[i]
         }
 
         someSKUsNotFound = true;
 
-        return ['SKU Not Found:', item[0].toString().split(" - ", 1)[0].toUpperCase(), '', '', '', '', '']
+        return ['SKU Not Found:', item[0].toString().split(' - ').pop().toUpperCase(), '', '', '', '', '']
       });
     }
     else if (values[0][0].toString().includes('-'))
@@ -1226,7 +1226,7 @@ function searchV2(e, spreadsheet, sheet, row, col)
                           {
                             if (checkBoxes[3][2] == true && isNotBlank(data[loc][i][c + 1]))
                             {
-                              output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], data[loc][i][c + 1], '', '', '', data[loc][1][c]]);
+                              output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], data[loc][i][c + 1], '', '', '', data[loc][1][c]]);
                               numRich++;
                             }
                           }
@@ -1234,7 +1234,7 @@ function searchV2(e, spreadsheet, sheet, row, col)
                           {
                             if (checkBoxes[4][2] == true && isNotBlank(data[loc][i][c + 1]))
                             {
-                              output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], data[loc][i][c + 1], '', '', '', data[loc][1][c]]);
+                              output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], data[loc][i][c + 1], '', '', '', data[loc][1][c]]);
                               numRich++;
                             }
                           }
@@ -1247,12 +1247,12 @@ function searchV2(e, spreadsheet, sheet, row, col)
                             {
                               if (data[loc][0][0] === 'PNT Parksville Transfer Spreadsheet (Location: 200)')
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', data[loc][i][c + 3], '', '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', data[loc][i][c + 3], '', '', data[loc][1][c]]);
                                 numParks++;
                               }
                               else
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', '', data[loc][i][c + 3], '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', '', data[loc][i][c + 3], '', data[loc][1][c]]);
                                 numRupt++;
                               }
                             }
@@ -1263,12 +1263,12 @@ function searchV2(e, spreadsheet, sheet, row, col)
                             {
                               if (data[loc][0][0] === 'PNT Parksville Transfer Spreadsheet (Location: 200)')
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', data[loc][i][c + 2], '', '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', data[loc][i][c + 2], '', '', data[loc][1][c]]);
                                 numParks++;
                               }
                               else
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', '', data[loc][i][c + 2], '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', '', data[loc][i][c + 2], '', data[loc][1][c]]);
                                 numRupt++;
                               }
                             }
@@ -1279,12 +1279,12 @@ function searchV2(e, spreadsheet, sheet, row, col)
                             {
                               if (data[loc][0][0] === 'PNT Parksville Transfer Spreadsheet (Location: 200)')
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', data[loc][i][c + 1], '', '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', data[loc][i][c + 1], '', '', data[loc][1][c]]);
                                 numParks++;
                               }
                               else
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', '', data[loc][i][c + 1], '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', '', data[loc][i][c + 1], '', data[loc][1][c]]);
                                 numRupt++;
                               }
                             }
@@ -1295,12 +1295,12 @@ function searchV2(e, spreadsheet, sheet, row, col)
                             {
                               if (data[loc][0][0] === 'PNT Parksville Transfer Spreadsheet (Location: 200)')
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', data[loc][i][c + 1], '', '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', data[loc][i][c + 1], '', '', data[loc][1][c]]);
                                 numParks++;
                               }
                               else
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', '', data[loc][i][c + 1], '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', '', data[loc][i][c + 1], '', data[loc][1][c]]);
                                 numRupt++;
                               }
                             }
@@ -1311,12 +1311,12 @@ function searchV2(e, spreadsheet, sheet, row, col)
                             {
                               if (data[loc][0][0] === 'PNT Parksville Transfer Spreadsheet (Location: 200)')
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', data[loc][i][c + 1], '', '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', data[loc][i][c + 1], '', '', data[loc][1][c]]);
                                 numParks++;
                               }
                               else
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', '', data[loc][i][c + 1], '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', '', data[loc][i][c + 1], '', data[loc][1][c]]);
                                 numRupt++;
                               }
                             }
@@ -1327,12 +1327,12 @@ function searchV2(e, spreadsheet, sheet, row, col)
                             {
                               if (data[loc][0][0] === 'PNT Parksville Transfer Spreadsheet (Location: 200)')
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', data[loc][i][c + 1], '', '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', data[loc][i][c + 1], '', '', data[loc][1][c]]);
                                 numParks++;
                               }
                               else
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', '', data[loc][i][c + 1], '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', '', data[loc][i][c + 1], '', data[loc][1][c]]);
                                 numRupt++;
                               }
                             }
@@ -1462,7 +1462,7 @@ function searchV2(e, spreadsheet, sheet, row, col)
                           {
                             if (checkBoxes[3][2] == true && isNotBlank(data[loc][i][c + 1]))
                             {
-                              output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], data[loc][i][c + 1], '', '', '', data[loc][1][c]]);
+                              output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], data[loc][i][c + 1], '', '', '', data[loc][1][c]]);
                               numRich++;
                             }
                           }
@@ -1470,7 +1470,7 @@ function searchV2(e, spreadsheet, sheet, row, col)
                           {
                             if (checkBoxes[4][2] == true && isNotBlank(data[loc][i][c + 1]))
                             {
-                              output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], data[loc][i][c + 1], '', '', '', data[loc][1][c]]);
+                              output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], data[loc][i][c + 1], '', '', '', data[loc][1][c]]);
                               numRich++;
                             }
                           }
@@ -1483,12 +1483,12 @@ function searchV2(e, spreadsheet, sheet, row, col)
                             {
                               if (data[loc][0][0] === 'PNT Parksville Transfer Spreadsheet (Location: 200)')
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', data[loc][i][c + 3], '', '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', data[loc][i][c + 3], '', '', data[loc][1][c]]);
                                 numParks++;
                               }
                               else
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', '', data[loc][i][c + 3], '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', '', data[loc][i][c + 3], '', data[loc][1][c]]);
                                 numRupt++;
                               }
                             }
@@ -1499,12 +1499,12 @@ function searchV2(e, spreadsheet, sheet, row, col)
                             {
                               if (data[loc][0][0] === 'PNT Parksville Transfer Spreadsheet (Location: 200)')
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', data[loc][i][c + 2], '', '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', data[loc][i][c + 2], '', '', data[loc][1][c]]);
                                 numParks++;
                               }
                               else
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', '', data[loc][i][c + 2], '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', '', data[loc][i][c + 2], '', data[loc][1][c]]);
                                 numRupt++;
                               }
                             }
@@ -1515,12 +1515,12 @@ function searchV2(e, spreadsheet, sheet, row, col)
                             {
                               if (data[loc][0][0] === 'PNT Parksville Transfer Spreadsheet (Location: 200)')
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', data[loc][i][c + 1], '', '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', data[loc][i][c + 1], '', '', data[loc][1][c]]);
                                 numParks++;
                               }
                               else
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', '', data[loc][i][c + 1], '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', '', data[loc][i][c + 1], '', data[loc][1][c]]);
                                 numRupt++;
                               }
                             }
@@ -1531,12 +1531,12 @@ function searchV2(e, spreadsheet, sheet, row, col)
                             {
                               if (data[loc][0][0] === 'PNT Parksville Transfer Spreadsheet (Location: 200)')
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', data[loc][i][c + 1], '', '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', data[loc][i][c + 1], '', '', data[loc][1][c]]);
                                 numParks++;
                               }
                               else
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', '', data[loc][i][c + 1], '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', '', data[loc][i][c + 1], '', data[loc][1][c]]);
                                 numRupt++;
                               }
                             }
@@ -1547,12 +1547,12 @@ function searchV2(e, spreadsheet, sheet, row, col)
                             {
                               if (data[loc][0][0] === 'PNT Parksville Transfer Spreadsheet (Location: 200)')
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', data[loc][i][c + 1], '', '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', data[loc][i][c + 1], '', '', data[loc][1][c]]);
                                 numParks++;
                               }
                               else
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', '', data[loc][i][c + 1], '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', '', data[loc][i][c + 1], '', data[loc][1][c]]);
                                 numRupt++;
                               }
                             }
@@ -1563,12 +1563,12 @@ function searchV2(e, spreadsheet, sheet, row, col)
                             {
                               if (data[loc][0][0] === 'PNT Parksville Transfer Spreadsheet (Location: 200)')
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', data[loc][i][c + 1], '', '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', data[loc][i][c + 1], '', '', data[loc][1][c]]);
                                 numParks++;
                               }
                               else
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', '', data[loc][i][c + 1], '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', '', data[loc][i][c + 1], '', data[loc][1][c]]);
                                 numRupt++;
                               }
                             }
@@ -1805,7 +1805,7 @@ function searchV2V2(e, spreadsheet, sheet, row, col)
                           {
                             if (checkBoxes[3][2] == true && isNotBlank(data[loc][i][c + 1]))
                             {
-                              output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], data[loc][i][c + 1], '', '', '', data[loc][1][c]]);
+                              output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], data[loc][i][c + 1], '', '', '', data[loc][1][c]]);
                               numRich++;
                             }
                           }
@@ -1813,7 +1813,7 @@ function searchV2V2(e, spreadsheet, sheet, row, col)
                           {
                             if (checkBoxes[4][2] == true && isNotBlank(data[loc][i][c + 1]))
                             {
-                              output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], data[loc][i][c + 1], '', '', '', data[loc][1][c]]);
+                              output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], data[loc][i][c + 1], '', '', '', data[loc][1][c]]);
                               numRich++;
                             }
                           }
@@ -1826,12 +1826,12 @@ function searchV2V2(e, spreadsheet, sheet, row, col)
                             {
                               if (data[loc][0][0] === 'PNT Parksville Transfer Spreadsheet (Location: 200)')
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', data[loc][i][c + 3], '', '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', data[loc][i][c + 3], '', '', data[loc][1][c]]);
                                 numParks++;
                               }
                               else
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', '', data[loc][i][c + 3], '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', '', data[loc][i][c + 3], '', data[loc][1][c]]);
                                 numRupt++;
                               }
                             }
@@ -1842,12 +1842,12 @@ function searchV2V2(e, spreadsheet, sheet, row, col)
                             {
                               if (data[loc][0][0] === 'PNT Parksville Transfer Spreadsheet (Location: 200)')
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', data[loc][i][c + 2], '', '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', data[loc][i][c + 2], '', '', data[loc][1][c]]);
                                 numParks++;
                               }
                               else
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', '', data[loc][i][c + 2], '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', '', data[loc][i][c + 2], '', data[loc][1][c]]);
                                 numRupt++;
                               }
                             }
@@ -1858,12 +1858,12 @@ function searchV2V2(e, spreadsheet, sheet, row, col)
                             {
                               if (data[loc][0][0] === 'PNT Parksville Transfer Spreadsheet (Location: 200)')
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', data[loc][i][c + 1], '', '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', data[loc][i][c + 1], '', '', data[loc][1][c]]);
                                 numParks++;
                               }
                               else
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', '', data[loc][i][c + 1], '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', '', data[loc][i][c + 1], '', data[loc][1][c]]);
                                 numRupt++;
                               }
                             }
@@ -1874,12 +1874,12 @@ function searchV2V2(e, spreadsheet, sheet, row, col)
                             {
                               if (data[loc][0][0] === 'PNT Parksville Transfer Spreadsheet (Location: 200)')
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', data[loc][i][c + 1], '', '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', data[loc][i][c + 1], '', '', data[loc][1][c]]);
                                 numParks++;
                               }
                               else
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', '', data[loc][i][c + 1], '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', '', data[loc][i][c + 1], '', data[loc][1][c]]);
                                 numRupt++;
                               }
                             }
@@ -1890,12 +1890,12 @@ function searchV2V2(e, spreadsheet, sheet, row, col)
                             {
                               if (data[loc][0][0] === 'PNT Parksville Transfer Spreadsheet (Location: 200)')
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', data[loc][i][c + 1], '', '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', data[loc][i][c + 1], '', '', data[loc][1][c]]);
                                 numParks++;
                               }
                               else
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', '', data[loc][i][c + 1], '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', '', data[loc][i][c + 1], '', data[loc][1][c]]);
                                 numRupt++;
                               }
                             }
@@ -1906,12 +1906,12 @@ function searchV2V2(e, spreadsheet, sheet, row, col)
                             {
                               if (data[loc][0][0] === 'PNT Parksville Transfer Spreadsheet (Location: 200)')
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', data[loc][i][c + 1], '', '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', data[loc][i][c + 1], '', '', data[loc][1][c]]);
                                 numParks++;
                               }
                               else
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', '', data[loc][i][c + 1], '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', '', data[loc][i][c + 1], '', data[loc][1][c]]);
                                 numRupt++;
                               }
                             }
@@ -1971,7 +1971,7 @@ function searchV2V2(e, spreadsheet, sheet, row, col)
                           {
                             if (checkBoxes[3][2] == true && isNotBlank(data[loc][i][c + 1]))
                             {
-                              output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], data[loc][i][c + 1], '', '', '', data[loc][1][c]]);
+                              output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], data[loc][i][c + 1], '', '', '', data[loc][1][c]]);
                               numRich++;
                             }
                           }
@@ -1979,7 +1979,7 @@ function searchV2V2(e, spreadsheet, sheet, row, col)
                           {
                             if (checkBoxes[4][2] == true && isNotBlank(data[loc][i][c + 1]))
                             {
-                              output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], data[loc][i][c + 1], '', '', '', data[loc][1][c]]);
+                              output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], data[loc][i][c + 1], '', '', '', data[loc][1][c]]);
                               numRich++;
                             }
                           }
@@ -1992,12 +1992,12 @@ function searchV2V2(e, spreadsheet, sheet, row, col)
                             {
                               if (data[loc][0][0] === 'PNT Parksville Transfer Spreadsheet (Location: 200)')
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', data[loc][i][c + 3], '', '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', data[loc][i][c + 3], '', '', data[loc][1][c]]);
                                 numParks++;
                               }
                               else
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', '', data[loc][i][c + 3], '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', '', data[loc][i][c + 3], '', data[loc][1][c]]);
                                 numRupt++;
                               }
                             }
@@ -2008,12 +2008,12 @@ function searchV2V2(e, spreadsheet, sheet, row, col)
                             {
                               if (data[loc][0][0] === 'PNT Parksville Transfer Spreadsheet (Location: 200)')
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', data[loc][i][c + 2], '', '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', data[loc][i][c + 2], '', '', data[loc][1][c]]);
                                 numParks++;
                               }
                               else
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', '', data[loc][i][c + 2], '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', '', data[loc][i][c + 2], '', data[loc][1][c]]);
                                 numRupt++;
                               }
                             }
@@ -2024,12 +2024,12 @@ function searchV2V2(e, spreadsheet, sheet, row, col)
                             {
                               if (data[loc][0][0] === 'PNT Parksville Transfer Spreadsheet (Location: 200)')
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', data[loc][i][c + 1], '', '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', data[loc][i][c + 1], '', '', data[loc][1][c]]);
                                 numParks++;
                               }
                               else
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', '', data[loc][i][c + 1], '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', '', data[loc][i][c + 1], '', data[loc][1][c]]);
                                 numRupt++;
                               }
                             }
@@ -2040,12 +2040,12 @@ function searchV2V2(e, spreadsheet, sheet, row, col)
                             {
                               if (data[loc][0][0] === 'PNT Parksville Transfer Spreadsheet (Location: 200)')
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', data[loc][i][c + 1], '', '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', data[loc][i][c + 1], '', '', data[loc][1][c]]);
                                 numParks++;
                               }
                               else
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', '', data[loc][i][c + 1], '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', '', data[loc][i][c + 1], '', data[loc][1][c]]);
                                 numRupt++;
                               }
                             }
@@ -2056,12 +2056,12 @@ function searchV2V2(e, spreadsheet, sheet, row, col)
                             {
                               if (data[loc][0][0] === 'PNT Parksville Transfer Spreadsheet (Location: 200)')
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', data[loc][i][c + 1], '', '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', data[loc][i][c + 1], '', '', data[loc][1][c]]);
                                 numParks++;
                               }
                               else
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', '', data[loc][i][c + 1], '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', '', data[loc][i][c + 1], '', data[loc][1][c]]);
                                 numRupt++;
                               }
                             }
@@ -2072,12 +2072,12 @@ function searchV2V2(e, spreadsheet, sheet, row, col)
                             {
                               if (data[loc][0][0] === 'PNT Parksville Transfer Spreadsheet (Location: 200)')
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', data[loc][i][c + 1], '', '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', data[loc][i][c + 1], '', '', data[loc][1][c]]);
                                 numParks++;
                               }
                               else
                               {
-                                output.push([data[loc][i][c].split(' - ')[4], data[loc][i][c], '', '', data[loc][i][c + 1], '', data[loc][1][c]]);
+                                output.push([data[loc][i][c].split(' - ')[data[loc][i][c].split(' - ').length - 2], data[loc][i][c], '', '', data[loc][i][c + 1], '', data[loc][1][c]]);
                                 numRupt++;
                               }
                             }
@@ -2265,7 +2265,7 @@ function stripDescriptions(range)
     splitDescription = descrip[0].split(' - ')
     if (splitDescription.length > 2)
     {
-      sku = splitDescription.shift()
+      sku = splitDescription.pop()
       uom = splitDescription.pop()
       splitDescription.pop()
       splitDescription.pop()
@@ -3005,7 +3005,7 @@ function rupert_applyFullSpreadsheetFormatting(range)
   {
     const spreadsheet = SpreadsheetApp.getActive();
     const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
-    ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM/edit#gid=407280159');
+    ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c/edit#gid=407280159');
     applyFullSpreadsheetFormatting();
     timeStamp(spreadsheet, 15, 15, adagioSheet, "dd MMM HH:mm")
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
@@ -3031,7 +3031,7 @@ function rupert_completeReceived()
   {
     const spreadsheet = SpreadsheetApp.getActive();
     const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
-    ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM/edit#gid=407280159');
+    ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c/edit#gid=407280159');
     completeReceived();
     timeStamp(spreadsheet, 6, 15, adagioSheet, "dd MMM HH:mm")
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
@@ -3056,7 +3056,7 @@ function rupert_completeToRichmond()
   {
     const spreadsheet = SpreadsheetApp.getActive();
     const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
-    ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM/edit#gid=407280159');
+    ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c/edit#gid=407280159');
     completeToRichmond();
     timeStamp(spreadsheet, 7, 15, adagioSheet, "dd MMM HH:mm")  
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
@@ -3081,7 +3081,7 @@ function rupert_print_X_Order()
   {
     const spreadsheet = SpreadsheetApp.getActive();
     const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
-    ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM/edit#gid=407280159');
+    ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c/edit#gid=407280159');
     print_X_Order();
     timeStamp(spreadsheet, 8, 15, adagioSheet, "dd MMM HH:mm")
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
@@ -3106,7 +3106,7 @@ function rupert_print_X_Shipped()
   {
     const spreadsheet = SpreadsheetApp.getActive();
     const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
-    ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM/edit#gid=407280159');
+    ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c/edit#gid=407280159');
     print_X_Shipped();
     timeStamp(spreadsheet, 9, 15, adagioSheet, "dd MMM HH:mm")
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
@@ -3131,7 +3131,7 @@ function rupert_clearInventory()
   {
     const spreadsheet = SpreadsheetApp.getActive();
     const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
-    ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM/edit#gid=407280159');
+    ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c/edit#gid=407280159');
     clearInventory();
     timeStamp(spreadsheet, 4, 15, adagioSheet, "dd MMM HH:mm")
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
@@ -3156,7 +3156,7 @@ function rupert_getCounts()
   {
     const spreadsheet = SpreadsheetApp.getActive();
     const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
-    ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM/edit#gid=407280159');
+    ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c/edit#gid=407280159');
     getCounts();
     timeStamp(spreadsheet, 10, 15, adagioSheet, "dd MMM HH:mm")
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
@@ -3181,7 +3181,7 @@ function rupert_clearManualCounts()
   {
     const spreadsheet = SpreadsheetApp.getActive();
     const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
-    ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM/edit#gid=407280159');
+    ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c/edit#gid=407280159');
     clearManualCounts();
     timeStamp(spreadsheet, 11, 15, adagioSheet, "dd MMM HH:mm")
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
@@ -3205,7 +3205,7 @@ function rupert_updateUPC_Database_ButtonClicked()
   try
   {
     const adagioSheet = SpreadsheetApp.getActive().getSheetByName('Adagio Transfer Sheet');
-    ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM/edit#gid=407280159');
+    ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c/edit#gid=407280159');
     updateUPC_Database(true);
     SpreadsheetApp.getActiveSheet().getRange(13, 18).setFontColor('black');
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
@@ -3229,7 +3229,7 @@ function rupert_updateRecentlyCreatedItems()
   try
   {
     const adagioSheet = SpreadsheetApp.getActive().getSheetByName('Adagio Transfer Sheet');
-    ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM/edit#gid=407280159');
+    ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c/edit#gid=407280159');
     updateRecentlyCreatedItems();
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
@@ -3252,7 +3252,7 @@ function rupert_updateUPC_Database()
   try
   {
     const adagioSheet = SpreadsheetApp.getActive().getSheetByName('Adagio Transfer Sheet');
-    ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM/edit#gid=407280159');
+    ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c/edit#gid=407280159');
     updateUPC_Database();
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
@@ -3275,7 +3275,7 @@ function rupert_countLog(range)
   try
   {
     const adagioSheet = SpreadsheetApp.getActive().getSheetByName('Adagio Transfer Sheet');
-    ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM/edit#gid=407280159');
+    ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c/edit#gid=407280159');
     countLog();
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
@@ -3299,7 +3299,7 @@ function rupert_logCountsOnWorkdays()
   try
   {
     const adagioSheet = SpreadsheetApp.getActive().getSheetByName('Adagio Transfer Sheet');
-    ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM/edit#gid=407280159');
+    ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c/edit#gid=407280159');
     logCountsOnWorkdays();
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
@@ -3322,7 +3322,7 @@ function rupert_updateSearchData(range)
   try
   {
     const adagioSheet = SpreadsheetApp.getActive().getSheetByName('Adagio Transfer Sheet');
-    ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM/edit#gid=407280159');
+    ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c/edit#gid=407280159');
     updateSearchData();
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
@@ -3347,7 +3347,7 @@ function rupert_manualCounts()
 
   try
   {
-    ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1cK1xrtJMeMbfQHrFc_TWUwCKlYzmkov0_zuBxO55iKM/edit#gid=407280159');
+    ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c/edit#gid=407280159');
     var manualCountsSheet = ss.getSheetByName("Manual Counts");
     var lastRow = manualCountsSheet.getLastRow();
     var startRow = (lastRow < 3) ? 4 : lastRow + 1;

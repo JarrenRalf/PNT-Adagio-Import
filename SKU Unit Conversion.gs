@@ -590,25 +590,28 @@ function possibleSKUsToWatch()
   const currentSKUstoWatch = currentSKUstoWatchSheet.getSheetValues(3, 1, currentSKUstoWatchSheet.getLastRow() - 2, 9)
   const numSkus = currentSKUstoWatch.length;
   const csvData = Utilities.parseCsv(DriveApp.getFilesByName("inventory.csv").next().getBlob().getDataAsString()).map(u => u.map(v => v.toString().toUpperCase()))
-  csvData.shift(); // Remove the hot spot item which has a sku of '0'
+  const header = csvData.shift()
+  const sku = header.indexOf('ITEM #')
+  const uom = header.indexOf('PRICE UNIT')
+  const description = header.indexOf('ITEM LIST')
   const numItems = csvData.length
   var data = [], sku1, sku11, sku111, sku2, sku22, sku222;
 
   for (var i = 0; i < numItems; i++)
   {
-    sku1 = csvData[i][6].substring(0, 8);
-    sku11 = csvData[i][6].substring(0, 9);
-    sku111 = csvData[i][6].substring(0, 11)
+    sku1 = csvData[i][sku].substring(0, 8);
+    sku11 = csvData[i][sku].substring(0, 9);
+    sku111 = csvData[i][sku].substring(0, 11)
 
     for (var ii = 0; ii < numItems; ii++)
     {
-      sku2 = csvData[ii][6].substring(0, 8);
-      sku22 = csvData[ii][6].substring(0, 9);
-      sku222 = csvData[ii][6].substring(0, 11);
+      sku2 = csvData[ii][sku].substring(0, 8);
+      sku22 = csvData[ii][sku].substring(0, 9);
+      sku222 = csvData[ii][sku].substring(0, 11);
 
-      if (csvData[i][6].length == 1 || csvData[ii][6].length == 1 || csvData[i][6].length == 2 || csvData[ii][6].length == 2 ||
-          csvData[i][6].length == 3 || csvData[ii][6].length == 3 || csvData[i][6].length == 4 || csvData[ii][6].length == 4 ||
-          csvData[i][6].length == 5 || csvData[ii][6].length == 5 || csvData[i][6].length == 6 || csvData[ii][6].length == 6 || // Ignore skus less than 7 letter
+      if (csvData[i][sku].length == 1 || csvData[ii][sku].length == 1 || csvData[i][sku].length == 2 || csvData[ii][sku].length == 2 ||
+          csvData[i][sku].length == 3 || csvData[ii][sku].length == 3 || csvData[i][sku].length == 4 || csvData[ii][sku].length == 4 ||
+          csvData[i][sku].length == 5 || csvData[ii][sku].length == 5 || csvData[i][sku].length == 6 || csvData[ii][sku].length == 6 || // Ignore skus less than 7 letter
           sku1 == '16010001' || sku2 == '16010001' || // Rigged cuttlefish
           sku1 == '16010005' || sku2 == '16010005' || // cuttlefish
           sku1 == '16070001' || sku2 == '16070001' || // rigged squid
@@ -650,20 +653,20 @@ function possibleSKUsToWatch()
           sku111 == '1708XRMAG20' || sku222 == '1708XRMAG20' || // RAPALA X-RAP MAGNUM G20 DIVEBAIT 20 FT
           sku111 == '1708XRMAG30' || sku222 == '1708XRMAG30' || // RAPALA X-RAP MAGNUM G20 DIVEBAIT 30 FT
           sku111 == '1708XRMAG40' || sku222 == '1708XRMAG40' || // RAPALA X-RAP MAGNUM G20 DIVEBAIT 40 FT
-          (csvData[i][6] == csvData[ii][6])) // Ignore the same SKUs
+          (csvData[i][sku] == csvData[ii][sku])) // Ignore the same SKUs
         continue;
       // Sku includes another sku, their UoM are not the same, and both are active in Adagio
-      else if (csvData[i][6].includes(csvData[ii][6]) && (csvData[i][0] != csvData[ii][0]) &&csvData[i][10] == 'A' && csvData[ii][10] == 'A')
+      else if (csvData[i][sku].includes(csvData[ii][sku]) && (csvData[i][uom] != csvData[ii][uom]))
       {
         for (var j = 0; j < numSkus; j++)
         {
-          if ((csvData[ i][6] == currentSKUstoWatch[j][0] && csvData[ii][6] == currentSKUstoWatch[j][6]) ||
-              (csvData[ii][6] == currentSKUstoWatch[j][0] && csvData[ i][6] == currentSKUstoWatch[j][6]))
+          if ((csvData[ i][sku] == currentSKUstoWatch[j][0] && csvData[ii][sku] == currentSKUstoWatch[j][6]) ||
+              (csvData[ii][sku] == currentSKUstoWatch[j][0] && csvData[ i][sku] == currentSKUstoWatch[j][6]))
             break;
         } 
 
         if (j === numSkus)
-          data.push([csvData[i][6], csvData[i][1], csvData[i][0], null, null, null, csvData[ii][6], csvData[ii][1], csvData[ii][0]])
+          data.push([csvData[i][sku], csvData[i][description], csvData[i][uom], null, null, null, csvData[ii][sku], csvData[ii][description], csvData[ii][uom]])
       }
     }
   }
@@ -682,36 +685,36 @@ function resetData()
 
   try
   {
-    var isActive, numberFormats = [];
+    var numberFormats = [];
     const spreadsheet = SpreadsheetApp.getActive();
     const csvData = Utilities.parseCsv(DriveApp.getFilesByName("inventory.csv").next().getBlob().getDataAsString());
     const inflowData = Object.values(Utilities.parseCsv(DriveApp.getFilesByName("inFlow_StockLevels.csv").next().getBlob().getDataAsString()).reduce((acc, val) => {
       // Sum the quantities if item is in multiple locations
       if (acc[val[0]]) acc[val[0]][1] = (inflow_conversions.hasOwnProperty(val[0])) ? Number(acc[val[0]][1]) + Number(val[4])*inflow_conversions[val[0]] : Number(acc[val[0]][1]) + Number(val[4]); 
       // Add the item to the new list if it contains the typical google sheets item format with "space - space"
-      else if (val[0].split(" - ").length > 4) acc[val[0]] = [val[0], (inflow_conversions.hasOwnProperty(val[0])) ? Number(val[4])*inflow_conversions[val[0]] : Number(val[4])]; 
+      else if (val[0].split(' - ').length > 4) acc[val[0]] = [val[0], (inflow_conversions.hasOwnProperty(val[0])) ? Number(val[4])*inflow_conversions[val[0]] : Number(val[4])]; 
       return acc;
     }, {}));
-    var isInFlowItem;
-    const header = csvData.shift();               // Remove the header
-    const active = header.indexOf('Active Item'); // Index of the Active Item column
-    const activeItems = csvData.filter(item => {
-      isActive = item[active] === 'A'; // These are the active items
 
-      if (isActive)
-      {
-        numberFormats.push(['@', '@', '#.#', '#.#', '#.#', '#.#', '@']); // Ensure that the inventory values are Numbers (for math operations) and the rest are Strings
-        item.splice(6, 7, item[6]); // Remove the unnecessary columns, starting with trites inventory while keeping sku
-        isInFlowItem = inflowData.find(description => description[0].split(" - ", 1)[0] == item[6])
-        item[5] = (isInFlowItem) ? isInFlowItem[1] : ''; // Add Trites inventory values if they are found in inFlow
-      }
-      return isActive // Remove the inactive Items
+    var isInFlowItem;
+    const header = csvData.shift(); // Remove the header
+    const sku = header.indexOf('Item #');
+    const tritesQty = header.indexOf('Trites');
+    const columnToStartDeleting = tritesQty + 1;
+    const numColsToDelete = header.length - tritesQty + 1;
+    const items = csvData.map(item => {
+      numberFormats.push(['@', '@', '#.#', '#.#', '#.#', '#.#', '@']); // Ensure that the inventory values are Numbers (for math operations) and the rest are Strings
+      item.splice(columnToStartDeleting, numColsToDelete, item[sku]); // Remove the unnecessary columns, starting with trites inventory while keeping sku
+      isInFlowItem = inflowData.find(description => description[0].split(' - ').pop() == item[6]) // Inflow SKU in back
+      item[tritesQty] = (isInFlowItem) ? isInFlowItem[1] : ''; // Add Trites inventory values if they are found in inFlow
+
+      return item;
     }); 
 
-    header.splice(6, 7, 'Item #');
+    header.splice(columnToStartDeleting, numColsToDelete, header[sku]);
     numberFormats.unshift(['@', '@', '@', '@', '@', '@', '@']) // Headers are Strings
-    const numRows = activeItems.unshift(header); // Put the header back
-    spreadsheet.getSheetByName("DataImport").clearContents().getRange(1, 1, numRows, activeItems[0].length).setNumberFormats(numberFormats).setValues(activeItems);
+    const numRows = items.unshift(header); // Put the header back
+    spreadsheet.getSheetByName("DataImport").clearContents().getRange(1, 1, numRows, items[0].length).setNumberFormats(numberFormats).setValues(items);
     
     const runtime = elapsedTime(START_TIME);
     spreadsheet.getSheetByName('ConvertedExport').getRange(1, 3, 2).setValues([[runtime], [timeStamp(spreadsheet)]]); // Elapsed time and timestamp
