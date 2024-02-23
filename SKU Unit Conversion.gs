@@ -574,10 +574,7 @@ function getYetiSeasonalSKUs(yetiSKUsToWatchSheet, spreadsheet)
       splitDescription = yetiItem[1].split(' ');
       splitDescription.pop();
       desciption = splitDescription.join(' ');
-
-      missingSeasonalYetiSKUs.push([yetiItem[0], desciption + ' SEASONAL ' + yetiItem[0].slice(-1), '', 
-        upcDatabase_YetiOnly.filter(upcCode => upcCode[0] == yetiItem[0] && !upcCode[1].toString().includes('629034')).map(upc => upc[1]).flat().join(', '), '', 
-        yetiItem[0].substring(0, yetiItem[0].length - 3) + 'SD', desciption + ' DISCON'])
+      missingSeasonalYetiSKUs.push([yetiItem[0], desciption + ' SEASONAL ' + yetiItem[0].slice(-1), '', '', '', yetiItem[0].substring(0, yetiItem[0].length - 3) + 'SD', desciption + ' DISCON'])
     }
   })
 
@@ -592,7 +589,16 @@ function getYetiSeasonalSKUs(yetiSKUsToWatchSheet, spreadsheet)
         .offset(0, 2, numItems, 1).setBorder(false, true, false, true, null, null, 'black', SpreadsheetApp.BorderStyle.SOLID_THICK)
         .offset(0, 2, numItems, 1).setBorder(false, true, false, true, null, null, 'black', SpreadsheetApp.BorderStyle.SOLID_THICK)
 
-  return yetiSKUsToWatchSheet.getDataRange().getValues();
+  const yetiSKUsToWatch_Range = yetiSKUsToWatchSheet.getDataRange();
+  const yetiSKUsToWatch_AllData = yetiSKUsToWatch_Range.getValues();
+
+  // Fill in any missing UPC Codes
+  for (var i = 2; i < yetiSKUsToWatch.length; i++)
+    yetiSKUsToWatch_AllData[i][3] = upcDatabase_YetiOnly.filter(upcCode => upcCode[0] == yetiSKUsToWatch_AllData[i][0] && !upcCode[1].toString().includes('629034')).map(upc => upc[1]).flat().join(', ');
+
+  yetiSKUsToWatch_Range.setValues(yetiSKUsToWatch_AllData);
+
+  return yetiSKUsToWatch_AllData;
 }
 
 /**
