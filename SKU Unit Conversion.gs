@@ -371,7 +371,8 @@ function computeConversions_Yeti()
   try
   {
     const spreadsheet = SpreadsheetApp.getActive();
-    const conversionData = spreadsheet.getSheetByName("Yeti SKUsToWatch").getDataRange().getValues();
+    const yetiSKUsToWatchSheet = spreadsheet.getSheetByName("Yeti SKUsToWatch")
+    const conversionData = getYetiSeasonalSKUs(yetiSKUsToWatchSheet, spreadsheet);
     const    exportSheet = spreadsheet.getSheetByName("ConvertedExport");
     const  errorLogSheet = spreadsheet.getSheetByName("Yeti ErrorLog");
     
@@ -539,6 +540,59 @@ function getConversions_Yeti(data, exportData, pairOfSKUs, SKU, locations)
   }
 
   return [data, exportData];
+}
+
+/**
+ * This function checks if the Yeti SKUsToWatch page has any seasonal colours missing from the list, if it does, then it adds them to the bottom.
+ * 
+ * @param {Sheet} yetiSKUsToWatchSheet : The Yeti SKUsToWatch sheet.
+ * @param {Spreadsheet} spreadsheet : The active spreadsheet.
+ * @returns {String[][]} Returns all of the data on the Yeti SKUsToWatch page.
+ * @author Jarren Ralf
+ */
+function getYetiSeasonalSKUs(yetiSKUsToWatchSheet, spreadsheet)
+{
+  const upcDatabase_YetiOnly = Utilities.parseCsv(DriveApp.getFilesByName("BarcodeInput.csv").next().getBlob().getDataAsString())
+    .filter(upc => upc[1].toString().includes('8015') && 
+                  (upc[1].endsWith('SC1') || upc[1].endsWith('SC2') || upc[1].endsWith('SC3') || upc[1].endsWith('SC4'))) // Seasonal colours either end with SC1, SC2, SC3, or SC4)
+    .map(col => [col[1], col[0].toString()]);
+  const inventorySheet = spreadsheet.getSheetByName('DataImport'); 
+  const lastRow_Yeti = yetiSKUsToWatchSheet.getLastRow();
+  const yetiSKUsToWatch = yetiSKUsToWatchSheet.getSheetValues(3, 1, lastRow_Yeti - 2, 1).flat()
+  const allSeasonalYetiSKUs = inventorySheet.getSheetValues(2, 2, inventorySheet.getLastRow() - 1, 6)
+    .filter(item => item[5].toString().includes('8015') && 
+                  (item[5].endsWith('SC1') || item[5].endsWith('SC2') || item[5].endsWith('SC3') || item[5].endsWith('SC4'))) // Seasonal colours either end with SC1, SC2, SC3, or SC4
+    .map(col => [col[5], col[0].split(' - ').shift()])
+  const missingSeasonalYetiSKUs = [];
+  var desciption, splitDescription;
+
+  allSeasonalYetiSKUs.map(yetiItem => {
+    if (yetiSKUsToWatch.includes(yetiItem[0]))
+      return null
+    else
+    {
+      splitDescription = yetiItem[1].split(' ');
+      splitDescription.pop();
+      desciption = splitDescription.join(' ');
+
+      missingSeasonalYetiSKUs.push([yetiItem[0], desciption + ' SEASONAL ' + yetiItem[0].slice(-1), '', 
+        upcDatabase_YetiOnly.filter(upcCode => upcCode[0] == yetiItem[0] && !upcCode[1].toString().includes('629034')).map(upc => upc[1]).flat().join(', '), '', 
+        yetiItem[0].substring(0, yetiItem[0].length - 3) + 'SD', desciption + ' DISCON'])
+    }
+  })
+
+  const numItems = missingSeasonalYetiSKUs.length;
+
+  if (numItems > 0)
+    yetiSKUsToWatchSheet.getRange(lastRow_Yeti + 1, 1, numItems, 7)
+      .setFontWeights(new Array(numItems).fill(['normal', 'normal', 'normal', 'normal', 'normal', 'bold', 'bold']))
+      .setHorizontalAlignment('center')
+      .setValues(missingSeasonalYetiSKUs)
+      .setBorder(false, true, true, true, false, false, 'black', SpreadsheetApp.BorderStyle.SOLID_THICK)
+        .offset(0, 2, numItems, 1).setBorder(false, true, false, true, null, null, 'black', SpreadsheetApp.BorderStyle.SOLID_THICK)
+        .offset(0, 2, numItems, 1).setBorder(false, true, false, true, null, null, 'black', SpreadsheetApp.BorderStyle.SOLID_THICK)
+
+  return yetiSKUsToWatchSheet.getDataRange().getValues();
 }
 
 /**
