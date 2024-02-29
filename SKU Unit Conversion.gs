@@ -745,15 +745,21 @@ function resetData()
 
   try
   {
-    var numberFormats = [];
+    var numberFormats = [], itemNumber;
     const spreadsheet = SpreadsheetApp.getActive();
     const csvData = Utilities.parseCsv(DriveApp.getFilesByName("inventory.csv").next().getBlob().getDataAsString());
-    const inflowData = Object.values(Utilities.parseCsv(DriveApp.getFilesByName("inFlow_StockLevels.csv").next().getBlob().getDataAsString()).reduce((acc, val) => {
-      // Sum the quantities if item is in multiple locations
-      if (acc[val[0]]) acc[val[0]][1] = (inflow_conversions.hasOwnProperty(val[0])) ? Number(acc[val[0]][1]) + Number(val[4])*inflow_conversions[val[0]] : Number(acc[val[0]][1]) + Number(val[4]); 
-      // Add the item to the new list if it contains the typical google sheets item format with "space - space"
-      else if (val[0].split(' - ').length > 4) acc[val[0]] = [val[0], (inflow_conversions.hasOwnProperty(val[0])) ? Number(val[4])*inflow_conversions[val[0]] : Number(val[4])]; 
-      return acc;
+    const inflowData = Object.values(Utilities.parseCsv(DriveApp.getFilesByName("inFlow_StockLevels.csv").next().getBlob().getDataAsString()).reduce((sum, item) => {
+      itemNumber = item[0].split(' - ').pop().toString().toUpperCase(); // Get the SKU number from the back of the description
+
+      // If the item already has a sum associate with this item Number, then this skus is put away in multiple locations, and therefore add up the quantities from all locations
+      if (sum[itemNumber]) // Inflow item might have a conversion factor associated with it so that the Price Unit in Adagio is consistent with the recorded quantity in inFlow
+        sum[itemNumber][1] = (inflow_conversions.hasOwnProperty(itemNumber)) ? Number(sum[itemNumber][1]) + Number(item[4])*inflow_conversions[itemNumber] : Number(sum[itemNumber][1]) + Number(item[4]); 
+
+      // Add the item to the new list if it contains the typical google sheets item format with "space - space" more than 4 times
+      else if (item[0].split(' - ').length > 4) // Inflow item might have a conversion factor associated with it so that the Price Unit in Adagio is consistent with the recorded quantity in inFlow
+        sum[itemNumber] = [itemNumber, (inflow_conversions.hasOwnProperty(itemNumber)) ? Number(item[4])*inflow_conversions[itemNumber] : Number(item[4])]; 
+
+      return sum; // Return the total inventory quantity for the item number so far
     }, {}));
 
     var isInFlowItem;

@@ -10,7 +10,7 @@ const inflow_conversions = {
   'WEB: 210/15x1-1/4"x200MD x foot -  - Twisted Tarred Nylon - FOOT - 10000015FT': 35.7,
   '3MM Braided Knotted PE 4"x100MD 50F 285# -  - Soccer - POUND - 10500030': 285,
   'WEB: 210/20x1/2"x800MDx100FM RASCHEL -  - Raschel Knotless - POUND - 10722000': 255,
-  'WEB: BRD KNOT 210/224 X 2-1/8" X foot -  - Web - Miscellaneous - FOOT - 10501416FT': 1, ////////////////////// not in access
+  'WEB: BRD KNOT 210/224 X 2-1/8" X foot -  - Web - Miscellaneous - FOOT - 10501416FT': 1, ////////////////////// 
   'WEB:#30 x 2" x 150MD BLACK HD ACRYLIC -  - Golf - POUND - 10503150': 1, //////////////////////
   'WEB: 210/128x2"x50MDx100FMx250LBS - North Pacific - Hockey/Lacrosse - POUND - 10500128': 250,
   'Black Cod Web 210/144 x 3in x 28md x 200 -  - Web - Miscellaneous - POUND - 10500144': 375, 
@@ -25,7 +25,7 @@ const inflow_conversions = {
   'MN3-7 Vexar Oyster Tube Netting Black -  - Golf - FOOT - 10501000': 1000,
   'MN8-25 Vexar Oyster Tube Netting Red -  - Golf - FOOT - 10501002': 2000,
   'NORPAC Dura Leadline 300 lbs/ 100 fm - NOVA BRAID - Gillnet Leadline - FATHOM - 17300008FM': 1, //////////////////////
-  'ROPE, QUIK SPLICE POLYTRON 1/2" -  - Seine Beachline 12 Strand Quick Splice - FOOT - 18150001': 1,  //////////////////////
+  'ROPE, QUIK SPLICE POLYTRON 1/2" -  - Seine Beachline 12 Strand Quick Splice - FOOT - 18150001': 600,
   'GRADE 43 HIGH TEST GALV CHAIN 1/4" -  - Chain - FOOT - 26014025': 500,
   'GRADE 43 HIGH TEST GALV CHAIN 5/16" -  - Chain - FOOT - 26014516': 1,
   'CHAIN: PROOF COIL 1/4" Hot Dipped Galv - VANGUARD - Chain - FOOT - 21000001': 500,
@@ -44,7 +44,7 @@ const inflow_conversions = {
 function addItemsToSearchData()
 {
   const NUM_COLS = 6;
-  const spreadsheet = SpreadsheetApp.getActive();
+  const spreadsheet = ss;
   const searchDataSheet = spreadsheet.getSheetByName("SearchData");
   const sheet = spreadsheet.getActiveSheet(); // Assumed to be the inventory page (because that is where the button for this function lives)
   const startRow = searchDataSheet.getLastRow() + 1; // The bottom of the list
@@ -74,7 +74,7 @@ function addItemsToSearchData()
 function addItemsToUpcData()
 {
   const NUM_COLS = 4;
-  const spreadsheet = SpreadsheetApp.getActive();
+  const spreadsheet = ss;
   const sheet = spreadsheet.getActiveSheet();
   const upcDatabaseSheet = spreadsheet.getSheetByName("UPC Database");
   const manAddedUPCsSheet = spreadsheet.getSheetByName("Manually Added UPCs");
@@ -115,7 +115,7 @@ function addItemsToUpcData()
 function addItemsToUpcData_ItemsNotFound()
 {
   const NUM_COLS = 4;
-  const spreadsheet = SpreadsheetApp.getActive();
+  const spreadsheet = ss;
   const upcDatabaseSheet = spreadsheet.getSheetByName("UPC Database");
   const manAddedUPCsSheet = spreadsheet.getSheetByName("Manually Added UPCs");
   const inventorySheet = (isRichmondSpreadsheet(spreadsheet)) ? spreadsheet.getSheetByName("INVENTORY") : spreadsheet.getSheetByName("SearchData");
@@ -149,7 +149,7 @@ function addNewItem()
     {
       const today = new Date();
       const createdDate = today.getDate() + '.' + (today.getMonth() + 1) + '.' + today.getFullYear();
-      const spreadsheet = SpreadsheetApp.getActive();
+      const spreadsheet = ss;
       const sheet = spreadsheet.getActiveSheet();
 
       // Append the item to the bottom of list and take the user to the new item
@@ -267,7 +267,7 @@ function addToAllManualCountsPages()
  */
 function addToInflowPickList(qty)
 {
-  const spreadsheet = SpreadsheetApp.getActive();
+  const spreadsheet = ss;
   const sheet = (!isRichmondSpreadsheet(spreadsheet)) ? SpreadsheetApp.openById('1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk').getSheetByName('inFlowPick') : 
                                                                                                                     spreadsheet.getSheetByName('inFlowPick');
   const activeSheet = SpreadsheetApp.getActiveSheet();
@@ -381,7 +381,7 @@ function addToInflowPickList(qty)
  */
 function addToOppositeStoreShippedPage()
 {
-  const spreadsheet = SpreadsheetApp.getActive()
+  const spreadsheet = ss
   const activeSheet = SpreadsheetApp.getActiveSheet();
   const activeRanges = activeSheet.getActiveRangeList().getRanges(); // The selected ranges on the item search sheet
   const firstRows = [], numRows = [], itemValues = [], backgroundColours = [], richTextValues = [];
@@ -515,7 +515,7 @@ function applyFullSpreadsheetFormatting(spreadsheet, sheets)
 {
   if (arguments.length === 0) // If no arguments are sent to the 
   {
-    spreadsheet = SpreadsheetApp.getActive();
+    spreadsheet = ss;
     sheets = spreadsheet.getSheets();
   }
 
@@ -1129,7 +1129,7 @@ function applyFullSpreadsheetFormatting(spreadsheet, sheets)
 //   const TRANSFERRED_COL = 12;
 //   const STATUS_COL_INDEX = 9;
 //   const rowStart = numHeaders + 1;
-//   const spreadsheet = SpreadsheetApp.getActive();
+//   const spreadsheet = ss;
 //   const orderSheet = spreadsheet.getSheetByName('Order');
 //   const shippedSheet = spreadsheet.getSheetByName('Shipped');
 //   const receivedSheet = spreadsheet.getSheetByName('Received');
@@ -1339,7 +1339,7 @@ function clearInflowPickList()
 function clearInventory()
 {
   const startTime = new Date().getTime();
-  const spreadsheet = SpreadsheetApp.getActive();
+  const spreadsheet = ss;
   const itemSearchSheet = spreadsheet.getSheetByName('Item Search');
   const  inventorySheet = spreadsheet.getSheetByName('INVENTORY');
   const numRowsRange = (isRichmondSpreadsheet(spreadsheet)) ? inventorySheet.getRange(1, 7, 1, 3) : inventorySheet.getRange(1, 7, 2, 3);
@@ -1355,7 +1355,7 @@ function clearInventory()
   const sku = items[0].indexOf('Item #')
   const tritesQty = items[0].indexOf('Trites')
   const inflowData = Object.values(Utilities.parseCsv(DriveApp.getFilesByName("inFlow_StockLevels.csv").next().getBlob().getDataAsString()).reduce((sum, item) => {
-    itemNumber = item[0].split(' - ').pop().toString().toUpperCase(); // Get the SKU number from the beginning of the description
+    itemNumber = item[0].split(' - ').pop().toString().toUpperCase(); // Get the SKU number from the back of the description
 
     // If the item already has a sum associate with this item Number, then this skus is put away in multiple locations, and therefore add up the quantities from all locations
     if (sum[itemNumber]) // Inflow item might have a conversion factor associated with it so that the Price Unit in Adagio is consistent with the recorded quantity in inFlow
@@ -1421,7 +1421,7 @@ function clearInventory()
 function clearManualCounts()
 {
   const startTime = new Date().getTime();
-  const spreadsheet = SpreadsheetApp.getActive();
+  const spreadsheet = ss;
   const sheet = spreadsheet.getSheetByName('Manual Counts');
   const numHeaders = 3;
   const numItems = sheet.getLastRow() - numHeaders;
@@ -1470,7 +1470,7 @@ function completeReceived()
   const startTime = new Date().getTime();
   const START_ROW = 4;
   
-  const spreadsheet = SpreadsheetApp.getActive();
+  const spreadsheet = ss;
   const sheet = spreadsheet.getSheetByName("Received");
   const numRows = sheet.getLastRow() - START_ROW + 1;
   sheet.getRange(START_ROW, 12, numRows).setValue(true);
@@ -1490,7 +1490,7 @@ function completeToRichmond()
   const  TRANSFERED_COL = 1;
   const       START_ROW = 3;
   
-  const spreadsheet = SpreadsheetApp.getActive();
+  const spreadsheet = ss;
   const sheet = spreadsheet.getSheetByName("ItemsToRichmond");
   const numRows = sheet.getLastRow() - START_ROW + 1;
   const range = sheet.getRange(START_ROW, 8, numRows, 2); // Get the range off the last two columns
@@ -1516,7 +1516,7 @@ function concatManuallyAddedUPCs()
 {
   var isInUpcDatabase, isInAdagioDatabase, additionalUPCs = [];
   const NUM_COLS = 5;
-  const spreadsheet = SpreadsheetApp.getActive();
+  const spreadsheet = ss;
   const upcDatabaseSheet = spreadsheet.getSheetByName("UPC Database");
   const manAddedUPCsSheet = spreadsheet.getSheetByName("Manually Added UPCs");
   const inventorySheet = spreadsheet.getSheetByName("INVENTORY");
@@ -1775,7 +1775,7 @@ function countLog()
   const NUM_COLS = 4;
   const today = new Date();
   const yesterday = new Date(today.getFullYear(), today.getMonth(), today.getDay() - 1);
-  const spreadsheet = SpreadsheetApp.getActive();
+  const spreadsheet = ss;
   const countLogPage = spreadsheet.getSheetByName("Count Log")
   var   countLogData = countLogPage.getSheetValues(2, 1, countLogPage.getLastRow() - 1, NUM_COLS);
   const recentCounts = countLogData.filter(c => c[3] > yesterday); // These are the counts that have been done since yesterday (helps with not adding duplicates to the list)
@@ -1800,7 +1800,7 @@ function countsRemaining()
   const today = new Date();
   const yesterday = new Date(today.getFullYear(), today.getMonth(), today.getDay() - 1);
   const ONE_YEAR = new Date(today.getFullYear() - 1, today.getMonth(), today.getDay());
-  const spreadsheet = SpreadsheetApp.getActive();
+  const spreadsheet = ss;
   const remainingCountsPage = spreadsheet.getSheetByName("Remaining Counts");
   const countLogPage = spreadsheet.getSheetByName("Count Log")
   var   countLogData = countLogPage.getSheetValues(2, 1, countLogPage.getLastRow() - 1, NUM_COLS);
@@ -1865,7 +1865,7 @@ function countsRemaining()
 function dateStamp(row, col, numRows, sheet, customFormat)
 {
   // If the function is sent only two arguments, namely the row and column, then set the dateStampRange appropriately
-  var timeZone = SpreadsheetApp.getActive().getSpreadsheetTimeZone();             // set timezone
+  var timeZone = ss.getSpreadsheetTimeZone();             // set timezone
   var dateStampFormat = (arguments.length === 5) ? customFormat : 'dd MMM yyyy';  // set dateStamp format
   var today = new Date();                                                         // Date object representing today's date
   var timeNow = Utilities.formatDate(today, timeZone, dateStampFormat);           // Set variable for current time string
@@ -1937,7 +1937,7 @@ function downloadButton_StockLevels()
  */
 function downloadInflowBarcodes()
 {
-  const spreadsheet = SpreadsheetApp.getActive();
+  const spreadsheet = ss;
   const sheet = spreadsheet.getSheetByName("Moncton's inFlow Item Quantities");
   const upcDatabase = spreadsheet.getSheetByName('UPC Database');
   const upcs = upcDatabase.getSheetValues(2, 1, upcDatabase.getLastRow() - 1, 3)
@@ -1972,7 +1972,7 @@ function downloadInflowBarcodes()
  */
 function downloadInflowPickList()
 {
-  const sheet = SpreadsheetApp.getActive().getSheetByName('inFlowPick');
+  const sheet = ss.getSheetByName('inFlowPick');
   const data = sheet.getSheetValues(3, 1, sheet.getLastRow() - 2, sheet.getLastColumn() - 1)
 
   for (var row = 0, csv = "OrderNumber,Customer,ItemName,ItemQuantity\r\n"; row < data.length; row++)
@@ -1997,7 +1997,7 @@ function downloadInflowPickList()
  */
 function downloadInflowStockLevels()
 {
-  const sheet = SpreadsheetApp.getActive().getSheetByName('Manual Counts');
+  const sheet = ss.getSheetByName('Manual Counts');
   const data = [];
   var loc, qty, i;
 
@@ -2033,7 +2033,7 @@ function downloadInflowStockLevels()
  */
 function formatActiveSheet()
 {
-  const spreadsheet = SpreadsheetApp.getActive();
+  const spreadsheet = ss;
   const sheetArray = [spreadsheet.getActiveSheet()];
   applyFullSpreadsheetFormatting(spreadsheet, sheetArray);
 }
@@ -2046,7 +2046,7 @@ function formatActiveSheet()
  */
 function generateSuggestedInflowPick()
 {
-  const spreadsheet = SpreadsheetApp.getActive();
+  const spreadsheet = ss;
   const suggestedValuesSheet = spreadsheet.getSheetByName("Moncton's inFlow Item Quantities");
   const suggestInflowPickSheet = spreadsheet.getSheetByName('Suggested inFlowPick');
   const numSuggestedItems = suggestedValuesSheet.getLastRow() - 1;
@@ -2163,7 +2163,7 @@ function getCountedSinceString(lastScannedTime)
 function getCounts()
 {
   const startTime = new Date().getTime();
-  const spreadsheet = SpreadsheetApp.getActive();
+  const spreadsheet = ss;
   const infoCountsSheet = spreadsheet.getSheetByName("InfoCounts");
 
   if (isRichmondSpreadsheet(spreadsheet))
@@ -2366,7 +2366,7 @@ function insertCarrierNotAssignedBanner()
 {
   const BANNER_COL = 0;
   const STATUS_COL = 9;
-  const sheet = SpreadsheetApp.getActive().getSheetByName("Shipped");
+  const sheet = ss.getSheetByName("Shipped");
   const values = sheet.getDataRange().getValues();
   const LAST_COL = sheet.getLastColumn();
   const bannerRow = [];
@@ -2624,7 +2624,7 @@ function manualCounts()
   const QTY_COL = 3;
   const NUM_COLS = 3;
   
-  var manualCountsSheet = SpreadsheetApp.getActive().getSheetByName("Manual Counts");
+  var manualCountsSheet = ss.getSheetByName("Manual Counts");
   var lastRow = manualCountsSheet.getLastRow();
   var startRow = (lastRow < 3) ? 4 : lastRow + 1;
 
@@ -2641,7 +2641,7 @@ function manualCounts_FromInfoCounts()
   const QTY_COL = 3;
   const NUM_COLS = 3;
   
-  var manualCountsSheet = SpreadsheetApp.getActive().getSheetByName("Manual Counts");
+  var manualCountsSheet = ss.getSheetByName("Manual Counts");
   var lastRow = manualCountsSheet.getLastRow();
   var startRow = (lastRow < 3) ? 4 : lastRow + 1;
 
@@ -3518,8 +3518,8 @@ function moveToUpcDatabse()
  */
 function populateManualScan(ss, sheet, rowNum, newItemDescription)
 {
-  const barcodeInputRange = SpreadsheetApp.getActive().getSheetByName('Manual Scan').getRange(1, 1);
-  const manualCountsPage = SpreadsheetApp.getActive().getSheetByName("Manual Counts");
+  const barcodeInputRange = ss.getSheetByName('Manual Scan').getRange(1, 1);
+  const manualCountsPage = ss.getSheetByName("Manual Counts");
   const currentStock = (sheet.getSheetName() === 'Item Search') ? 2 : 1;
   const lastRow = manualCountsPage.getLastRow();
   var itemValues = (sheet.getSheetName() === 'Item Search') ? sheet.getSheetValues(rowNum, 2, 1, 3)[0] : sheet.getSheetValues(rowNum, 1, 1, 2)[0];
@@ -3568,7 +3568,7 @@ function print_X(sheetName)
   const START_ROW = 4;
   const ACTUAL_COUNT_COL = 8;
   
-  const spreadsheet = SpreadsheetApp.getActive();
+  const spreadsheet = ss;
   const sheet = spreadsheet.getSheetByName(sheetName);
   const numRows = sheet.getLastRow() - START_ROW + 1;
   const actualCountsRange = sheet.getRange(START_ROW, ACTUAL_COUNT_COL, numRows);
@@ -3619,7 +3619,7 @@ function richmondToStoreTransfers()
   const QTY_COL  = 9;
   const NUM_COLS = 7;
   
-  var orderSheet = SpreadsheetApp.getActive().getSheetByName("Order");
+  var orderSheet = ss.getSheetByName("Order");
   var lastRow = orderSheet.getLastRow();
   
   copySelectedValues(orderSheet, lastRow + 1, NUM_COLS, QTY_COL);
@@ -3746,7 +3746,7 @@ function recentlyCreatedItems(spreadsheet, itemSearchSheet)
 
   if (arguments.length !== 2)
   {
-    spreadsheet = SpreadsheetApp.getActive();
+    spreadsheet = ss;
     itemSearchSheet = spreadsheet.getActiveSheet();
   }
 
@@ -4631,7 +4631,7 @@ function storeToRichmondTransfers()
   const QTY_COL  = 6;
   const NUM_COLS = 3;
   
-  var itemsToRichmondSheet = SpreadsheetApp.getActive().getSheetByName("ItemsToRichmond");
+  var itemsToRichmondSheet = ss.getSheetByName("ItemsToRichmond");
   var lastRow = itemsToRichmondSheet.getLastRow();
   
   copySelectedValues(itemsToRichmondSheet, lastRow + 1, NUM_COLS, QTY_COL);
@@ -4787,7 +4787,7 @@ function uniqByKeepLast(arr, key) {
 function unmarryUPC()
 {
   const ui = SpreadsheetApp.getUi();
-  const spreadsheet = SpreadsheetApp.getActive()
+  const spreadsheet = ss
   const item = spreadsheet.getActiveSheet().getSheetValues(1, 1, 1, 1)[0][0].toString().split('\n')
   const response = ui.prompt('Unmarry UPCs', 'Please scan the barcode for:\n\n' + item[0] +'.', ui.ButtonSet.OK_CANCEL)
 
@@ -4822,7 +4822,7 @@ function updateBO(rowRange, rowValues)
 function updateRecentlyCreatedItems()
 {
   const MAX_NUM_ITEMS = 500;
-  const spreadsheet = SpreadsheetApp.getActive();
+  const spreadsheet = ss;
   const sheet = spreadsheet.getSheetByName("INVENTORY");
   const numHeaders = (isRichmondSpreadsheet(spreadsheet)) ? 7 : 9;
   const transferData = sheet.getSheetValues(numHeaders + 1, 1, sheet.getLastRow() - numHeaders, 9);
@@ -4891,7 +4891,7 @@ function updateRecentlyCreatedItems()
 function updateSearchData()
 {
   const today = new Date();
-  const spreadsheet = SpreadsheetApp.getActive();
+  const spreadsheet = ss;
   const searchDataRng = (isRichmondSpreadsheet(spreadsheet)) ? spreadsheet.getSheetByName("INVENTORY").getRange('B7:C') : spreadsheet.getSheetByName("SearchData").getRange('B1:C');
   const searchData = searchDataRng.getValues();
   const numItems = searchData.length;
@@ -4934,7 +4934,7 @@ function updateSearchData()
 function updateUPC_Database(isButtonClicked)
 {
   const today = new Date();
-  const spreadsheet = SpreadsheetApp.getActive();
+  const spreadsheet = ss;
   const upcDatabaseSheet = spreadsheet.getSheetByName("UPC Database");
   const inventorySheet = spreadsheet.getSheetByName("INVENTORY");
   const csvData = Utilities.parseCsv(DriveApp.getFilesByName("BarcodeInput.csv").next().getBlob().getDataAsString());
