@@ -2686,11 +2686,12 @@ function manualScan(e, spreadsheet, sheet)
         item = item.split('\n');
         
         if (item[1].split(' ')[0] === 'will') // The item was not found on the manual counts page
-          sheet.getRange(1, 1, 1, 2).setValues([['Item Not Found on Manual Counts page.', '']]);
+          sheet.getRange(1, 1, 2, 2).setValues([['', ''], ['Item Not Found on Manual Counts page.', '']]);
         else
         {
           manualCountsPage.getRange(item[2], 3, 1, 5).setNumberFormat('@').setValues([['', '', '', '', '']])
-          sheet.getRange(1, 1, 1, 2).setValues([[item[0]  + '\nwas found on the Manual Counts page at line :\n' + item[2] 
+          sheet.getRange(1, 1, 2, 2).setValues([['', ''], 
+                                                [item[0]  + '\nwas found on the Manual Counts page at line :\n' + item[2] 
                                                           + '\nCurrent Stock :\n' + item[4] 
                                                           + '\nCurrent Manual Count :\n\nCurrent Running Sum :\n',
                                                           '']]);
@@ -2706,7 +2707,7 @@ function manualScan(e, spreadsheet, sheet)
         item = item.split('\n');
 
         if (item[1].split(' ')[0] === 'will') // The item was not found on the manual counts page
-          sheet.getRange(1, 1, 1, 2).setValues([['Item Not Found on Manual Counts page.', '']]);
+          sheet.getRange(1, 1, 2, 2).setValues([['', ''], ['Item Not Found on Manual Counts page.', '']]);
         else
         {
           var range = manualCountsPage.getRange(item[2], 3, 1, 5);
@@ -2746,7 +2747,8 @@ function manualScan(e, spreadsheet, sheet)
 
           manualCountsValues[0][2] = new Date().getTime()
           range.setNumberFormats([['#.#', '@', '#', '@', '@']]).setValues(manualCountsValues)
-          sheet.getRange(1, 1, 1, 2).setValues([[item[0]  + '\nwas found on the Manual Counts page at line :\n' + (item[2]) 
+          sheet.getRange(1, 1, 2, 2).setValues([['', ''], 
+                                                [item[0]  + '\nwas found on the Manual Counts page at line :\n' + (item[2]) 
                                                           + '\nCurrent Stock :\n' + item[4]
                                                           + '\nCurrent Manual Count :\n' + manualCountsValues[0][0] 
                                                           + '\nCurrent Running Sum :\n' + manualCountsValues[0][1]
@@ -2764,7 +2766,7 @@ function manualScan(e, spreadsheet, sheet)
         item = item.split('\n');
 
         if (item[1].split(' ')[0] === 'will') // The item was not found on the manual counts page
-          sheet.getRange(1, 1, 1, 2).setValues([['Item Not Found on Manual Counts page.', '']]);
+          sheet.getRange(1, 1, 2, 2).setValues([['', ''], ['Item Not Found on Manual Counts page.', '']]);
         else
         {
           const range = manualCountsPage.getRange(item[2], 3, 1, 3);
@@ -2778,7 +2780,8 @@ function manualScan(e, spreadsheet, sheet)
                                                                                   String(upcCode));
           manualCountsValues[0][0] = Number(manualCountsValues[0][0]) + upcCode;
           range.setNumberFormats([['#.#', '@', '#']]).setValues(manualCountsValues)
-          sheet.getRange(1, 1, 1, 2).setValues([[item[0]  + '\nwas found on the Manual Counts page at line :\n' + item[2] 
+          sheet.getRange(1, 1, 2, 2).setValues([['', ''], 
+                                                [item[0]  + '\nwas found on the Manual Counts page at line :\n' + item[2] 
                                                           + '\nCurrent Stock :\n' + item[4] 
                                                           + '\nCurrent Manual Count :\n' + manualCountsValues[0][0] 
                                                           + '\nCurrent Running Sum :\n' + manualCountsValues[0][1]
@@ -2797,7 +2800,8 @@ function manualScan(e, spreadsheet, sheet)
               const row = lastRow + 1;
               manualCountsPage.getRange(row, 1, 1, 5).setNumberFormats([['@', '@', '#.#', '@', '#']]).setValues([[upcDatabase[i][2], upcDatabase[i][3], 1, '\'' + String(1), new Date().getTime()]])
               applyFullRowFormatting(manualCountsPage, row, 1, 7)
-              sheet.getRange(1, 1, 1, 2).setValues([[upcDatabase[i][2]  + '\nwas added to the Manual Counts page at line :\n' + row 
+              sheet.getRange(1, 1, 2, 2).setValues([['', ''],
+                                                    [upcDatabase[i][2]  + '\nwas added to the Manual Counts page at line :\n' + row 
                                                                         + '\nCurrent Stock :\n' + upcDatabase[i][3]
                                                                         + '\nCurrent Manual Count :\n1',
                                                                         '']]);
@@ -2825,7 +2829,8 @@ function manualScan(e, spreadsheet, sheet)
                                                                                                                                 String(manualCountsValues[j][2]) + ' \+ 1' : 
                                                                                                                                 String(1));
                     manualCountsPage.getRange(j + 4, 3, 1, 3).setNumberFormats([['#.#', '@', '#']]).setValues([[updatedCount, runningSum, new Date().getTime()]])
-                    sheet.getRange(1, 1, 1, 2).setValues([[manualCountsValues[j][0] + '\nwas found on the Manual Counts page at line :\n' + (j + 4) 
+                    sheet.getRange(1, 1, 2, 2).setValues([['', ''], 
+                                                          [manualCountsValues[j][0] + '\nwas found on the Manual Counts page at line :\n' + (j + 4) 
                                                                                     + '\nCurrent Stock :\n' + manualCountsValues[j][1]
                                                                                     + '\nCurrent Manual Count :\n' + updatedCount 
                                                                                     + '\nCurrent Running Sum :\n' + runningSum
@@ -2835,7 +2840,8 @@ function manualScan(e, spreadsheet, sheet)
                   else
                   {
                     manualCountsPage.getRange(j + 4, 3, 1, 3).setNumberFormats([['#.#', '@', '#']]).setValues([[1, '1', new Date().getTime()]])
-                    sheet.getRange(1, 1, 1, 2).setValues([[manualCountsValues[j][0] + '\nwas found on the Manual Counts page at line :\n' + (j + 4) 
+                    sheet.getRange(1, 1, 2, 2).setValues([['', ''],
+                                                          [manualCountsValues[j][0] + '\nwas found on the Manual Counts page at line :\n' + (j + 4) 
                                                                                     + '\nCurrent Stock :\n' + manualCountsValues[j][1]
                                                                                     + '\nCurrent Manual Count :\n1',
                                                                                     '']]);
@@ -2849,7 +2855,8 @@ function manualScan(e, spreadsheet, sheet)
                 manualCountsPage.getRange(row, 1, 1, 5).setNumberFormats([['@', '@', '#.#', '@', '#']])
                   .setValues([[upcDatabase[i][2], upcDatabase[i][3], 1, '\'' + String(1), new Date().getTime()]])
                 applyFullRowFormatting(manualCountsPage, row, 1, 7)
-                sheet.getRange(1, 1, 1, 2).setValues([[upcDatabase[i][2]  + '\nwas added to the Manual Counts page at line :\n' + row 
+                sheet.getRange(1, 1, 2, 2).setValues([['', ''], 
+                                                      [upcDatabase[i][2]  + '\nwas added to the Manual Counts page at line :\n' + row 
                                                                           + '\nCurrent Stock :\n' + upcDatabase[i][3]
                                                                           + '\nCurrent Manual Count :\n1',
                                                                           '']]);
@@ -2953,14 +2960,15 @@ function manualScan(e, spreadsheet, sheet)
 
       if (isNotBlank(quantity)) // The user may have hit the delete key
       {
-        const item = sheet.getRange(1, 1).getValue().split('\n');    // The information from the left cell that is used to move the item to the manual counts page
+        const item = sheet.getRange(2, 1).getValue().split('\n');    // The information from the left cell that is used to move the item to the manual counts page
         const quantity_String = quantity.toString().toLowerCase();
         const quantity_String_Split = quantity_String.split(' ');
 
         if (quantity_String === 'clear')
         {
           manualCountsPage.getRange(item[2], 3, 1, 5).setNumberFormat('@').setValues([['', '', '', '', '']])
-          sheet.getRange(1, 1, 1, 2).setValues([[item[0]  + '\nwas found on the Manual Counts page at line :\n' + item[2] 
+          sheet.getRange(1, 1, 2, 2).setValues([['', ''],
+                                                [item[0]  + '\nwas found on the Manual Counts page at line :\n' + item[2] 
                                                           + '\nCurrent Stock :\n' + item[4] 
                                                           + '\nCurrent Manual Count :\n\nCurrent Running Sum :\n',
                                                           '']]);
@@ -3028,7 +3036,7 @@ function manualScan(e, spreadsheet, sheet)
                 range.setNumberFormats([['#.#', '@', '#', '@', '@']]).setValues([[updatedCount, runningSum, new Date().getTime(), 
                   quantity_String_Split[1], quantity_String_Split[0].toString()]]);
 
-              sheet.getRange(1, 1, 1, 2).setValues([[item[0]  + '\nwas found on the Manual Counts page at line :\n' + item[2] 
+              sheet.getRange(1, 1, 2, 2).setValues([['', ''], [item[0]  + '\nwas found on the Manual Counts page at line :\n' + item[2] 
                                                               + '\nCurrent Stock :\n' + item[4] 
                                                               + '\nCurrent Manual Count :\n' + updatedCount 
                                                               + '\nCurrent Running Sum :\n' + runningSum
@@ -3056,7 +3064,8 @@ function manualScan(e, spreadsheet, sheet)
                   new Date().getTime(), quantity_String_Split[1], quantity_String_Split[0].toString()]]);
 
               applyFullRowFormatting(manualCountsPage, row, 1, 7)
-              sheet.getRange(1, 1, 1, 2).setValues([[item[0]  + '\nwas added to the Manual Counts page at line :\n' + item[2] 
+              sheet.getRange(1, 1, 2, 2).setValues([['', ''], 
+                                                    [item[0]  + '\nwas added to the Manual Counts page at line :\n' + item[2] 
                                                               + '\nCurrent Stock :\n' + item[4] 
                                                               + '\nCurrent Manual Count :\n' + quantity_String_Split[0],
                                                               '']]);
@@ -3065,7 +3074,7 @@ function manualScan(e, spreadsheet, sheet)
           else // The cell to the left does not contain the necessary item information to be able to move it to the manual counts page
             barcodeInputRange.setValue('Please scan your barcode in the left cell again.')
 
-          sheet.getRange(1, 1).activate();
+          sheet.getRange(2, 1).activate();
         }
         else if (isNumber(quantity_String_Split[1]))
         {
@@ -3099,7 +3108,8 @@ function manualScan(e, spreadsheet, sheet)
                 range.setNumberFormats([['#.#', '@', '#', '@', '@']]).setValues([[updatedCount, runningSum, new Date().getTime(), 
                   quantity_String_Split[0], quantity_String_Split[1].toString()]]);
 
-              sheet.getRange(1, 1, 1, 2).setValues([[item[0]  + '\nwas found on the Manual Counts page at line :\n' + item[2] 
+              sheet.getRange(1, 1, 2, 2).setValues([['', ''],
+                                                    [item[0]  + '\nwas found on the Manual Counts page at line :\n' + item[2] 
                                                               + '\nCurrent Stock :\n' + item[4] 
                                                               + '\nCurrent Manual Count :\n' + updatedCount 
                                                               + '\nCurrent Running Sum :\n' + runningSum
@@ -3127,7 +3137,8 @@ function manualScan(e, spreadsheet, sheet)
                   new Date().getTime(), quantity_String_Split[0], quantity_String_Split[1].toString()]]);
 
               applyFullRowFormatting(manualCountsPage, row, 1, 7)
-              sheet.getRange(1, 1, 1, 2).setValues([[item[0]  + '\nwas added to the Manual Counts page at line :\n' + item[2] 
+              sheet.getRange(1, 1, 2, 2).setValues([['', ''],
+                                                    [item[0]  + '\nwas added to the Manual Counts page at line :\n' + item[2] 
                                                               + '\nCurrent Stock :\n' + item[4] 
                                                               + '\nCurrent Manual Count :\n' + quantity_String_Split[1],
                                                               '']]);
@@ -3136,7 +3147,7 @@ function manualScan(e, spreadsheet, sheet)
           else // The cell to the left does not contain the necessary item information to be able to move it to the manual counts page
             barcodeInputRange.setValue('Please scan your barcode in the left cell again.')
 
-          sheet.getRange(1, 1).activate();
+          sheet.getRange(2, 1).activate();
         }
         else if (quantity <= 100000) // If false, Someone probably scanned a barcode in the quantity cell (not likely to have counted an inventory amount of 100 000)
         {
@@ -3144,7 +3155,6 @@ function manualScan(e, spreadsheet, sheet)
           {
             if (item[1].split(' ')[0] === 'was') // The item was already on the manual counts page
             {
-              Logger.log('This is the expected execution.')
               const range = manualCountsPage.getRange(item[2], 3, 1, 3);
               const itemValues = range.getValues()
               const updatedCount = Number(itemValues[0][0]) + quantity;
@@ -3156,7 +3166,8 @@ function manualScan(e, spreadsheet, sheet)
                                                                         String(itemValues[0][0]) + ' \+ ' + String(quantity) : 
                                                                         String(quantity));
               range.setNumberFormats([['#.#', '@', '#']]).setValues([[updatedCount, runningSum, new Date().getTime()]])
-              sheet.getRange(1, 1, 1, 2).setValues([[item[0]  + '\nwas found on the Manual Counts page at line :\n' + item[2] 
+              sheet.getRange(1, 1, 2, 2).setValues([['', ''],
+                                                    [item[0]  + '\nwas found on the Manual Counts page at line :\n' + item[2] 
                                                               + '\nCurrent Stock :\n' + item[4] 
                                                               + '\nCurrent Manual Count :\n' + updatedCount 
                                                               + '\nCurrent Running Sum :\n' + runningSum
@@ -3169,7 +3180,8 @@ function manualScan(e, spreadsheet, sheet)
               const row = lastRow + 1;
               manualCountsPage.getRange(row, 1, 1, 5).setNumberFormats([['@', '@', '#.#', '@', '#']]).setValues([[item[0], item[4], quantity, '\'' + String(quantity), new Date().getTime()]])
               applyFullRowFormatting(manualCountsPage, row, 1, 7)
-              sheet.getRange(1, 1, 1, 2).setValues([[item[0]  + '\nwas added to the Manual Counts page at line :\n' + item[2] 
+              sheet.getRange(1, 1, 2, 2).setValues([['', ''], 
+                                                    [item[0]  + '\nwas added to the Manual Counts page at line :\n' + item[2] 
                                                               + '\nCurrent Stock :\n' + item[4] 
                                                               + '\nCurrent Manual Count :\n' + quantity,
                                                               '']]);
@@ -3178,7 +3190,7 @@ function manualScan(e, spreadsheet, sheet)
           else // The cell to the left does not contain the necessary item information to be able to move it to the manual counts page
             barcodeInputRange.setValue('Please scan your barcode in the left cell again.')
 
-          sheet.getRange(1, 1).activate();
+          sheet.getRange(2, 1).activate();
         }
         else 
           barcodeInputRange.setValue('Please enter a valid quantity.')
