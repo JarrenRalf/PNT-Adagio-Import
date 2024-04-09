@@ -419,6 +419,8 @@ function computeOneConversion()
             }
           }
 
+          Logger.log(assembledItems)
+
           const assemblyPage = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk/edit').getSheetByName('Assembly')
           const row = assemblyPage.getLastRow() + 1;
           const numRows = assembledItems.length;
