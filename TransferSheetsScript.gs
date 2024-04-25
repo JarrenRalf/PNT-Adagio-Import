@@ -493,7 +493,7 @@ function applyFullRowFormatting(sheet, row, numRows, numCols)
 
     borderRng.setFontSize(10).setFontLine('none').setFontWeight('bold').setFontStyle('normal').setFontFamily('Arial').setFontColor('black')
                   .setNumberFormats(numberFormats).setHorizontalAlignments(horizontalAlignments).setWrapStrategies(wrapStrategies)
-                  .setBorder(true, true, true, true,  null, true, 'black', SpreadsheetApp.BorderStyle.SOLID).setBackground('white');
+                  .setBorder(true, true, true, true,  false, true, 'black', SpreadsheetApp.BorderStyle.SOLID).setBackground('white');
 
     thickBorderRng.setBorder(null, true, null, true, false, null, 'black', SpreadsheetApp.BorderStyle.SOLID_THICK).setBackground(GREEN);
     shippedColRng.setBackground(YELLOW);
@@ -2793,8 +2793,10 @@ function manualScan(e, spreadsheet, sheet)
               const marriedItem = item[0].split(' - ');
               const upcDatabaseSheet = spreadsheet.getSheetByName("UPC Database");
               const manAddedUPCsSheet = spreadsheet.getSheetByName("Manually Added UPCs");
-              manAddedUPCsSheet.getRange(manAddedUPCsSheet.getLastRow() + 1, 1, 1, 4).setNumberFormat('@').setValues([[marriedItem[0], upcString[1], marriedItem[4], item[0]]]);
-              upcDatabaseSheet.getRange(upcDatabaseSheet.getLastRow() + 1, 1, 1, 4).setNumberFormat('@').setValues([[upcString[1], marriedItem[4], item[0], item[4]]]); 
+              const sku = marriedItem.pop()
+              const uom = marriedItem.pop()
+              manAddedUPCsSheet.getRange(manAddedUPCsSheet.getLastRow() + 1, 1, 1, 4).setNumberFormat('@').setValues([[sku, upcString[1], uom, item[0]]]);
+              upcDatabaseSheet.getRange(upcDatabaseSheet.getLastRow() + 1, 1, 1, 4).setNumberFormat('@').setValues([[upcString[1], uom, item[0], item[4]]]); 
               barcodeInputRange.setValue('UPC Code has been added to the database temporarily.')
               sheet.getRange(2, 1).activate();
             }
@@ -3044,8 +3046,10 @@ function manualScan(e, spreadsheet, sheet)
                 const marriedItem = item[0].split(' - ');
                 const upcDatabaseSheet = spreadsheet.getSheetByName("UPC Database");
                 const manAddedUPCsSheet = spreadsheet.getSheetByName("Manually Added UPCs");
-                manAddedUPCsSheet.getRange(manAddedUPCsSheet.getLastRow() + 1, 1, 1, 4).setNumberFormat('@').setValues([[marriedItem[0], upc, marriedItem[4], item[0]]]);
-                upcDatabaseSheet.getRange(upcDatabaseSheet.getLastRow() + 1, 1, 1, 4).setNumberFormat('@').setValues([[upc, marriedItem[4], item[0], item[4]]]); 
+                const sku = marriedItem.pop()
+                const uom = marriedItem.pop()
+                manAddedUPCsSheet.getRange(manAddedUPCsSheet.getLastRow() + 1, 1, 1, 4).setNumberFormat('@').setValues([[sku, upc, uom, item[0]]]);
+                upcDatabaseSheet.getRange(upcDatabaseSheet.getLastRow() + 1, 1, 1, 4).setNumberFormat('@').setValues([[upc, uom, item[0], item[4]]]); 
                 barcodeInputRange.setValue('UPC Code has been added to the database temporarily.')
                 sheet.getRange(2, 1).activate();
               }
@@ -3387,7 +3391,64 @@ function manualScan(e, spreadsheet, sheet)
             else if (numResults !== 0) // Items found based on the user's search words
               barcodeInputRange.setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(searchResults).build())
                 .offset(0, 1).setValue(numResults + ' results found')
-            else // No items found based on the user's search words
+            else if (numSearchWords === 0 && isNumber(Number(searchWords[0])))
+            {
+                const lastRow = manualCountsPage.getLastRow();
+                const upcDatabase = spreadsheet.getSheetByName("UPC Database").getDataRange().getValues();
+
+                if (lastRow <= 3) // There are no items on the manual counts page
+                {
+                  for (var i = upcDatabase.length - 1; i >= 1; i--) // Loop through the UPC values
+                  {
+                    if (upcDatabase[i][0] == searchWords[0]) // UPC found
+                    {
+                      barcodeInputRange.offset(1, 0).setValue(upcDatabase[i][2] + '\nwill be added to the Manual Counts page at line :\n' + 4 + '\nCurrent Stock :\n' + upcDatabase[i][3]);
+                      break; // Item was found, therefore stop searching
+                    }
+                  }
+                }
+                else // There are existing items on the manual counts page
+                {
+                  const row = lastRow + 1;
+                  const manualCountsValues = manualCountsPage.getSheetValues(4, 1, row - 3, 5);
+
+                  for (var i = upcDatabase.length - 1; i >= 1; i--) // Loop through the UPC values
+                  {
+                    if (upcDatabase[i][0] == searchWords[0])
+                    {
+                      for (var j = 0; j < manualCountsValues.length; j++) // Loop through the manual counts page
+                      {
+                        if (manualCountsValues[j][0] === upcDatabase[i][2]) // The description matches
+                        {
+                          const countedSince = getCountedSinceString(manualCountsValues[j][4])
+                            
+                          barcodeInputRange.offset(0, 0, 2, 2).setValues([['', ''], [
+                            upcDatabase[i][2]  + '\nwas found on the Manual Counts page at line :\n' + (j + 4) 
+                                               + '\nCurrent Stock :\n' + upcDatabase[i][3] 
+                                               + '\nCurrent Manual Count :\n' + manualCountsValues[j][2] 
+                                               + '\nCurrent Running Sum :\n' + manualCountsValues[j][3]
+                                               + '\nLast Counted :\n' + countedSince, '']]);
+                          break; // Item was found on the manual counts page, therefore stop searching
+                        }
+                      }
+
+                      if (j === manualCountsValues.length) // Item was not found on the manual counts page
+                        barcodeInputRange.offset(0, 0, 2, 2).setValues([['', ''], [upcDatabase[i][2] + '\nwill be added to the Manual Counts page at line :\n' + row + '\nCurrent Stock :\n' + upcDatabase[i][3], '']]);
+
+                      break;
+                    }
+                  }
+                }
+
+                if (i === 0)
+                  barcodeInputRange.setDataValidation(SpreadsheetApp.newDataValidation()
+                      .requireValueInList(['No item descriptions contain all of the following search words: ' + searchWords.join(" ")]).build())
+                    .offset(0, 1).setValue('0 results found')
+                else
+                  barcodeInputRange.setDataValidation(SpreadsheetApp.newDataValidation().requireValueInList(['UPC Code Found in Database: ' + searchWords[0]]).build())
+                    .offset(1, 1).activate()
+            }
+            else // No items found based on the user's search words 
               barcodeInputRange.setDataValidation(SpreadsheetApp.newDataValidation()
                   .requireValueInList(['No item descriptions contain all of the following search words: ' + searchWords.join(" ")]).build())
                 .offset(0, 1).setValue('0 results found')
@@ -3704,14 +3765,13 @@ function moveSelectedItemsFromCarrierNotAssigned()
   }
   else // The user is on the shipped sheet
   {
-    const activeRanges = ss.getActiveRangeList().getRanges();
-    const rangesToDelete = ss.getActiveRangeList().getRanges().reverse(); // Delete them from the bottom up, otherwise row numbers will change
+    const spreadsheet = ss
+    const activeRanges = spreadsheet.getActiveRangeList().getRanges();
+    const rangesToDelete = spreadsheet.getActiveRangeList().getRanges().reverse(); // Delete them from the bottom up, otherwise row numbers will change
     const numCols = shippedSheet.getLastColumn();
-    const currentShipments = shippedSheet.getRange(1, 1, shippedSheet.getLastRow(), numCols).getValues();
-    const currentShipmentList = currentShipments.filter(carrier => isNotBlank(carrier[11]) && carrier[11] === carrier[0]).map(shipment => shipment[0]);
-
-    if (currentShipmentList[currentShipmentList.length - 1] === 'Carrier Not Assigned')
-      currentShipmentList.pop(); // Remove Carrier Not Assigned 
+    const dataValidationSheet = spreadsheet.getSheetByName('Data Validation');
+    const allCarriers = dataValidationSheet.getSheetValues(1, 1, dataValidationSheet.getLastRow(), 3)
+    const currentShipmentList = [...new Set(allCarriers.map(carrier => carrier[0]).flat().filter(carrier => isNotBlank(carrier)))];
 
     const response = ui.prompt('Choose a shipment:\n\n' + currentShipmentList.map((shipment, i) => i.toString() + ': ' + shipment).join('\n') 
       + '\n\nMissing carrier? Get Adrian to format the shipped page and run this function again.');
@@ -3727,13 +3787,37 @@ function moveSelectedItemsFromCarrierNotAssigned()
         if (index > -1 && index < currentShipmentList.length) // Valid index selection
         {
           const chosenShipment = currentShipmentList[index];
-          const shipmentRow = currentShipments.findIndex(carrier => carrier[0] === chosenShipment) + 2;
+          var shipmentRow = allCarriers.find(carrier => carrier[1] === chosenShipment)[2];
           var range, col, column_1, range_NumRows, items, backgroundColours_Dates, backgroundColours_Notes, richTextValues, notesRange, 
-            values = [], dateColours = [], notesColours = [], notesRichText = [], isCarrierNotAssigned = true;
+            values = [], dateColours = [], notesColours = [], notesRichText = [], isCarrierNotAssigned = true, isNewShipment = false;
+
+          if (typeof shipmentRow === 'string') // We must create a new carrier line
+          {
+            isNewShipment = true;
+            shipmentRow = Number(shipmentRow.replace(/^\D+/g,'')); // Convert the string to a number
+            const cols = numCols - 1;
+            shipmentRow++;
+            shippedSheet.insertRowAfter(shipmentRow - 1).setRowHeight(shipmentRow, 40)
+              .getRange(shipmentRow, 1, 1, cols)
+                .setBackgrounds([new Array(cols).fill('#6d9eeb')])
+                .setFontColors([[...new Array(cols - 1).fill('white'), '#6d9eeb']])
+                .setFontSizes([new Array(cols).fill(14)])
+                .setFontLine('none').setFontWeight('bold').setFontStyle('normal').setFontFamily('Arial')
+                .setHorizontalAlignments([new Array(cols).fill('left')])
+                .setWrapStrategies([new Array(cols).fill(SpreadsheetApp.WrapStrategy.OVERFLOW)])
+                .setDataValidations([new Array(cols).fill(null)])
+                .setBorder(true, true, true, true, null, null)
+                .setValues([[chosenShipment, ...new Array(9).fill(null), 'via']])
+              .offset(0,  0, 1, cols - 1).merge()
+              .offset(0, 12, 1, 1).setDataValidation(shippedSheet.getRange(3, 13).getDataValidation())
+              
+          }
+
+          shipmentRow++;
           
           while (activeRanges.length > 0) // Loop through the active ranges
           {
-            range = activeRanges.pop();
+            range = (isNewShipment) ? activeRanges.pop().offset(1, 0) : activeRanges.pop();
             col = range.getColumn();
             column_1 = 1 - col;
             range_NumRows = range.getNumRows();
@@ -3761,15 +3845,25 @@ function moveSelectedItemsFromCarrierNotAssigned()
             {
               const numItems = values.length;
 
-              shippedSheet.insertRowsAfter(shipmentRow - 1, numItems).getRange(shipmentRow, 1, numItems, numCols).setValues(values.reverse());
+              shippedSheet.insertRowsBefore(shipmentRow, numItems).getRange(shipmentRow, 1, numItems, numCols).setValues(values.reverse());
               applyFullRowFormatting(shippedSheet, shipmentRow, numItems, numCols - 1); 
               shippedSheet.autoResizeRows(shipmentRow, numItems).getRange(shipmentRow, 1, numItems).setBackgrounds(dateColours.reverse())
-                .offset(0, 5, numItems).setBackgrounds(notesColours.reverse()).setRichTextValues(notesRichText.reverse())
-                .offset(0, 4, numItems).setDataValidation(shippedSheet.getRange('J3').getDataValidation())
-                .offset(0, 3, numItems).setDataValidation(null)
+                .offset(0,   5, numItems).setBackgrounds(notesColours.reverse()).setRichTextValues(notesRichText.reverse())
+                .offset(0,   4, numItems).setDataValidation((isNewShipment) ? 
+                  shippedSheet.getRange(3, 10).getDataValidation().copy().requireValueInRange(dataValidationSheet.getRange("$D$1:$D")).build() : 
+                  shippedSheet.getRange(3, 10).getDataValidation())
+                .offset(0,   3, numItems).setDataValidation(null)
                 .offset(0, -12, numItems, numCols - 1).activate();
 
-              rangesToDelete.map(range => shippedSheet.deleteRows(numItems + range.getRow(), range.getNumRows()));
+              rangesToDelete.map(range => {
+                if (isNewShipment)
+                {
+                  range = range.offset(1, 0);
+                  shippedSheet.deleteRows(numItems + range.getRow(), range.getNumRows()) 
+                }
+                else
+                  shippedSheet.deleteRows(numItems + range.getRow(), range.getNumRows())
+              });
             }
             else
               ui.alert('You may only select items with Shipment Status: Carrier Not Assigned.');
