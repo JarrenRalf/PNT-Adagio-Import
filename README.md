@@ -1,4 +1,7 @@
 # Adagio-Import
+What problem did this spreadsheet solve in my company?
+- It provided a dashboard for the inventory controller to view all of the relevant data across each of the three transfer sheets and control them remotely from one page.
+- This page has built in automation that controls the collection of inventory adjustments and stock transfers daily
 The set of scripts that controls Pacific Net &amp; Twine's inventory flow.
 
 [Adagio Update Sheet](https://docs.google.com/spreadsheets/d/1OQRe83LOCfVHXeUMyys4EgUHRWu-t6j4LS-4fcqZk9I/edit#gid=0)
