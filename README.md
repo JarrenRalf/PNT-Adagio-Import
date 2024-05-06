@@ -9,10 +9,11 @@ Link to Sample Secondary Spreadsheets:
 
 [Prince Rupert Transfer Sheet](https://docs.google.com/spreadsheets/d/1wrM_A0UeFiaW0BCeiHRpRCFw2CsnUfndEyZ-dcd4vYI/edit#gid=407280159)
 
-What problem did this spreadsheet solve in my company?
+How does this spreadsheet benefit Pacific Net & Twine?
+- It manages and controls 3 other spreadsheets, where those spreadsheets are used by the majority of the employees at the company in order to do intra-company ordering or stock adjustments.
 - It provided a dashboard for the inventory controller to view all of the relevant data across each of the three transfer sheets and control them remotely from one page.
-- This page has built in automation that controls the collection of inventory adjustments and stock transfers daily
-The set of scripts that controls Pacific Net &amp; Twine's inventory flow.
-
+- Our database of items and inventory quantities are updated then saved on our google drive daily, along with our barcodes, and then with the click of 1 button, the Transfer Sheet spreadsheet is updated.
+- Built in automation controls the collection of inventory adjustments and stock transfers daily, so that importing the infortmation into the Adagio accounting software takes less than 60 seconds.
+- Some items are sold under mulitple SKUs because quantities in a package vary, so this spreadsheet handles those conputations as well as items that get assembled from component parts.
 
 
