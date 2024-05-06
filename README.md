@@ -11,7 +11,7 @@ Link to Sample Secondary Spreadsheets:
 
 How does this spreadsheet benefit Pacific Net & Twine?
 - It manages and controls 3 other spreadsheets, where those spreadsheets are used by the majority of the employees at the company in order to do intra-company ordering or stock adjustments.
-- It provided a dashboard for the inventory controller to view all of the relevant data across each of the three transfer sheets and control them remotely from one page.
+- It provides a dashboard for the inventory controller to view all of the relevant data across each of the three transfer sheets and control them remotely from one page.
 - Our database of items and inventory quantities are updated then saved on our google drive daily, along with our barcodes, and then with the click of 1 button, the Transfer Sheet spreadsheet is updated.
 - Built in automation controls the collection of inventory adjustments and stock transfers daily, so that importing the infortmation into the Adagio accounting software takes less than 60 seconds.
 - Some items are sold under mulitple SKUs because quantities in a package vary, so this spreadsheet handles those conputations as well as items that get assembled from component parts.
