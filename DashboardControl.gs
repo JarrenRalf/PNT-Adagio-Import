@@ -580,6 +580,7 @@ function manualCounts_FromTritesCounts()
  */
 function pasteMultipleSKUsOnSearchPage(range, sheet, spreadsheet)
 {
+  const startTime = new Date().getTime();
   const values = range.getValues().filter(blank => isNotBlank(blank[0]))
 
   if (values.length !== 0) // Don't run function if every value is blank, probably means the user pressed the delete key on a large selection
@@ -661,16 +662,21 @@ function pasteMultipleSKUsOnSearchPage(range, sheet, spreadsheet)
         .offset(0, 0, numItems, 7)
           .setFontFamily('Arial').setFontWeight('bold').setFontSize(10).setHorizontalAlignments(horizontalAlignments).setBackgrounds(colours)
           .setBorder(false, null, false, null, false, false).setValues(items)
-        .offset(numSkusNotFound, 0, numSkusFound, 7).activate()
+        .offset(-8, 0, 1, 1).setValue((numSkusFound !== 1) ? numSkusFound + " results found." : numSkusFound + " result found.")
+        .offset( 6, 0, 1, 1).setValue((new Date().getTime() - startTime)/1000 + " seconds")
+        .offset(numSkusNotFound + 2, 0, numSkusFound, 7).activate()
     }
     else // All SKUs were succefully found
     {
       const numItems = skus.length
       const horizontalAlignments = new Array(numItems).fill(['center', 'left', 'center', 'center', 'center', 'center', 'center'])
 
-      sheet.getRange(9, 1, sheet.getMaxRows() - 2, 7).clearContent().setBackground('white').setFontColor('black').offset(0, 0, numItems, 7)
-        .setFontFamily('Arial').setFontWeight('bold').setFontSize(10).setHorizontalAlignments(horizontalAlignments)
-        .setBorder(false, null, false, null, false, false).setValues(skus).activate()
+      sheet.getRange(9, 1, sheet.getMaxRows() - 2, 7).clearContent().setBackground('white').setFontColor('black')
+        .offset(0, 0, numItems, 7)
+          .setFontFamily('Arial').setFontWeight('bold').setFontSize(10).setHorizontalAlignments(horizontalAlignments)
+          .setBorder(false, null, false, null, false, false).setValues(skus).activate()
+        .offset(-8, 0, 1, 1).setValue((numItems !== 1) ? numItems + " results found." : numItems + " result found.")
+        .offset( 6, 0, 1, 1).setValue((new Date().getTime() - startTime)/1000 + " seconds");
     }
   }
 }
