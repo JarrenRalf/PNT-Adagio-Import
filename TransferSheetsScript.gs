@@ -173,15 +173,16 @@ function addNewItem()
 function addOneMode()
 {
   const range = SpreadsheetApp.getActiveSheet().getRange(3, 7);
+
   if (range.isChecked())
   {
-    range.uncheck()
-    ss.toast('Off','Add-One Mode')
+    range.uncheck();
+    ss.toast('Off','Add-One Mode');
   }
   else
   {
     range.check();
-    ss.toast('On','Add-One Mode')
+    ss.toast('On','Add-One Mode');
   } 
 }
 
@@ -3503,16 +3504,19 @@ function moveRow(e, spreadsheet, sheet, sheetName)
         {
           rowValues[0][8] = 'N/A';
           transferRow(sheet, shippedSheet, row, rowValues, numCols, true);
+          sendEmailToBranchStore(value, row, rowValues, sheet, spreadsheet)
         }
         else if (value == "Discontinued") // The cell is set to "Discontinued"  
         {
           rowValues[0][8] = 'Discont';
           transferRow(sheet, shippedSheet, row, rowValues, numCols, true);
+          sendEmailToBranchStore(value, row, rowValues, sheet, spreadsheet)
         }
         else if (value == "Order From Distributor") // The cell is set to "Order From Distributor"  
         {
           rowValues[0][8] = 'Reorder';
           transferRow(sheet, shippedSheet, row, rowValues, numCols, true);
+          sendEmailToBranchStore(value, row, rowValues, sheet, spreadsheet)
         }
         else // This means order and shipped quantities need to be checked
         {
@@ -3922,9 +3926,10 @@ function moveToUpcDatabse()
  * This function takes the information from the Item Search or Manual Counts page and the user's recently scanned barcode in the created date column and it 
  * populates the Manual Scan page with the relevant data need to update the count of the particular item.
  * 
- * @param {Spreadsheet}  ss    : The active spreadsheet.
- * @param {Sheet}       sheet  : The active sheet.
- * @param {Number}      rowNum : The row number of the current item.
+ * @param {Spreadsheet}   ss          : The active spreadsheet.
+ * @param {Sheet}        sheet        : The active sheet.
+ * @param {Number}       rowNum       : The row number of the current item.
+ * @param {String} newItemDescription : The new description that has been added
  * @author Jarren Ralf
  */
 function populateManualScan(ss, sheet, rowNum, newItemDescription)
@@ -4977,6 +4982,150 @@ function search(e, spreadsheet, sheet)
     }
     spreadsheet.toast('Searching Complete.')
   }
+}
+
+/**
+ * This function sends an email to the relevant people at the particular branch store when the status of an item on the Order page is changed to either
+ * Order From Distributor or Discontinued or Item Not Available. 
+ * 
+ * @param {String}         status   : The status of the item.
+ * @param {Number}          row     : The row on the order sheet that has had the status change.
+ * @param {String[]}     rowValues  : All of the values from the row that had the status change.
+ * @param {Sheet}          sheet    : The order sheet.
+ * @param {Spreadsheet} spreadsheet : The active spreadsheet.
+ * @author Jarren Ralf
+ */
+function sendEmailToBranchStore(status, row, rowValues, sheet, spreadsheet)
+{
+  const htmlTemplate = HtmlService.createTemplateFromFile('shipmentStatusChangeEmail');
+  htmlTemplate.orderDateBackgroundColour = sheet.getRange(row, 1).getBackground();
+  htmlTemplate.notesBackgroundColour = sheet.getRange(row, 6).getBackground();
+  htmlTemplate.orderDate = Utilities.formatDate(rowValues[0][0], spreadsheet.getSpreadsheetTimeZone(), "dd MMM yyyy");
+  htmlTemplate.enteredBy = rowValues[0][1];
+  htmlTemplate.qty = rowValues[0][2];
+  htmlTemplate.uom = rowValues[0][3];
+  htmlTemplate.description = rowValues[0][4];
+  htmlTemplate.notes = rowValues[0][5];
+  htmlTemplate.currentStock = rowValues[0][6];
+  htmlTemplate.actualStock = rowValues[0][7];
+  htmlTemplate.shipmentStatus = status;
+  htmlTemplate.url = spreadsheet.getUrl() + '#gid=' + spreadsheet.getSheetByName('Shipped').getSheetId();
+
+  MailApp.sendEmail({
+    to: (isParksvilleSpreadsheet(spreadsheet)) ? 
+          "eryn@pacificnetandtwine.com, lodgesales@pacificnetandtwine.com, noah@pacificnetandtwine.com, shane@pacificnetandtwine.com, pntparksville@gmail.com, parksville@pacificnetandtwine.com"
+        : "pr@pacificnetandtwine.com, pntrupert@gmail.com",
+    subject: "Shipment Status Change on the Transfer Sheet: " + status,
+    htmlBody: htmlTemplate.evaluate().getContent(),
+  });
+}
+
+/**
+ * This function sends an email to the relevant people at Trites and asks them if they have stock of the selected items. It also adds a timestamp to the Notes
+ * column informing everyone that Trites has been contacted about the items.
+ * 
+ * @author Jarren Ralf
+ */
+function sendEmailToTrites()
+{
+  const activeRanges = SpreadsheetApp.getActiveRangeList().getRanges(); // The selected ranges on the item search sheet
+
+  if (SpreadsheetApp.getActiveSheet().getSheetName() === 'Order' && Math.min(...activeRanges.map(rng => rng.getRow())) > 3) // If the user has not selected an item, alert them with an error message
+  { 
+    const spreadsheet = ss;
+    const timeZone = spreadsheet.getSpreadsheetTimeZone();
+    const pntStoreLocation = (isParksvilleSpreadsheet(spreadsheet)) ? 'Parksville' : 'Prince Rupert'
+    const htmlOutput = HtmlService.createHtmlOutputFromFile('tritesStockCheckEmail')
+    const emailTimestamp = "\n*Email Sent to Trites on " + Utilities.formatDate(new Date(), timeZone, "dd MMM yyyy")+"*";
+    const emailTimestamp_TextStyle = SpreadsheetApp.newTextStyle().setBold(true).setFontFamily('Arial').setFontSize(10).setForegroundColor('#cc0000').setUnderline(true).build();
+    var range, notesRange, richText_Notes, richText_Notes_Runs, fullText, fullTextLength, backgroundColours = [];
+
+    const itemValues = [].concat.apply([], activeRanges.map(rng => {
+        range = rng.offset(0, 1 - rng.getColumn(), rng.getNumRows(), 6);
+        notesRange = rng.offset(0, 6 - rng.getColumn(), rng.getNumRows(), 1);
+        backgroundColours.push(...range.getBackgrounds());
+
+        richText_Notes = notesRange.getRichTextValues().map(note_RichText => {
+          fullText = note_RichText[0].getText()
+          fullTextLength = fullText.length;
+          richText_Notes_Runs = note_RichText[0].getRuns().map(run => [run.getStartIndex(), run.getEndIndex(), run.getTextStyle()]);
+
+          // It would be nice to have a more compact way of doing this
+          switch (richText_Notes_Runs.length)
+          {
+            case 5:
+              return [SpreadsheetApp.newRichTextValue().setText(fullText + emailTimestamp)
+                .setTextStyle(richText_Notes_Runs[0][0], richText_Notes_Runs[0][1], richText_Notes_Runs[0][2])
+                .setTextStyle(richText_Notes_Runs[1][0], richText_Notes_Runs[1][1], richText_Notes_Runs[1][2])
+                .setTextStyle(richText_Notes_Runs[2][0], richText_Notes_Runs[2][1], richText_Notes_Runs[2][2])
+                .setTextStyle(richText_Notes_Runs[3][0], richText_Notes_Runs[3][1], richText_Notes_Runs[3][2])
+                .setTextStyle(richText_Notes_Runs[4][0], richText_Notes_Runs[4][1], richText_Notes_Runs[4][2])
+                .setTextStyle(fullTextLength + 1, fullTextLength + emailTimestamp.length, emailTimestamp_TextStyle)
+                .build()]
+            case 4:
+              return [SpreadsheetApp.newRichTextValue().setText(fullText + emailTimestamp)
+                .setTextStyle(richText_Notes_Runs[0][0], richText_Notes_Runs[0][1], richText_Notes_Runs[0][2])
+                .setTextStyle(richText_Notes_Runs[1][0], richText_Notes_Runs[1][1], richText_Notes_Runs[1][2])
+                .setTextStyle(richText_Notes_Runs[2][0], richText_Notes_Runs[2][1], richText_Notes_Runs[2][2])
+                .setTextStyle(richText_Notes_Runs[3][0], richText_Notes_Runs[3][1], richText_Notes_Runs[3][2])
+                .setTextStyle(fullTextLength + 1, fullTextLength + emailTimestamp.length, emailTimestamp_TextStyle)
+                .build()]
+            case 3:
+              return [SpreadsheetApp.newRichTextValue().setText(fullText + emailTimestamp)
+                .setTextStyle(richText_Notes_Runs[0][0], richText_Notes_Runs[0][1], richText_Notes_Runs[0][2])
+                .setTextStyle(richText_Notes_Runs[1][0], richText_Notes_Runs[1][1], richText_Notes_Runs[1][2])
+                .setTextStyle(richText_Notes_Runs[2][0], richText_Notes_Runs[2][1], richText_Notes_Runs[2][2])
+                .setTextStyle(fullTextLength + 1, fullTextLength + emailTimestamp.length, emailTimestamp_TextStyle)
+                .build()]
+            case 2:
+              return [SpreadsheetApp.newRichTextValue().setText(fullText + emailTimestamp)
+                .setTextStyle(richText_Notes_Runs[0][0], richText_Notes_Runs[0][1], richText_Notes_Runs[0][2])
+                .setTextStyle(richText_Notes_Runs[1][0], richText_Notes_Runs[1][1], richText_Notes_Runs[1][2])
+                .setTextStyle(fullTextLength + 1, fullTextLength + emailTimestamp.length, emailTimestamp_TextStyle)
+                .build()]
+            case 1:
+              return isNotBlank(fullText) ? 
+                [SpreadsheetApp.newRichTextValue().setText(fullText + emailTimestamp)
+                  .setTextStyle(richText_Notes_Runs[0][0], richText_Notes_Runs[0][1], richText_Notes_Runs[0][2])
+                  .setTextStyle(fullTextLength + 1, fullTextLength + emailTimestamp.length, emailTimestamp_TextStyle)
+                  .build()] 
+                : [SpreadsheetApp.newRichTextValue().setText(emailTimestamp).setTextStyle(emailTimestamp_TextStyle).build()] 
+            default:
+              return [note_RichText];
+          }
+        })
+
+        notesRange.setRichTextValues(richText_Notes).setBackgrounds(notesRange.getBackgrounds());
+
+        return range.getValues()
+      })
+    );
+
+    const numItems = itemValues.length;
+    
+    for (var i = 0; i < numItems; i++)
+      htmlOutput.append(
+        '<tr style="height: 20px">'+
+        '<td class="s4" dir="ltr" style="background-color:' + backgroundColours[i][0] + '">' + 
+          Utilities.formatDate(itemValues[i][0], timeZone, "dd MMM yyyy") + '</td>' +
+        '<td class="s5" dir="ltr">' + itemValues[i][1] + '</td>'+
+        '<td class="s5" dir="ltr">' + itemValues[i][2] + '</td>'+
+        '<td class="s6" dir="ltr">' + itemValues[i][3] + '</td>'+
+        '<td class="s7" dir="ltr">' + itemValues[i][4] + '</td>'+
+        '<td class="s8" dir="ltr" style="background-color:' + backgroundColours[i][5] + '">' + itemValues[i][5] + '</td></tr>'
+      )
+
+    htmlOutput.append('</tbody></table></div>')
+
+    MailApp.sendEmail({
+      to: "triteswarehouse@pacificnetandtwine.com, scottnakashima@hotmail.com",
+      cc: "mark@pacificnetandtwine.com, warehouse@pacificnetandtwine.com, adrian@pacificnetandtwine.com",
+      subject: pntStoreLocation + " store has ordered the following items. Do you have any of them at Trites?",
+      htmlBody: htmlOutput.getContent(),
+    });
+  }
+  else
+    Browser.msgBox('Please select an item or items on the Order page.')
 }
 
 /**
