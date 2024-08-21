@@ -5089,7 +5089,7 @@ function sendEmailToTrites()
                   .setTextStyle(richText_Notes_Runs[0][0], richText_Notes_Runs[0][1], richText_Notes_Runs[0][2])
                   .setTextStyle(fullTextLength + 1, fullTextLength + emailTimestamp.length, emailTimestamp_TextStyle)
                   .build()] 
-                : [SpreadsheetApp.newRichTextValue().setText(emailTimestamp).setTextStyle(emailTimestamp_TextStyle).build()] 
+                : [SpreadsheetApp.newRichTextValue().setText("*Email Sent to Trites on " + Utilities.formatDate(new Date(), timeZone, "dd MMM yyyy")+"*").setTextStyle(emailTimestamp_TextStyle).build()] 
             default:
               return [note_RichText];
           }
@@ -5119,7 +5119,7 @@ function sendEmailToTrites()
 
     MailApp.sendEmail({
       to: "triteswarehouse@pacificnetandtwine.com, scottnakashima@hotmail.com",
-      cc: "mark@pacificnetandtwine.com, warehouse@pacificnetandtwine.com, adrian@pacificnetandtwine.com",
+      cc: "mark@pacificnetandtwine.com, warehouse@pacificnetandtwine.com",
       subject: pntStoreLocation + " store has ordered the following items. Do you have any of them at Trites?",
       htmlBody: htmlOutput.getContent(),
     });
