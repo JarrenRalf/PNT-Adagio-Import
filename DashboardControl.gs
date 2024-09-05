@@ -1171,7 +1171,7 @@ function scanConversions(range, sheet, spreadsheet, col)
  * @param   {Number}         col     : The column number that was just edited
  * @author Jarren Ralf 
  */
-function searchV2(e, spreadsheet, sheet, row, col)
+function searchV2(e, spreadsheet, sheet)
 {
   const startTime = new Date().getTime();
   const searchResultsDisplayRange = sheet.getRange(1, 1); // The range that will display the number of items found by the search
@@ -1179,7 +1179,7 @@ function searchV2(e, spreadsheet, sheet, row, col)
   const itemSearchFullRange = sheet.getRange(9, 1, sheet.getMaxRows() - 8, 7); // The entire range of the Item Search page
   const checkBoxes = sheet.getSheetValues(1, 3, 6, 3);
   const output = [];
-  const searchesOrNot = sheet.getRange(1, 2, 6).clearFormat()                                               // Clear the formatting of the range of the search box
+  const searchesOrNot = sheet.getRange(1, 2, 6).clearFormat()                                       // Clear the formatting of the range of the search box
     .setBorder(true, true, true, true, null, null, 'black', SpreadsheetApp.BorderStyle.SOLID_THICK) // Set the border
     .setFontFamily("Arial").setFontColor("black").setFontWeight("bold").setFontSize(14)             // Set the various font parameters
     .setHorizontalAlignment("center").setVerticalAlignment("middle")                                // Set the alignment
@@ -1400,6 +1400,26 @@ function searchV2(e, spreadsheet, sheet, row, col)
               }
             }
           }
+        }
+        else if (searches[0][0].toLowerCase() === 'all' && searches[0][1].toLowerCase() === 'hoochies')
+        {
+          const hoochieData = data.filter(item => item[6].toString().substring(0, 2) == '16');
+          const hoochiePrefixes = ['16060005', '16010005', '16050005', '16020000', '16020011', '16020010', '16060065', '16060010', '16070000', '16075300',   
+                                   '16070975', '16030000', '16060175', '16200030', '16200000', '16200025', '16200065', '16200021', '16200022', '16200061'];
+          const numTypesOfHoochies = hoochiePrefixes.length;
+          var hoochies = new Array(numTypesOfHoochies).fill('').map(() => []);
+
+          for (var j = 0; j < numTypesOfHoochies; j++) // Loop through the number of searches
+          {
+            for (var i = 0; i < hoochieData.length; i++) // Loop through all of the descriptions from the search data
+              if (hoochieData[i][6].toString().substring(0, 8) === hoochiePrefixes[j] && !hoochieData[i][1].toString().toLowerCase().includes('rig')) // Does the i-th sku contain begin with the j-th hoochie prefix 
+                hoochies[j].push(hoochieData[i]); // The description also does not contain the word "rig"
+
+            // hoochies[j] = sortHoochies(hoochies[j], 1, hoochiePrefixes[j])
+            // Logger.log(hoochies[j])
+          }
+
+          output.push(...[].concat(...hoochies));
         }
         else
         {
