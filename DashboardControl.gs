@@ -1415,8 +1415,7 @@ function searchV2(e, spreadsheet, sheet)
               if (hoochieData[i][6].toString().substring(0, 8) === hoochiePrefixes[j] && !hoochieData[i][1].toString().toLowerCase().includes('rig')) // Does the i-th sku contain begin with the j-th hoochie prefix 
                 hoochies[j].push(hoochieData[i]); // The description also does not contain the word "rig"
 
-            // hoochies[j] = sortHoochies(hoochies[j], 1, hoochiePrefixes[j])
-            // Logger.log(hoochies[j])
+            hoochies[j] = sortHoochies(hoochies[j], 1, hoochiePrefixes[j])
           }
 
           output.push(...[].concat(...hoochies));
