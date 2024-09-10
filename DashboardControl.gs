@@ -1404,8 +1404,8 @@ function searchV2(e, spreadsheet, sheet)
         else if (searches[0][0].toLowerCase() === 'all' && searches[0][1].toLowerCase() === 'hoochies')
         {
           const hoochieData = data.filter(item => item[6].toString().substring(0, 2) == '16');
-          const hoochiePrefixes = ['16060005', '16010005', '16050005', '16020000', '16020011', '16020010', '16060065', '16060010', '16070000', '16075300',   
-                                   '16070975', '16030000', '16060175', '16200030', '16200000', '16200025', '16200065', '16200021', '16200022', '16200061'];
+          const hoochiePrefixes = ['16060005', '16010005', '16050005', '16020000', '16020010', '16060065', '16060010', '16070000', '16075300', '16070975',
+                                   '16030000', '16060175', '16200030', '16200000', '16200025', '16200065', '16200021', '16200022', '16200061'];
           const numTypesOfHoochies = hoochiePrefixes.length;
           var hoochies = new Array(numTypesOfHoochies).fill('').map(() => []);
 
