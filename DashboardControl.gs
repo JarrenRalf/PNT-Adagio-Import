@@ -2361,37 +2361,42 @@ function updateSearchData_withToast()
   const today = new Date();
   const spreadsheet = ss;
   const adagioSpreadsheet = SpreadsheetApp.getActive();
-  adagioSpreadsheet.toast('Retrieving search data...', '', 30)
-  const searchDataRng = (isRichmondSpreadsheet(spreadsheet)) ? spreadsheet.getSheetByName("INVENTORY").getRange('B7:C') : spreadsheet.getSheetByName("SearchData").getRange('B1:C');
-  const searchData = searchDataRng.getValues();
-  const numItems = searchData.length;
+
+  adagioSpreadsheet.toast('Accessing count log and sorting by date...', '', -1)
+
   const countLog = spreadsheet.getSheetByName("Count Log");
   const numOldCounts = countLog.getLastRow() - 1;
-  adagioSpreadsheet.toast('Search data retrieval complete. Accessing count log and sorting by date...', '', 30)
   const countLogRange = countLog.getRange(2, 1, numOldCounts, 4);
   const countLogData = countLogRange.getValues().sort(sortByCountedDate);
-  adagioSpreadsheet.toast('Sorting complete. Removing duplicates in count log...', '', 30)
+
+  adagioSpreadsheet.toast('Sorting complete. Removing duplicates in count log...', '', -1)
+
   const mostRecentCounts = uniqByKeepLast(countLogData, sku => sku[0]); // Remove duplicates
   const numNewCounts = mostRecentCounts.length;
-  const numberFormats = [...Array(numItems)].map(e => ['@', 'dd MMM yyyy']);
-  adagioSpreadsheet.toast('Duplicates removed. Clearing count log...', '', 30)
+  
+  adagioSpreadsheet.toast('Duplicates removed. Clearing count log...', '', -1)
+
   countLogRange.clearContent();
-  adagioSpreadsheet.toast('Count log cleared. Setting values to count log...', '', 30)
+
+  adagioSpreadsheet.toast('Count log cleared. Setting values to count log...', '', -1)
+
   countLog.getRange(2, 1, numNewCounts, 4).setValues(mostRecentCounts);
+
+  adagioSpreadsheet.toast('Count log update complete. Retrieving search data and updating Counted On date...', '', -1)
+
+  const searchDataRng = (isRichmondSpreadsheet(spreadsheet)) ? spreadsheet.getSheetByName("INVENTORY").getRange('B7:C') : spreadsheet.getSheetByName("SearchData").getRange('B1:C');
+  const searchData = searchDataRng.getValues().map(skuAndCountDate => {
+    skuAndCountDate[1] = mostRecentCounts.find(sku => sku[0] == skuAndCountDate[0].split(' - ').pop().toString())?.[3]
+
+    return skuAndCountDate;
+  });
+
+  const numItems = searchData.length;
+  const numberFormats = [...Array(numItems)].map(e => ['@', 'dd MMM yyyy']);
   searchData[0][1] = "Last Counted On";
   numberFormats[0][1] = '@';
 
-  adagioSpreadsheet.toast('Count log update complete. Importing "Last Counted On" dates to search data...', '', 30)
-  for (var i = 1; i < numItems; i++)
-  {
-    for (var j = 0; j < numNewCounts; j++)
-    {
-      if (searchData[i][0].split(' - ').pop().toString() == mostRecentCounts[j][0])
-        searchData[i][1] = mostRecentCounts[j][3];
-    }
-  }
-
-  adagioSpreadsheet.toast('Importing dates complete. Writing dates on the search data sheet...', '', 30)
+  adagioSpreadsheet.toast('Search data has been updated with Counted On dates. Writing dates on the search data sheet...', '', -1)
   
   searchDataRng.setNumberFormats(numberFormats).setValues(searchData);
   spreadsheet.getSheetByName("INVENTORY").getRange(6, 1).setValue('The Recent Counts were last updated at ' + today.toLocaleTimeString() + ' on ' +  today.toDateString());
