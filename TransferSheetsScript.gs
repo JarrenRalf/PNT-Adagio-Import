@@ -739,7 +739,7 @@ function applyFullSpreadsheetFormatting(spreadsheet, sheets)
         spreadsheet.setNamedRange('Progress_ManualCounts', sheets[j].getRange('B3'));
         spreadsheet.setNamedRange('Remaining_ManualCounts', sheets[j].getRange('C1'));
         headerValues = [[  Store_Name + ' Manual Counts', '=COUNTA($C$4:$C)', '=COUNTA($A$4:$A)-Completed_ManualCounts', 'Scanning Data', '', 'Inflow Data', ''], 
-                        ['Sku# - Description - Category - UoM', 'Current Count', 'New Count', 'Running Sum', 'Last Scan Time (ms)', 'Location', 'Quantity'], 
+                        ['Description - Vendor - Category - UoM - Sku#', 'Current Count', 'New Count', 'Running Sum', 'Last Scan Time (ms)', 'Location', 'Quantity'], 
                         ['', '=Completed_ManualCounts&\"/\"&(Completed_ManualCounts + Remaining_ManualCounts)', '', '', '', '', '']];
         sheets[j].hideColumns(4, 4);
         numberFormats[2][6] = '#';
@@ -750,7 +750,7 @@ function applyFullSpreadsheetFormatting(spreadsheet, sheets)
         spreadsheet.setNamedRange('Progress_InfoCounts', sheets[j].getRange('B3'));
         spreadsheet.setNamedRange('Remaining_InfoCounts', sheets[j].getRange('C1'));
         headerValues = [['New ' + Store_Name + ' Counts', '=COUNTA($C$4:$C$' + lastRow + ')', '=' + numRows + '-Completed_InfoCounts'], 
-                        ['Sku# - Description - Category - UoM', 'Current Count', 'New Count'], 
+                        ['Description - Vendor - Category - UoM - Sku#', 'Current Count', 'New Count'], 
                         ['', '=Completed_InfoCounts&\"/\"&(Completed_InfoCounts+Remaining_InfoCounts)', '']];
       }
 
@@ -1750,10 +1750,10 @@ function copySelectedValues(sheet, startRow, numCols, qtyCol, isInfoCountsPage, 
       sheet.getRange(startRow, startCol, numItems, itemVals[0].length).setNumberFormat('@').setValues(itemVals); // Move the item values to the destination sheet
     else // Moving items to the Manual Counts page
     {
-      if (startRow > 4) // There are existing items on the Manual Counts page
+      if (startRow > 3) // There are existing items on the Manual Counts page
       {
         // Retrieve the existing items and add them to the new items
-        const groupedItems = groupHoochieTypes(sheet.getSheetValues(4, startCol, startRow - 4, sheet.getMaxColumns()).concat(itemVals.map(val => [...val, '', '', '', '', ''])), 0)
+        const groupedItems = groupHoochieTypes(sheet.getSheetValues(4, startCol, startRow - 3, sheet.getMaxColumns()).concat(itemVals.map(val => [...val, '', '', '', '', ''])), 0)
         const items = [];
 
         Object.keys(groupedItems).forEach(key => items.push(...sortHoochies(groupedItems[key], 0, key)));
