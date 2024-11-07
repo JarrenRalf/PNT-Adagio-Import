@@ -556,7 +556,7 @@ function getYetiSeasonalSKUs(yetiSKUsToWatchSheet, spreadsheet)
     .filter(upc => upc[1].toString().includes('8015') && 
                   (upc[1].endsWith('SC1') || upc[1].endsWith('SC2') || upc[1].endsWith('SC3') || upc[1].endsWith('SC4'))) // Seasonal colours either end with SC1, SC2, SC3, or SC4)
     .map(col => [col[1], col[0].toString()]);
-  const inventorySheet = spreadsheet.getSheetByName('DataImport'); 
+  const inventorySheet = spreadsheet.getSheetByName("DataImport"); 
   const lastRow_Yeti = yetiSKUsToWatchSheet.getLastRow();
   const yetiSKUsToWatch = yetiSKUsToWatchSheet.getSheetValues(3, 1, lastRow_Yeti - 2, 1).flat()
   const allSeasonalYetiSKUs = inventorySheet.getSheetValues(2, 2, inventorySheet.getLastRow() - 1, 6)
@@ -645,8 +645,8 @@ function isNonPositive(num)
 function possibleSKUsToWatch()
 {
   const spreadsheet = SpreadsheetApp.getActive()
-  const possibleSkusSheet = spreadsheet.getSheetByName('Second Possible SKUsToWatch')
-  const currentSKUstoWatchSheet = spreadsheet.getSheetByName('SKUsToWatch')
+  const possibleSkusSheet = spreadsheet.getSheetByName("Second Possible SKUsToWatch")
+  const currentSKUstoWatchSheet = spreadsheet.getSheetByName("SKUsToWatch")
   const currentSKUstoWatch = currentSKUstoWatchSheet.getSheetValues(3, 1, currentSKUstoWatchSheet.getLastRow() - 2, 9)
   const numSkus = currentSKUstoWatch.length;
   const csvData = Utilities.parseCsv(DriveApp.getFilesByName("inventory.csv").next().getBlob().getDataAsString()).map(u => u.map(v => v.toString().toUpperCase()))
@@ -783,9 +783,9 @@ function resetData()
     spreadsheet.getSheetByName("DataImport").clearContents().getRange(1, 1, numRows, items[0].length).setNumberFormats(numberFormats).setValues(items);
     
     const runtime = elapsedTime(START_TIME);
-    spreadsheet.getSheetByName('ConvertedExport').getRange(1, 3, 2).setValues([[runtime], [timeStamp(spreadsheet)]]); // Elapsed time and timestamp
+    spreadsheet.getSheetByName("ConvertedExport").getRange(1, 3, 2).setValues([[runtime], [timeStamp(spreadsheet)]]); // Elapsed time and timestamp
 
-    const timeStampRng = spreadsheet.getSheetByName('Adagio Transfer Sheet').getRange(1, 4, 2, 6);
+    const timeStampRng = spreadsheet.getSheetByName("Adagio Transfer Sheet").getRange(1, 4, 2, 6);
     const timeStampValues = timeStampRng.getValues();
     timeStampValues[0][5] = runtime + ' seconds';
     timeStampValues[1][0] = timeStamp(spreadsheet);

@@ -129,7 +129,7 @@ function computeOneConversion()
 
               if (isNotBlank(qty) || !isNaN(qty)) // Valid number
               {
-                const inventorySheet = spreadsheet.getSheetByName('DataImport');
+                const inventorySheet = spreadsheet.getSheetByName("DataImport");
                 const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
                 var convertedItems = []
 
@@ -169,7 +169,7 @@ function computeOneConversion()
           }
           else
           {
-            const inventorySheet = spreadsheet.getSheetByName('DataImport');
+            const inventorySheet = spreadsheet.getSheetByName("DataImport");
             const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
             var convertedItems = [];
 
@@ -224,7 +224,7 @@ function computeOneConversion()
 
               if (isNotBlank(qty) || !isNaN(qty)) // Valid number
               {
-                const inventorySheet = spreadsheet.getSheetByName('DataImport');
+                const inventorySheet = spreadsheet.getSheetByName("DataImport");
                 const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
                 var convertedItems = []
 
@@ -264,7 +264,7 @@ function computeOneConversion()
           }
           else
           {
-            const inventorySheet = spreadsheet.getSheetByName('DataImport');
+            const inventorySheet = spreadsheet.getSheetByName("DataImport");
             const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
             var convertedItems = [];
 
@@ -333,7 +333,7 @@ function computeOneConversion()
 
             if (isNotBlank(qty) || !isNaN(qty)) // Valid number
             {
-              const inventorySheet = spreadsheet.getSheetByName('DataImport');
+              const inventorySheet = spreadsheet.getSheetByName("DataImport");
               const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
               var assembledItems = []
 
@@ -385,7 +385,7 @@ function computeOneConversion()
         }
         else
         {
-          const inventorySheet = spreadsheet.getSheetByName('DataImport');
+          const inventorySheet = spreadsheet.getSheetByName("DataImport");
           const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
           var assembledItems = []
 
@@ -585,7 +585,7 @@ function pasteMultipleSKUsOnSearchPage(range, sheet, spreadsheet)
 
   if (values.length !== 0) // Don't run function if every value is blank, probably means the user pressed the delete key on a large selection
   {
-    const inventorySheet = spreadsheet.getSheetByName('DataImport');
+    const inventorySheet = spreadsheet.getSheetByName("DataImport");
     const data = inventorySheet.getSheetValues(2, 1, inventorySheet.getLastRow() - 1, 7);
     var someSKUsNotFound = false, skus;
 
@@ -715,7 +715,7 @@ function scanAssemblies(range, sheet, spreadsheet)
 
           if (isNotBlank(qty) || !isNaN(qty)) // Valid number
           {
-            const inventorySheet = spreadsheet.getSheetByName('DataImport');
+            const inventorySheet = spreadsheet.getSheetByName("DataImport");
             const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
             var assembledItems = []
 
@@ -767,7 +767,7 @@ function scanAssemblies(range, sheet, spreadsheet)
       }
       else
       {
-        const inventorySheet = spreadsheet.getSheetByName('DataImport');
+        const inventorySheet = spreadsheet.getSheetByName("DataImport");
         const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
         var assembledItems = []
 
@@ -868,7 +868,7 @@ function scanConversions(range, sheet, spreadsheet, col)
 
                 if (isNotBlank(qty) || !isNaN(qty)) // Valid number
                 {
-                  const inventorySheet = spreadsheet.getSheetByName('DataImport');
+                  const inventorySheet = spreadsheet.getSheetByName("DataImport");
                   const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
                   const sku1 = col - 1, sku2 = 7 - col; // Select the appropriate column numbers
                   const numPackages = (sku2 !== 6) ? qty*packagedItems[0][4] : qty/packagedItems[0][4]; // The appropriate conversion value
@@ -910,7 +910,7 @@ function scanConversions(range, sheet, spreadsheet, col)
             }
             else
             {
-              const inventorySheet = spreadsheet.getSheetByName('DataImport');
+              const inventorySheet = spreadsheet.getSheetByName("DataImport");
               const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
               const sku1 = col - 1, sku2 = 7 - col;
               const numPackages = (sku2 !== 6) ? quantity*packagedItems[0][4] : quantity/packagedItems[0][4]; // The appropriate conversion value
@@ -964,7 +964,7 @@ function scanConversions(range, sheet, spreadsheet, col)
 
                 if (isNotBlank(qty) || !isNaN(qty)) // Valid number
                 {
-                  const inventorySheet = spreadsheet.getSheetByName('DataImport');
+                  const inventorySheet = spreadsheet.getSheetByName("DataImport");
                   const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
                   const sku1 = col - 1, sku2 = 7 - col;
                   const numPackages = (sku2 !== 6) ? qty*packagedItems[1][4] : qty/packagedItems[1][4];
@@ -1006,7 +1006,7 @@ function scanConversions(range, sheet, spreadsheet, col)
             }
             else
             {
-              const inventorySheet = spreadsheet.getSheetByName('DataImport');
+              const inventorySheet = spreadsheet.getSheetByName("DataImport");
               const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
               const sku1 = col - 1, sku2 = 7 - col;
               const numPackages = (sku2 !== 6) ? quantity*packagedItems[1][4] : quantity/packagedItems[1][4];
@@ -1066,7 +1066,7 @@ function scanConversions(range, sheet, spreadsheet, col)
 
               if (isNotBlank(qty) || !isNaN(qty)) // Valid number
               {
-                const inventorySheet = spreadsheet.getSheetByName('DataImport');
+                const inventorySheet = spreadsheet.getSheetByName("DataImport");
                 const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
                 const sku1 = col - 1, sku2 = 7 - col;
                 const numPackages = (sku2 !== 6) ? qty*packagedItems[0][4] : qty/packagedItems[0][4]; // The appropriate conversion value
@@ -1108,7 +1108,7 @@ function scanConversions(range, sheet, spreadsheet, col)
           }
           else
           {
-            const inventorySheet = spreadsheet.getSheetByName('DataImport');
+            const inventorySheet = spreadsheet.getSheetByName("DataImport");
             const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
             const sku1 = col - 1, sku2 = 7 - col;
             const numPackages = (sku2 !== 6) ? quantity*packagedItems[0][4] : quantity/packagedItems[0][4]; // The appropriate conversion value
@@ -1200,11 +1200,11 @@ function searchV2(e, spreadsheet, sheet)
         const dataSheets = [];
 
         if (checkBoxes[3][0] == true)
-          dataSheets.push(spreadsheet.getSheetByName('Imported Richmond Data (Loc: 100)'))
+          dataSheets.push(spreadsheet.getSheetByName("Imported Richmond Data (Loc: 100)"))
         if (checkBoxes[4][0] == true)
-          dataSheets.push(spreadsheet.getSheetByName('Imported Parksville Data (Loc: 200)'))
+          dataSheets.push(spreadsheet.getSheetByName("Imported Parksville Data (Loc: 200)"))
         if (checkBoxes[5][0] == true)
-          dataSheets.push(spreadsheet.getSheetByName('Imported Rupert Data (Loc: 300)'))
+          dataSheets.push(spreadsheet.getSheetByName("Imported Rupert Data (Loc: 300)"))
 
         const data = dataSheets.map(sheet => sheet.getSheetValues(1, 1, sheet.getLastRow(), sheet.getLastColumn()));
         const numSearches = searches.length; // The number of searches
@@ -1362,7 +1362,7 @@ function searchV2(e, spreadsheet, sheet)
       }
       else
       {
-        const inventorySheet = spreadsheet.getSheetByName('DataImport');
+        const inventorySheet = spreadsheet.getSheetByName("DataImport");
         const data = inventorySheet.getSheetValues(2, 1, inventorySheet.getLastRow() - 1, 7);
         const numSearches = searches.length; // The number searches
         var numSearchWords;
@@ -1455,11 +1455,11 @@ function searchV2(e, spreadsheet, sheet)
         const dataSheets = [];
 
         if (checkBoxes[3][0] == true)
-          dataSheets.push(spreadsheet.getSheetByName('Imported Richmond Data (Loc: 100)'))
+          dataSheets.push(spreadsheet.getSheetByName("Imported Richmond Data (Loc: 100)"))
         if (checkBoxes[4][0] == true)
-          dataSheets.push(spreadsheet.getSheetByName('Imported Parksville Data (Loc: 200)'))
+          dataSheets.push(spreadsheet.getSheetByName("Imported Parksville Data (Loc: 200)"))
         if (checkBoxes[5][0] == true)
-          dataSheets.push(spreadsheet.getSheetByName('Imported Rupert Data (Loc: 300)'))
+          dataSheets.push(spreadsheet.getSheetByName("Imported Rupert Data (Loc: 300)"))
 
         const data = dataSheets.map(sheet => sheet.getSheetValues(1, 1, sheet.getLastRow(), sheet.getLastColumn()));
         const numSearches = searches.length; // The number of searches
@@ -1617,7 +1617,7 @@ function searchV2(e, spreadsheet, sheet)
       }
       else
       {
-        const inventorySheet = spreadsheet.getSheetByName('DataImport');
+        const inventorySheet = spreadsheet.getSheetByName("DataImport");
         const data = inventorySheet.getSheetValues(2, 1, inventorySheet.getLastRow() - 1, 7);
         const numSearches = searches.length; // The number searches
         var numSearchWords;
@@ -1798,11 +1798,11 @@ function searchV2V2(e, spreadsheet, sheet, row, col)
         const dataSheets = [];
 
         if (checkBoxes[3][0] == true)
-          dataSheets.push(spreadsheet.getSheetByName('Imported Richmond Data (Loc: 100)'))
+          dataSheets.push(spreadsheet.getSheetByName("Imported Richmond Data (Loc: 100)"))
         if (checkBoxes[4][0] == true)
-          dataSheets.push(spreadsheet.getSheetByName('Imported Parksville Data (Loc: 200)'))
+          dataSheets.push(spreadsheet.getSheetByName("Imported Parksville Data (Loc: 200)"))
         if (checkBoxes[5][0] == true)
-          dataSheets.push(spreadsheet.getSheetByName('Imported Rupert Data (Loc: 300)'))
+          dataSheets.push(spreadsheet.getSheetByName("Imported Rupert Data (Loc: 300)"))
 
         const data = dataSheets.map(sheet => sheet.getSheetValues(1, 1, sheet.getLastRow(), sheet.getLastColumn()));
         const numSearches = searches.length; // The number of searches
@@ -1964,11 +1964,11 @@ function searchV2V2(e, spreadsheet, sheet, row, col)
         const dataSheets = [];
 
         if (checkBoxes[3][0] == true)
-          dataSheets.push(spreadsheet.getSheetByName('Imported Richmond Data (Loc: 100)'))
+          dataSheets.push(spreadsheet.getSheetByName("Imported Richmond Data (Loc: 100)"))
         if (checkBoxes[4][0] == true)
-          dataSheets.push(spreadsheet.getSheetByName('Imported Parksville Data (Loc: 200)'))
+          dataSheets.push(spreadsheet.getSheetByName("Imported Parksville Data (Loc: 200)"))
         if (checkBoxes[5][0] == true)
-          dataSheets.push(spreadsheet.getSheetByName('Imported Rupert Data (Loc: 300)'))
+          dataSheets.push(spreadsheet.getSheetByName("Imported Rupert Data (Loc: 300)"))
 
         const data = dataSheets.map(sheet => sheet.getSheetValues(1, 1, sheet.getLastRow(), sheet.getLastColumn()));
         const numSearches = searches.length; // The number of searches
@@ -2129,7 +2129,7 @@ function searchV2V2(e, spreadsheet, sheet, row, col)
     {
       if (searchesOrNot.length === 1) // The word 'not' WASN'T found in the string
       {
-        const inventorySheet = spreadsheet.getSheetByName('DataImport');
+        const inventorySheet = spreadsheet.getSheetByName("DataImport");
         const data = inventorySheet.getSheetValues(2, 1, inventorySheet.getLastRow() - 1, 7);
         const numSearches = searches.length; // The number searches
         var numSearchWords;
@@ -2158,7 +2158,7 @@ function searchV2V2(e, spreadsheet, sheet, row, col)
       }
       else
       {
-        const inventorySheet = spreadsheet.getSheetByName('DataImport');
+        const inventorySheet = spreadsheet.getSheetByName("DataImport");
         const data = inventorySheet.getSheetValues(2, 1, inventorySheet.getLastRow() - 1, 7);
         const numSearches = searches.length; // The number searches
         var numSearchWords;
@@ -2420,7 +2420,7 @@ function richmond_applyFullSpreadsheetFormatting(range)
   try
   {
     const spreadsheet = SpreadsheetApp.getActive();
-    const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
+    const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk/edit#gid=592450561');
     applyFullSpreadsheetFormatting();
     timeStamp(spreadsheet, 15, 5, adagioSheet, "dd MMM HH:mm")
@@ -2446,7 +2446,7 @@ function richmond_clearInventory()
   try
   {
     const spreadsheet = SpreadsheetApp.getActive();
-    const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
+    const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk/edit#gid=592450561');
     clearInventory();
     timeStamp(spreadsheet, 4, 5, adagioSheet, "dd MMM HH:mm")
@@ -2471,7 +2471,7 @@ function richmond_getCounts()
   try
   {
     const spreadsheet = SpreadsheetApp.getActive();
-    const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
+    const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk/edit#gid=592450561');
     getCounts();
     timeStamp(spreadsheet, 6, 5, adagioSheet, "dd MMM HH:mm")
@@ -2496,7 +2496,7 @@ function richmond_clearManualCounts()
   try
   {
     const spreadsheet = SpreadsheetApp.getActive();
-    const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
+    const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk/edit#gid=592450561');
     clearManualCounts();
     timeStamp(spreadsheet, 8, 5, adagioSheet, "dd MMM HH:mm")
@@ -2714,7 +2714,7 @@ function parksville_applyFullSpreadsheetFormatting(range)
   try
   {
     const spreadsheet = SpreadsheetApp.getActive();
-    const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
+    const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM/edit#gid=1340095049');
     applyFullSpreadsheetFormatting();
     timeStamp(spreadsheet, 15, 10, adagioSheet, "dd MMM HH:mm")
@@ -2740,7 +2740,7 @@ function parksville_completeReceived()
   try
   {
     const spreadsheet = SpreadsheetApp.getActive();
-    const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
+    const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM/edit#gid=1340095049');
     completeReceived();
     timeStamp(spreadsheet, 6, 10, adagioSheet, "dd MMM HH:mm")
@@ -2765,7 +2765,7 @@ function parksville_completeToRichmond()
   try
   {
     const spreadsheet = SpreadsheetApp.getActive();
-    const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
+    const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM/edit#gid=1340095049');
     completeToRichmond();
     timeStamp(spreadsheet, 7, 10, adagioSheet, "dd MMM HH:mm")
@@ -2790,7 +2790,7 @@ function parksville_print_X_Order()
   try
   {
     const spreadsheet = SpreadsheetApp.getActive();
-    const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
+    const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM/edit#gid=1340095049');
     print_X_Order();
     timeStamp(spreadsheet, 8, 10, adagioSheet, "dd MMM HH:mm"),
@@ -2815,7 +2815,7 @@ function parksville_print_X_Shipped()
   try
   {
     const spreadsheet = SpreadsheetApp.getActive();
-    const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
+    const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM/edit#gid=1340095049');
     print_X_Shipped();
     timeStamp(spreadsheet, 9, 10, adagioSheet, "dd MMM HH:mm")
@@ -2840,7 +2840,7 @@ function parksville_clearInventory()
   try
   {
     const spreadsheet = SpreadsheetApp.getActive();
-    const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
+    const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM/edit#gid=1340095049');
     clearInventory();
     timeStamp(spreadsheet, 4, 10, adagioSheet, "dd MMM HH:mm")
@@ -2865,7 +2865,7 @@ function parksville_getCounts()
   try
   {
     const spreadsheet = SpreadsheetApp.getActive();
-    const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
+    const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM/edit#gid=1340095049');
     getCounts();
     timeStamp(spreadsheet, 10, 10, adagioSheet, "dd MMM HH:mm")
@@ -2890,7 +2890,7 @@ function parksville_clearManualCounts()
   try
   {
     const spreadsheet = SpreadsheetApp.getActive();
-    const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
+    const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM/edit#gid=1340095049');
     clearManualCounts();
     timeStamp(spreadsheet, 11, 10, adagioSheet, "dd MMM HH:mm")
@@ -3087,7 +3087,7 @@ function rupert_applyFullSpreadsheetFormatting(range)
   try
   {
     const spreadsheet = SpreadsheetApp.getActive();
-    const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
+    const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c/edit#gid=407280159');
     applyFullSpreadsheetFormatting();
     timeStamp(spreadsheet, 15, 15, adagioSheet, "dd MMM HH:mm")
@@ -3113,7 +3113,7 @@ function rupert_completeReceived()
   try
   {
     const spreadsheet = SpreadsheetApp.getActive();
-    const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
+    const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c/edit#gid=407280159');
     completeReceived();
     timeStamp(spreadsheet, 6, 15, adagioSheet, "dd MMM HH:mm")
@@ -3138,7 +3138,7 @@ function rupert_completeToRichmond()
   try
   {
     const spreadsheet = SpreadsheetApp.getActive();
-    const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
+    const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c/edit#gid=407280159');
     completeToRichmond();
     timeStamp(spreadsheet, 7, 15, adagioSheet, "dd MMM HH:mm")  
@@ -3163,7 +3163,7 @@ function rupert_print_X_Order()
   try
   {
     const spreadsheet = SpreadsheetApp.getActive();
-    const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
+    const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c/edit#gid=407280159');
     print_X_Order();
     timeStamp(spreadsheet, 8, 15, adagioSheet, "dd MMM HH:mm")
@@ -3188,7 +3188,7 @@ function rupert_print_X_Shipped()
   try
   {
     const spreadsheet = SpreadsheetApp.getActive();
-    const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
+    const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c/edit#gid=407280159');
     print_X_Shipped();
     timeStamp(spreadsheet, 9, 15, adagioSheet, "dd MMM HH:mm")
@@ -3213,7 +3213,7 @@ function rupert_clearInventory()
   try
   {
     const spreadsheet = SpreadsheetApp.getActive();
-    const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
+    const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c/edit#gid=407280159');
     clearInventory();
     timeStamp(spreadsheet, 4, 15, adagioSheet, "dd MMM HH:mm")
@@ -3238,7 +3238,7 @@ function rupert_getCounts()
   try
   {
     const spreadsheet = SpreadsheetApp.getActive();
-    const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
+    const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c/edit#gid=407280159');
     getCounts();
     timeStamp(spreadsheet, 10, 15, adagioSheet, "dd MMM HH:mm")
@@ -3263,7 +3263,7 @@ function rupert_clearManualCounts()
   try
   {
     const spreadsheet = SpreadsheetApp.getActive();
-    const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
+    const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c/edit#gid=407280159');
     clearManualCounts();
     timeStamp(spreadsheet, 11, 15, adagioSheet, "dd MMM HH:mm")

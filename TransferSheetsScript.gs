@@ -79,7 +79,7 @@ function addItemsToUpcData()
   const upcDatabaseSheet = spreadsheet.getSheetByName("UPC Database");
   const manAddedUPCsSheet = spreadsheet.getSheetByName("Manually Added UPCs");
 
-  if (sheet.getSheetName() === 'Manual Scan')
+  if (sheet.getSheetName() === "Manual Scan")
   { 
     const ui = SpreadsheetApp.getUi();
     const barcodeInputRange = sheet.getRange(1, 1);
@@ -97,7 +97,7 @@ function addItemsToUpcData()
       }
     }
   }
-  else if (sheet.getSheetName() === 'Manual Counts' || sheet.getSheetName() === 'Item Search')
+  else if (sheet.getSheetName() === "Manual Counts" || sheet.getSheetName() === "Item Search")
   {
     const startRow = upcDatabaseSheet.getLastRow() + 1; // The bottom of the list
     copySelectedValues(upcDatabaseSheet, startRow, NUM_COLS, 'upc', false, [manAddedUPCsSheet]); // Move items to UPC Database and the Manually Added UPCs
@@ -196,9 +196,9 @@ function addToAllManualCountsPages()
   const spreadsheets =  [SpreadsheetApp.openById('1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c'), // Rupert
                          SpreadsheetApp.openById('181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM'), // Parksville
                          ss] // Richmond
-  const itemSearchSheet = spreadsheets[2].getSheetByName('Item Search')
+  const itemSearchSheet = spreadsheets[2].getSheetByName("Item Search")
   var activeRanges = itemSearchSheet.getActiveRangeList().getRanges(); // The selected ranges on the item search sheet
-  var itemValues = [[[]]], firstRows = [], lastRows = [], items, manualCountsSheet, finalRow, startRow;
+  var itemValues = [[[]]], firstRows = [], lastRows = [], items, manualCountsSheet, finalRow, startRow, groupedItems;
   
   // Find the first row and last row in the the set of all active ranges
   for (var r = 0; r < activeRanges.length; r++)
@@ -238,8 +238,28 @@ function addToAllManualCountsPages()
       manualCountsSheet = spreadsheet.getSheetByName("Manual Counts")
       finalRow = manualCountsSheet.getLastRow();
       startRow = (finalRow < 3) ? 4 : finalRow + 1;
-      manualCountsSheet.getRange(startRow, 1, numItems, items[0].length).setNumberFormat('@').setValues(items); // Move the item values to the destination sheet
-      applyFullRowFormatting(manualCountsSheet, startRow, numItems, 7); // Apply the proper formatting
+
+      if (startRow > 4) // There are existing items on the Manual Counts page
+      {
+        // Retrieve the existing items and add them to the new items
+        groupedItems = groupHoochieTypes(manualCountsSheet.getSheetValues(4, 1, startRow - 4, manualCountsSheet.getMaxColumns()).concat(items.map(val => [...val, '', '', '', '', ''])), 0)
+        items.length = 0;
+
+        Object.keys(groupedItems).forEach(key => items.push(...sortHoochies(groupedItems[key], 0, key)));
+
+        manualCountsSheet.getRange(4, 1, items.length, items[0].length).setNumberFormat('@').setValues(items); // Move the item values to the destination sheet
+        applyFullRowFormatting(manualCountsSheet, 4, items.length, 7); // Apply the proper formatting
+      }
+      else
+      {
+        groupedItems = groupHoochieTypes(items, 0)
+        items.length = 0;
+
+        Object.keys(groupedItems).forEach(key => items.push(...sortHoochies(groupedItems[key], 0, key)));
+
+        manualCountsSheet.getRange(startRow, 1, numItems, items[0].length).setNumberFormat('@').setValues(items); // Move the item values to the destination sheet
+        applyFullRowFormatting(manualCountsSheet, startRow, numItems, 7); // Apply the proper formatting
+      }
 
       switch (store)
       {
@@ -269,8 +289,8 @@ function addToAllManualCountsPages()
 function addToInflowPickList(qty)
 {
   const spreadsheet = ss;
-  const sheet = (!isRichmondSpreadsheet(spreadsheet)) ? SpreadsheetApp.openById('1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk').getSheetByName('inFlowPick') : 
-                                                                                                                    spreadsheet.getSheetByName('inFlowPick');
+  const sheet = (!isRichmondSpreadsheet(spreadsheet)) ? SpreadsheetApp.openById('1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk').getSheetByName("inFlowPick") : 
+                                                                                                                    spreadsheet.getSheetByName("inFlowPick");
   const activeSheet = SpreadsheetApp.getActiveSheet();
   const activeRanges = activeSheet.getActiveRangeList().getRanges(); // The selected ranges on the item search sheet
   const firstRows = [], lastRows = [], itemValues = [];
@@ -278,7 +298,7 @@ function addToInflowPickList(qty)
   const inflowData = Utilities.parseCsv(DriveApp.getFilesByName("inFlow_StockLevels.csv").next().getBlob().getDataAsString())
     .filter(item => item[0].split(' - ').length > 4).map(descrip => descrip[0])
 
-  if (activeSheet.getSheetName() === 'Item Search')
+  if (activeSheet.getSheetName() === "Item Search")
   {
     // Find the first row and last row in the the set of all active ranges
     for (var r = 0; r < activeRanges.length; r++)
@@ -305,7 +325,7 @@ function addToInflowPickList(qty)
     else
       SpreadsheetApp.getUi().alert('Please select an item from the list.');
   }
-  else if (activeSheet.getSheetName() === 'Suggested inFlowPick')
+  else if (activeSheet.getSheetName() === "Suggested inFlowPick")
   {
     // Find the first row and last row in the the set of all active ranges
     for (var r = 0; r < activeRanges.length; r++)
@@ -332,7 +352,7 @@ function addToInflowPickList(qty)
     else
       SpreadsheetApp.getUi().alert('Please select an item from the list.');
   }
-  else if (activeSheet.getSheetName() === 'Order')
+  else if (activeSheet.getSheetName() === "Order")
   {
     // Find the first row and last row in the the set of all active ranges
     for (var r = 0; r < activeRanges.length; r++)
@@ -418,7 +438,7 @@ function addToOppositeStoreShippedPage()
       var branch_location = 'Parksville'
     }
 
-    const shippedPage = targetSpreadsheet.getSheetByName('Shipped')
+    const shippedPage = targetSpreadsheet.getSheetByName("Shipped")
     const row = shippedPage.getLastRow() + 1;
     const numRows = itemVals.length;
     const numCols = 11;
@@ -996,7 +1016,7 @@ function applyFullSpreadsheetFormatting(spreadsheet, sheets)
       sheets[j].setFrozenRows(numHeaders);
       sheets[j].autoResizeRows(numHeaders, numRows + 1);
     }
-    else if (sheetNames[j] === "UPC Database" || sheetNames[j] === "Manually Added UPCs" || sheetNames[j] === 'UPCs to Unmarry')
+    else if (sheetNames[j] === "UPC Database" || sheetNames[j] === "Manually Added UPCs" || sheetNames[j] === "UPCs to Unmarry")
     {
       numHeaders = 1;
       rowStart = numHeaders + 1;
@@ -1078,8 +1098,8 @@ function applyFullSpreadsheetFormatting(spreadsheet, sheets)
     else if (sheetNames[j] === "Data Validation")
       sheets[j].hideSheet().getDataRange().setFontSize(20).setFontLine('none').setFontStyle('normal').setFontWeight('normal').setFontFamily('Arial').setFontColor('black')
         .setBackground('white').setVerticalAlignment('middle').setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP);
-    else if (sheetNames[j] === 'Manual Scan' || sheetNames[j] === 'Item Scan')
-      (sheetNames[j] === 'Manual Scan') ? 
+    else if (sheetNames[j] === "Manual Scan" || sheetNames[j] === 'Item Scan')
+      (sheetNames[j] === "Manual Scan") ? 
         sheets[j].getRange(1, 1, 1, 2).setNumberFormats([['@', '#.#']]).setFontSize(25).setFontLine('none').setFontStyle('none').setFontWeight('normal').setFontFamily('Arial')
           .setFontColor('black').setBackground('white').setVerticalAlignment('middle').setHorizontalAlignment('center').setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP) :
         sheets[j].getRange(1, 1).setNumberFormat('@').setFontSize(25).setFontLine('none').setFontStyle('none').setFontWeight('normal').setFontFamily('Arial').setFontColor('black')
@@ -1131,9 +1151,9 @@ function applyFullSpreadsheetFormatting(spreadsheet, sheets)
 //   const STATUS_COL_INDEX = 9;
 //   const rowStart = numHeaders + 1;
 //   const spreadsheet = ss;
-//   const orderSheet = spreadsheet.getSheetByName('Order');
-//   const shippedSheet = spreadsheet.getSheetByName('Shipped');
-//   const receivedSheet = spreadsheet.getSheetByName('Received');
+//   const orderSheet = spreadsheet.getSheetByName("Order");
+//   const shippedSheet = spreadsheet.getSheetByName("Shipped");
+//   const receivedSheet = spreadsheet.getSheetByName("Received");
 //   const orderRange = orderSheet.getRange(rowStart, 1, orderSheet.getLastRow() - numHeaders, numCols);
 //   const shippedRange = shippedSheet.getRange(rowStart, 1, shippedSheet.getLastRow() - numHeaders, numCols);
 //   const receivedRange = receivedSheet.getRange(rowStart, 1, receivedSheet.getLastRow() - numHeaders, numCols)
@@ -1341,8 +1361,8 @@ function clearInventory()
 {
   const startTime = new Date().getTime();
   const spreadsheet = ss;
-  const itemSearchSheet = spreadsheet.getSheetByName('Item Search');
-  const  inventorySheet = spreadsheet.getSheetByName('INVENTORY');
+  const itemSearchSheet = spreadsheet.getSheetByName("Item Search");
+  const  inventorySheet = spreadsheet.getSheetByName("INVENTORY");
   const numRowsRange = (isRichmondSpreadsheet(spreadsheet)) ? inventorySheet.getRange(1, 7, 1, 3) : inventorySheet.getRange(1, 7, 2, 3);
 
   itemSearchSheet.getRange('B1').clearContent(); // Clear the search box on the Item Search page
@@ -1386,8 +1406,8 @@ function clearInventory()
     inventorySheet.getRange(7, 1, numRows, data[0].length).setNumberFormat('@').setValues(data);
     numRowsRange.setValues([[numRows, dateStamp(undefined, null, null, null, 'dd MMM HH:mm'), getRunTime(startTime)]]);
 
-    spreadsheet.getSheetByName('Assembly').clearContents();
-    spreadsheet.getSheetByName('UoM Conversion').clearContents();
+    spreadsheet.getSheetByName("Assembly").clearContents();
+    spreadsheet.getSheetByName("UoM Conversion").clearContents();
   }
   else
   {
@@ -1409,7 +1429,7 @@ function clearInventory()
     const startTime2 = new Date().getTime();
     const searchData = data.filter(e => e[8] !== "No TS").map(f => [f[0], f[1], null, f[2], f[3], f[4], f[5]]); // Remove "No TS" items and keep units, descriptions and inventory
     const numItems = searchData.length;
-    spreadsheet.getSheetByName('SearchData').clearContents().getRange(1, 1, numItems, searchData[0].length).setNumberFormat('@').setValues(searchData);
+    spreadsheet.getSheetByName("SearchData").clearContents().getRange(1, 1, numItems, searchData[0].length).setNumberFormat('@').setValues(searchData);
     numRowsRange.setValues([[numRows, date1, runTime1],[numItems, dateStamp(undefined, null, null, null, 'dd MMM HH:mm'), getRunTime(startTime2)]]);
   }
 }
@@ -1423,7 +1443,7 @@ function clearManualCounts()
 {
   const startTime = new Date().getTime();
   const spreadsheet = ss;
-  const sheet = spreadsheet.getSheetByName('Manual Counts');
+  const sheet = spreadsheet.getSheetByName("Manual Counts");
   const numHeaders = 3;
   const numItems = sheet.getLastRow() - numHeaders;
 
@@ -1451,11 +1471,11 @@ function clearManualCounts()
   }
 
   if (isRichmondSpreadsheet(spreadsheet))
-    spreadsheet.getSheetByName('INVENTORY').getRange(5, 3, 1, 7)
+    spreadsheet.getSheetByName("INVENTORY").getRange(5, 3, 1, 7)
       .setValues([[ '=Remaining_ManualCounts&\" items on the Manual Counts page that haven\'t been counted\"', null, null, null, 
                     '=Progress_ManualCounts', dateStamp(undefined, null, null, null, 'dd MMM HH:mm'), getRunTime(startTime)]]);
   else
-    spreadsheet.getSheetByName('INVENTORY').getRange(8, 1, 1, 9)
+    spreadsheet.getSheetByName("INVENTORY").getRange(8, 1, 1, 9)
       .setValues([[ '=Remaining_ManualCounts&\" items on the Manual Counts page that haven\'t been counted\"', null, null, null, null, null, 
                     '=Progress_ManualCounts', dateStamp(undefined, null, null, null, 'dd MMM HH:mm'), getRunTime(startTime)]]);    
 }
@@ -1475,7 +1495,7 @@ function completeReceived()
   const sheet = spreadsheet.getSheetByName("Received");
   const numRows = sheet.getLastRow() - START_ROW + 1;
   sheet.getRange(START_ROW, 12, numRows).setValue(true);
-  spreadsheet.getSheetByName('INVENTORY').getRange(3, 7, 1, 3).setValues([['=COUNTIF(Received_Checkbox,FALSE)', dateStamp(undefined, null, null, null, 'dd MMM HH:mm'), getRunTime(startTime)]]);
+  spreadsheet.getSheetByName("INVENTORY").getRange(3, 7, 1, 3).setValues([['=COUNTIF(Received_Checkbox,FALSE)', dateStamp(undefined, null, null, null, 'dd MMM HH:mm'), getRunTime(startTime)]]);
 }
 
 /**
@@ -1504,7 +1524,7 @@ function completeToRichmond()
   }
   
   range.setValues(data); // Set the range with the updated values
-  spreadsheet.getSheetByName('INVENTORY').getRange(4, 7, 1, 3)
+  spreadsheet.getSheetByName("INVENTORY").getRange(4, 7, 1, 3)
     .setValues([['=COUNTIF(ItemsToRichmond_Checkbox,FALSE)', dateStamp(undefined, null, null, null, 'dd MMM HH:mm'), getRunTime(startTime)]]);
 }
 
@@ -1627,7 +1647,7 @@ function copySelectedValues(sheet, startRow, numCols, qtyCol, isInfoCountsPage, 
       const ui = SpreadsheetApp.getUi();
       var response, response2, item, itemJoined, upc, upcTemporaryValues = [], itemTemporaryValues = [];
 
-      if (activeSheet.getSheetName() === 'Manual Counts')
+      if (activeSheet.getSheetName() === "Manual Counts")
       {
         if (isNotFound)
         {
@@ -1746,14 +1766,14 @@ function copySelectedValues(sheet, startRow, numCols, qtyCol, isInfoCountsPage, 
       sheets[0].getRange(sheets[0].getLastRow() + 1, 1, numItems, numCols).setNumberFormat('@').setValues(upcTemporaryValues);
     }
 
-    if (sheet.getSheetName() !== 'Manual Counts') 
+    if (sheet.getSheetName() !== "Manual Counts") 
       sheet.getRange(startRow, startCol, numItems, itemVals[0].length).setNumberFormat('@').setValues(itemVals); // Move the item values to the destination sheet
     else // Moving items to the Manual Counts page
     {
-      if (startRow > 3) // There are existing items on the Manual Counts page
+      if (startRow > 4) // There are existing items on the Manual Counts page
       {
         // Retrieve the existing items and add them to the new items
-        const groupedItems = groupHoochieTypes(sheet.getSheetValues(4, startCol, startRow - 3, sheet.getMaxColumns()).concat(itemVals.map(val => [...val, '', '', '', '', ''])), 0)
+        const groupedItems = groupHoochieTypes(sheet.getSheetValues(4, startCol, startRow - 4, sheet.getMaxColumns()).concat(itemVals.map(val => [...val, '', '', '', '', ''])), 0)
         const items = [];
 
         Object.keys(groupedItems).forEach(key => items.push(...sortHoochies(groupedItems[key], 0, key)));
@@ -1773,10 +1793,10 @@ function copySelectedValues(sheet, startRow, numCols, qtyCol, isInfoCountsPage, 
 
     if (!isInventoryPage && !isUpcPage) 
     {
-      const nCols = (sheet.getSheetName() === 'Manual Counts') ? 7 : 11;
+      const nCols = (sheet.getSheetName() === "Manual Counts") ? 7 : 11;
       applyFullRowFormatting(sheet, startRow, numItems, nCols); // Apply the proper formatting
       
-      if (sheet.getSheetName() !== 'Manual Counts') 
+      if (sheet.getSheetName() !== "Manual Counts") 
         sheet.getRange(startRow, qtyCol).activate(); // Go to the quantity column on the destination sheet
       
       // If we are moving items onto the transfer pages, set the ordered date
@@ -1836,7 +1856,7 @@ function countsRemaining()
 
   if (isRichmondSpreadsheet(spreadsheet)) 
   {
-    const inventorySheet = spreadsheet.getSheetByName('INVENTORY')
+    const inventorySheet = spreadsheet.getSheetByName("INVENTORY")
     const fullInventory = inventorySheet.getSheetValues(8, 2, inventorySheet.getLastRow() - 7, 7);
 
     for (var i = 0; i < fullInventory.length; i++)
@@ -1852,7 +1872,7 @@ function countsRemaining()
   }
   else
   {
-    const searchDataSheet = spreadsheet.getSheetByName('SearchData')
+    const searchDataSheet = spreadsheet.getSheetByName("SearchData")
     const fullInventory = searchDataSheet.getSheetValues(2, 2, searchDataSheet.getLastRow() - 1, 2);
 
     for (var i = 0; i < fullInventory.length; i++)
@@ -1965,7 +1985,7 @@ function downloadInflowBarcodes()
 {
   const spreadsheet = ss;
   const sheet = spreadsheet.getSheetByName("Moncton's inFlow Item Quantities");
-  const upcDatabase = spreadsheet.getSheetByName('UPC Database');
+  const upcDatabase = spreadsheet.getSheetByName("UPC Database");
   const upcs = upcDatabase.getSheetValues(2, 1, upcDatabase.getLastRow() - 1, 3)
   const data = sheet.getSheetValues(3, 1, sheet.getLastRow() - 2, 1).map(item => {
     item.push('');
@@ -1998,7 +2018,7 @@ function downloadInflowBarcodes()
  */
 function downloadInflowPickList()
 {
-  const sheet = ss.getSheetByName('inFlowPick');
+  const sheet = ss.getSheetByName("inFlowPick");
   const data = sheet.getSheetValues(3, 1, sheet.getLastRow() - 2, sheet.getLastColumn() - 1)
 
   for (var row = 0, csv = "OrderNumber,Customer,ItemName,ItemQuantity\r\n"; row < data.length; row++)
@@ -2023,7 +2043,7 @@ function downloadInflowPickList()
  */
 function downloadInflowStockLevels()
 {
-  const sheet = ss.getSheetByName('Manual Counts');
+  const sheet = ss.getSheetByName("Manual Counts");
   const data = [];
   var loc, qty, i;
 
@@ -2074,7 +2094,7 @@ function generateSuggestedInflowPick()
 {
   const spreadsheet = ss;
   const suggestedValuesSheet = spreadsheet.getSheetByName("Moncton's inFlow Item Quantities");
-  const suggestInflowPickSheet = spreadsheet.getSheetByName('Suggested inFlowPick');
+  const suggestInflowPickSheet = spreadsheet.getSheetByName("Suggested inFlowPick");
   const numSuggestedItems = suggestedValuesSheet.getLastRow() - 1;
   const suggestedValues = suggestedValuesSheet.getSheetValues(2, 1, numSuggestedItems, 3);
   const inventorySheet = spreadsheet.getSheetByName("INVENTORY");
@@ -2219,7 +2239,7 @@ function getCounts()
       .setValues([[ '=Remaining_InfoCounts&\" items on the infoCounts page that haven\'t been counted\"', null, null, null, 
                     '=Progress_InfoCounts', dateStamp(undefined, null, null, null, 'dd MMM HH:mm'), getRunTime(startTime)]]);
   else
-    spreadsheet.getSheetByName('INVENTORY').getRange(7, 1, 1, 9)
+    spreadsheet.getSheetByName("INVENTORY").getRange(7, 1, 1, 9)
       .setValues([[ '=Remaining_InfoCounts&\" items on the infoCounts page that haven\'t been counted\"', null, null, null, null, null, 
                     '=Progress_InfoCounts', dateStamp(undefined, null, null, null, 'dd MMM HH:mm'), getRunTime(startTime)]]);
 }
@@ -2326,12 +2346,12 @@ function getPhysicalCounted_CountLog(sheets, DATE, recentCounts)
 
     if (numRows > 0) // Check if there is any data
     {
-      if (sheetName === 'Order')
+      if (sheetName === "Order")
       {
         descripCol = 5;
         numCols = 6;
       }
-      else if (sheetName === 'Shipped')
+      else if (sheetName === "Shipped")
       {
         descripCol = 5;
         numCols = 4;
@@ -2496,7 +2516,7 @@ function itemScan(e, spreadsheet, sheet, sheetName)
       {
         if (upcDatabase[i][0] == upcCode)
         {
-          if (sheetName === 'Shipped')
+          if (sheetName === "Shipped")
           {
             sheet.getRange(row, 4, 1, 7).setValues([[upcDatabase[i][1], upcDatabase[i][2], null, upcDatabase[i][3], '', '', 'Carrier Not Assigned']])
             applyFullRowFormatting(sheet, row, 1, 11)
@@ -2511,7 +2531,7 @@ function itemScan(e, spreadsheet, sheet, sheetName)
             sheet.getRange(row, 6).activate();
             spreadsheet.toast('Item Added to Bottom of Page')
           }
-          else if (sheetName === 'Order')
+          else if (sheetName === "Order")
           {
             const orderPageValues = sheet.getSheetValues(4, 5, lastRow - 3, 1);
 
@@ -2533,9 +2553,9 @@ function itemScan(e, spreadsheet, sheet, sheetName)
               spreadsheet.toast('Item Added to Bottom of Page')
             }
           }
-          else if (sheetName === 'Received')
+          else if (sheetName === "Received")
           {
-            const shippedPage = spreadsheet.getSheetByName('Shipped');
+            const shippedPage = spreadsheet.getSheetByName("Shipped");
             const shippedPageValues = shippedPage.getSheetValues(4, 5, lastRow - 3, 1);
 
             for (var j = 0; j < shippedPageValues.length; j++)
@@ -3813,10 +3833,10 @@ function moveSelectedItemsFromCarrierNotAssigned()
   const ui = SpreadsheetApp.getUi();
   const shippedSheet = SpreadsheetApp.getActiveSheet()
 
-  if (shippedSheet.getSheetName() !== 'Shipped')
+  if (shippedSheet.getSheetName() !== "Shipped")
   {
     ui.alert('You must be on the shipped page to run this function.');
-    ss.getSheetByName('Shipped').activate();
+    ss.getSheetByName("Shipped").activate();
   }
   else // The user is on the shipped sheet
   {
@@ -3824,7 +3844,7 @@ function moveSelectedItemsFromCarrierNotAssigned()
     const activeRanges = spreadsheet.getActiveRangeList().getRanges();
     const rangesToDelete = spreadsheet.getActiveRangeList().getRanges().reverse(); // Delete them from the bottom up, otherwise row numbers will change
     const numCols = shippedSheet.getLastColumn();
-    const dataValidationSheet = spreadsheet.getSheetByName('Data Validation');
+    const dataValidationSheet = spreadsheet.getSheetByName("Data Validation");
     const allCarriers = dataValidationSheet.getSheetValues(1, 1, dataValidationSheet.getLastRow(), 3)
     const currentShipmentList = [...new Set(allCarriers.map(carrier => carrier[0]).flat().filter(carrier => isNotBlank(carrier)))];
 
@@ -3940,7 +3960,7 @@ function moveSelectedItemsFromCarrierNotAssigned()
  */
 function moveToItemSearch()
 {
-  ss.getSheetByName('Item Search').getRange(1, 2).activate();
+  ss.getSheetByName("Item Search").getRange(1, 2).activate();
 }
 
 /**
@@ -3950,7 +3970,7 @@ function moveToItemSearch()
  */
 function moveToManualCounts()
 {
-  ss.getSheetByName('Manual Counts').activate();
+  ss.getSheetByName("Manual Counts").activate();
 }
 
 /**
@@ -3960,7 +3980,7 @@ function moveToManualCounts()
  */
 function moveToManualScan()
 {
-  ss.getSheetByName('Manual Scan').getRange(1, 1).activate();
+  ss.getSheetByName("Manual Scan").getRange(1, 1).activate();
 }
 
 /**
@@ -3970,7 +3990,7 @@ function moveToManualScan()
  */
 function moveToUpcDatabse()
 {
-  ss.getSheetByName('UPC Database').activate();
+  ss.getSheetByName("UPC Database").activate();
 }
 
 /**
@@ -3985,11 +4005,11 @@ function moveToUpcDatabse()
  */
 function populateManualScan(ss, sheet, rowNum, newItemDescription)
 {
-  const barcodeInputRange = ss.getSheetByName('Manual Scan').getRange(1, 1);
+  const barcodeInputRange = ss.getSheetByName("Manual Scan").getRange(1, 1);
   const manualCountsPage = ss.getSheetByName("Manual Counts");
-  const currentStock = (sheet.getSheetName() === 'Item Search') ? 2 : 1;
+  const currentStock = (sheet.getSheetName() === "Item Search") ? 2 : 1;
   const lastRow = manualCountsPage.getLastRow();
-  var itemValues = (sheet.getSheetName() === 'Item Search') ? sheet.getSheetValues(rowNum, 2, 1, 3)[0] : sheet.getSheetValues(rowNum, 1, 1, 2)[0];
+  var itemValues = (sheet.getSheetName() === "Item Search") ? sheet.getSheetValues(rowNum, 2, 1, 3)[0] : sheet.getSheetValues(rowNum, 1, 1, 2)[0];
 
   if (newItemDescription != null)
   {
@@ -4061,7 +4081,7 @@ function print_X_Order()
 { 
   const startTime = new Date().getTime()
   const spreadsheet = print_X("Order"); 
-  spreadsheet.getSheetByName('INVENTORY').getRange(5, 7, 1, 3).setValues([['=COUNTIF(Order_ActualCounts,">=0")', dateStamp(undefined, null, null, null, 'dd MMM HH:mm'), getRunTime(startTime)]]);
+  spreadsheet.getSheetByName("INVENTORY").getRange(5, 7, 1, 3).setValues([['=COUNTIF(Order_ActualCounts,">=0")', dateStamp(undefined, null, null, null, 'dd MMM HH:mm'), getRunTime(startTime)]]);
 }
 
 /**
@@ -4073,7 +4093,7 @@ function print_X_Shipped()
 {
   const startTime = new Date().getTime()
   const spreadsheet = print_X("Shipped");
-  spreadsheet.getSheetByName('INVENTORY').getRange(6, 7, 1, 3).setValues([['=COUNTIF(Shipped_ActualCounts,">=0")', dateStamp(undefined, null, null, null, 'dd MMM HH:mm'), getRunTime(startTime)]]);
+  spreadsheet.getSheetByName("INVENTORY").getRange(6, 7, 1, 3).setValues([['=COUNTIF(Shipped_ActualCounts,">=0")', dateStamp(undefined, null, null, null, 'dd MMM HH:mm'), getRunTime(startTime)]]);
 }
 
 /**
@@ -4131,7 +4151,7 @@ function receiveAll(e, spreadsheet, sheet)
       {
         range.setValue('');
         numRows = shipments.length - 1;
-        const receivedSheet = spreadsheet.getSheetByName('Received');
+        const receivedSheet = spreadsheet.getSheetByName("Received");
         const shippedItemsRange = sheet.getRange(row + 1, 1, numRows, numCols);
         const backgroundColours = shippedItemsRange.getBackgrounds();
         const richTextValues = sheet.getRange(row + 1, 6, numRows).getRichTextValues();
@@ -4156,7 +4176,7 @@ function receiveAll(e, spreadsheet, sheet)
 
         if (numRows > 0)
         {
-          const receivedSheet = spreadsheet.getSheetByName('Received');
+          const receivedSheet = spreadsheet.getSheetByName("Received");
           const shippedItemsRange = sheet.getRange(row + 1, 1, numRows, numCols);
           const backgroundColours = shippedItemsRange.getBackgrounds();
           const richTextValues = sheet.getRange(row + 1, 6, numRows).getRichTextValues();
@@ -4183,7 +4203,7 @@ function receiveAll(e, spreadsheet, sheet)
 
         if (numRows > 0)
         {
-          const receivedSheet = spreadsheet.getSheetByName('Received');
+          const receivedSheet = spreadsheet.getSheetByName("Received");
           const shippedItemsRange = sheet.getRange(row + 1, 1, numRows, numCols);
           const backgroundColours = shippedItemsRange.getBackgrounds();
           const richTextValues = sheet.getRange(row + 1, 6, numRows).getRichTextValues();
@@ -4217,7 +4237,7 @@ function recentlyCreatedItems(spreadsheet, itemSearchSheet)
     itemSearchSheet = spreadsheet.getActiveSheet();
   }
 
-  const recentData = spreadsheet.getSheetByName('Recent').getSheetValues(2, 1, MAX_NUM_ITEMS, 6);
+  const recentData = spreadsheet.getSheetByName("Recent").getSheetValues(2, 1, MAX_NUM_ITEMS, 6);
 
   if (isRichmondSpreadsheet(spreadsheet))
   {
@@ -4228,8 +4248,8 @@ function recentlyCreatedItems(spreadsheet, itemSearchSheet)
   }
   else
   {
-    const orderSheet = spreadsheet.getSheetByName('Order');
-    const shippedSheet = spreadsheet.getSheetByName('Shipped')
+    const orderSheet = spreadsheet.getSheetByName("Order");
+    const shippedSheet = spreadsheet.getSheetByName("Shipped")
     const orderedItems =   orderSheet.getSheetValues(4, 5,   orderSheet.getLastRow() - 3, 1); // The items on the order sheet
     const shippedItems = shippedSheet.getSheetValues(4, 5, shippedSheet.getLastRow() - 3, 1); // The items on the shipped sheet
     const backgroundColours = [], fontColours = [];
@@ -4323,7 +4343,7 @@ function search(e, spreadsheet, sheet)
 
           if (isNotBlank(searchWords[0])) // If the value in the search box is NOT blank, then compute the search
           {
-            const inventorySheet = spreadsheet.getSheetByName('INVENTORY');
+            const inventorySheet = spreadsheet.getSheetByName("INVENTORY");
             const data = inventorySheet.getSheetValues(8, 1, inventorySheet.getLastRow() - 7, 7);
             const numSearchWords = searchWords.length - 1; // The number of search words - 1
             const output = [];
@@ -4406,7 +4426,7 @@ function search(e, spreadsheet, sheet)
           }
           else if (isNotBlank(e.oldValue) && userHasPressedDelete(e.value)) // If the user deletes the data in the search box, then the recently created items are displayed
           {
-            const recentData = spreadsheet.getSheetByName('Recent').getSheetValues(2, 1, MAX_NUM_ITEMS, 7);  // These are the most recently created items
+            const recentData = spreadsheet.getSheetByName("Recent").getSheetValues(2, 1, MAX_NUM_ITEMS, 7);  // These are the most recently created items
             itemSearchFullRange.setValues(recentData);
             searchResultsDisplayRange.setValue("The last " + MAX_NUM_ITEMS + " created items are displayed.");
           }
@@ -4426,7 +4446,7 @@ function search(e, spreadsheet, sheet)
 
           if (isNotBlank(searchWords[0])) // If the value in the search box is NOT blank, then compute the search
           {
-            const searchDataSheet = spreadsheet.getSheetByName('SearchData');
+            const searchDataSheet = spreadsheet.getSheetByName("SearchData");
             const descriptions = searchDataSheet.getSheetValues(2, 2, searchDataSheet.getLastRow() - 1, 1); // All the descriptions (ONLY) from the SearchData sheet
             const numSearchWords = searchWords.length - 1; // The number of search words - 1
             const firstOutput = [], itemIndices = [];
@@ -4530,8 +4550,8 @@ function search(e, spreadsheet, sheet)
               }
 
               const columnIndex = (isParksvilleSpreadsheet(spreadsheet)) ? [4, 3, 5, 6] : [5, 3, 4, 6]; // This makes sure the current stock reference on the Order sheet is correct
-              const orderSheet = spreadsheet.getSheetByName('Order');
-              const shippedSheet = spreadsheet.getSheetByName('Shipped');
+              const orderSheet = spreadsheet.getSheetByName("Order");
+              const shippedSheet = spreadsheet.getSheetByName("Shipped");
               const orderedItems =   orderSheet.getSheetValues(4, 5,   orderSheet.getLastRow() - 3, 1).map(u => u[0].split(' - ').pop()); // The items on the order sheet
               const shippedItems = shippedSheet.getSheetValues(4, 5, shippedSheet.getLastRow() - 3, 1).map(u => u[0].split(' - ').pop()); // The items on the shipped sheet
               const data = searchDataSheet.getSheetValues(2, 1, searchDataSheet.getLastRow() - 1, 7);
@@ -4592,11 +4612,11 @@ function search(e, spreadsheet, sheet)
           }
           else if (isNotBlank(e.oldValue) && userHasPressedDelete(e.value)) // If the user deletes the data in the search box, then the recently created items are displayed
           {
-            const orderSheet = spreadsheet.getSheetByName('Order');
-            const shippedSheet = spreadsheet.getSheetByName('Shipped');
+            const orderSheet = spreadsheet.getSheetByName("Order");
+            const shippedSheet = spreadsheet.getSheetByName("Shipped");
             const orderedItems =   orderSheet.getSheetValues(4, 5,   orderSheet.getLastRow() - 3, 1); // The items on the order sheet
             const shippedItems = shippedSheet.getSheetValues(4, 5, shippedSheet.getLastRow() - 3, 1); // The items on the shipped sheet
-            const recentData = spreadsheet.getSheetByName('Recent').getSheetValues(2, 1, MAX_NUM_ITEMS, 7); // These are the most recently created items
+            const recentData = spreadsheet.getSheetByName("Recent").getSheetValues(2, 1, MAX_NUM_ITEMS, 7); // These are the most recently created items
             const backgroundColours = [], fontColours = [];
 
             for (var i = 0; i < MAX_NUM_ITEMS; i++)
@@ -4685,7 +4705,7 @@ function search(e, spreadsheet, sheet)
               const item = sheet.getSheetValues(row, 2, 1, 1)[0][0];
               const unmarryUpcSheet = spreadsheet.getSheetByName("UPCs to Unmarry");
               unmarryUpcSheet.getRange(unmarryUpcSheet.getLastRow() + 1, 1, 1, 2).setNumberFormat('@').setValues([[value[1], item]]);
-              spreadsheet.getSheetByName('Manual Scan').getRange(1, 1).activate()
+              spreadsheet.getSheetByName("Manual Scan").getRange(1, 1).activate()
             }
             else
               Browser.msgBox('Invalid UPC Code', 'Please type either mmm, uuu, aaa, or sss, followed by SPACE and the UPC Code.', Browser.Buttons.OK)
@@ -4700,13 +4720,13 @@ function search(e, spreadsheet, sheet)
               item[1] = newItem.join(' - ')
               const upcDatabaseSheet = spreadsheet.getSheetByName("UPC Database");
               const manAddedUPCsSheet = spreadsheet.getSheetByName("Manually Added UPCs");
-              const inventorySheet = (isRichmondSpreadsheet(spreadsheet)) ? spreadsheet.getSheetByName('INVENTORY') : spreadsheet.getSheetByName('SearchData');
+              const inventorySheet = (isRichmondSpreadsheet(spreadsheet)) ? spreadsheet.getSheetByName("INVENTORY") : spreadsheet.getSheetByName("SearchData");
               manAddedUPCsSheet.getRange(manAddedUPCsSheet.getLastRow() + 1, 1, 1, 4).setNumberFormat('@').setValues([['MAKE_NEW_SKU', value[1], item[0], item[1]]]);
               upcDatabaseSheet.getRange(upcDatabaseSheet.getLastRow() + 1, 1, 1, 3).setNumberFormat('@').setValues([[value[1], item[0], item[1]]]); 
               inventorySheet.getRange(inventorySheet.getLastRow() + 1, 1, 1, 2).setNumberFormat('@').setValues([[item[0], item[1]]]); // Add the 'MAKE_NEW_SKU' item to the inventory sheet
 
               populateManualScan(spreadsheet, sheet, row, item[1])
-              sheet.getRange(4, 1, MAX_NUM_ITEMS, 6).setValues(spreadsheet.getSheetByName('Recent').getSheetValues(2, 1, MAX_NUM_ITEMS, 6));
+              sheet.getRange(4, 1, MAX_NUM_ITEMS, 6).setValues(spreadsheet.getSheetByName("Recent").getSheetValues(2, 1, MAX_NUM_ITEMS, 6));
               sheet.getRange(1, 1, 1, 2).setValues([["The last " + MAX_NUM_ITEMS + " created items are displayed.", ""]]);
             }
             else
@@ -4738,7 +4758,7 @@ function search(e, spreadsheet, sheet)
 
     if (values.length !== 0) // Don't run function if every value is blank, probably means the user pressed the delete key on a large selection
     {
-      const inventorySheet = spreadsheet.getSheetByName('INVENTORY');
+      const inventorySheet = spreadsheet.getSheetByName("INVENTORY");
       var data, someSKUsNotFound = false, skus;
 
       if (isRichmondSpreadsheet(spreadsheet))
@@ -4903,8 +4923,8 @@ function search(e, spreadsheet, sheet)
             return isSkuFound;
           })
 
-          const orderSheet = spreadsheet.getSheetByName('Order');
-          const shippedSheet = spreadsheet.getSheetByName('Shipped');
+          const orderSheet = spreadsheet.getSheetByName("Order");
+          const shippedSheet = spreadsheet.getSheetByName("Shipped");
           const orderedItems =   orderSheet.getSheetValues(4, 5,   orderSheet.getLastRow() - 3, 1).map(u => u[0].split(' - ').pop().toString().toUpperCase()); // The items on the order sheet
           const shippedItems = shippedSheet.getSheetValues(4, 5, shippedSheet.getLastRow() - 3, 1).map(u => u[0].split(' - ').pop().toString().toUpperCase()); // The items on the shipped sheet
           const backgroundColours = [], fontColours = [];
@@ -4974,8 +4994,8 @@ function search(e, spreadsheet, sheet)
           const numItems = skus.length
           const horizontalAlignments = new Array(numItems).fill(['center', 'left', 'center', 'center', 'center', 'center', 'center', 'center'])
           const fontSizes = new Array(numItems).fill([10, 10, 10, 10, 10, 10, 10, 12])
-          const orderSheet = spreadsheet.getSheetByName('Order');
-          const shippedSheet = spreadsheet.getSheetByName('Shipped');
+          const orderSheet = spreadsheet.getSheetByName("Order");
+          const shippedSheet = spreadsheet.getSheetByName("Shipped");
           const orderedItems =   orderSheet.getSheetValues(4, 5,   orderSheet.getLastRow() - 3, 1).map(u => u[0].split(' - ').pop().toString().toUpperCase()); // The items on the order sheet
           const shippedItems = shippedSheet.getSheetValues(4, 5, shippedSheet.getLastRow() - 3, 1).map(u => u[0].split(' - ').pop().toString().toUpperCase()); // The items on the shipped sheet
           const backgroundColours = [], fontColours = [];
@@ -5060,7 +5080,7 @@ function sendEmailToBranchStore(status, row, rowValues, sheet, spreadsheet)
   htmlTemplate.currentStock = rowValues[0][6];
   htmlTemplate.actualStock = rowValues[0][7];
   htmlTemplate.shipmentStatus = status;
-  htmlTemplate.url = spreadsheet.getUrl() + '#gid=' + spreadsheet.getSheetByName('Shipped').getSheetId();
+  htmlTemplate.url = spreadsheet.getUrl() + '#gid=' + spreadsheet.getSheetByName("Shipped").getSheetId();
 
   MailApp.sendEmail({
     to: (isParksvilleSpreadsheet(spreadsheet)) ? 
@@ -5081,7 +5101,7 @@ function sendEmailToTrites()
 {
   const activeRanges = SpreadsheetApp.getActiveRangeList().getRanges(); // The selected ranges on the item search sheet
 
-  if (SpreadsheetApp.getActiveSheet().getSheetName() === 'Order' && Math.min(...activeRanges.map(rng => rng.getRow())) > 3) // If the user has not selected an item, alert them with an error message
+  if (SpreadsheetApp.getActiveSheet().getSheetName() === "Order" && Math.min(...activeRanges.map(rng => rng.getRow())) > 3) // If the user has not selected an item, alert them with an error message
   { 
     const spreadsheet = ss;
     const timeZone = spreadsheet.getSpreadsheetTimeZone();
@@ -5357,7 +5377,7 @@ function transferRow(fromSheet, sheet, row, rowValues, numCols, isRowDeleted, ro
   
   if (fromSheetName !== sheetName) rowValues[0][10] = dateStamp(row, 11); // This represents when the item was moved to a different page
 
-  if (sheetName === 'Received') // Put all of the receivings at the top of the page
+  if (sheetName === "Received") // Put all of the receivings at the top of the page
   {
     var destinationRow = 4;
     sheet.insertRowAfter(3);
@@ -5420,7 +5440,7 @@ function transferRow(fromSheet, sheet, row, rowValues, numCols, isRowDeleted, ro
   
   if (isRowDeleted) 
   {
-    if (fromSheetName === 'Shipped') // If we are on the shipped page, we need to check if a carrier banner needs to be deleted
+    if (fromSheetName === "Shipped") // If we are on the shipped page, we need to check if a carrier banner needs to be deleted
     {
       // First check if shipping banner needs to be delete
       const numCarrierRowBanners = carrierBannerRowNumbers.length - 1; // We don't care about the Back to Order data validation.
@@ -5509,7 +5529,7 @@ function updateBO(rowRange, rowValues)
 }
 
 /**
- * This function first updates the 'Recent' sheet which contains the last MAX_NUM_ITEMS items that have been created in Adagio.
+ * This function first updates the Recent sheet which contains the last MAX_NUM_ITEMS items that have been created in Adagio.
  * It also includes the data from the count log as to when each item was last counted.
  * 
  * @author Jarren Ralf
@@ -5727,7 +5747,7 @@ function warning(e, spreadsheet, sheet, sheetName)
     {
       if (!isRichmondSpreadsheet(spreadsheet))
       {
-        (sheetName === 'Manual Counts') ? // sheetName === 'TitesCounts'
+        (sheetName === "Manual Counts") ? // sheetName === 'TitesCounts'
           SpreadsheetApp.getUi().alert("Please don't attempt to change the items from the Manual Counts page.\n\nGo to the Item Search or Manual Scan page to add new products to this list.") :
           SpreadsheetApp.getUi().alert("Please don't attempt to change the items on the InfoCounts page.");
 
@@ -5740,7 +5760,7 @@ function warning(e, spreadsheet, sheet, sheetName)
       range.setValue(e.oldValue); // Put the old value back in the cell
       if (userHasNotPressedDelete(e.value)) sheet.getRange(row, 3).setValue(e.value).activate(); // Move the count the user entered to the New Count column
     }
-    else if (col == 3 && sheetName === 'Manual Counts')
+    else if (col == 3 && sheetName === "Manual Counts")
     {
       if (e.oldValue !== undefined) // Old value is NOT blank
       {

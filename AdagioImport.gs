@@ -11,7 +11,7 @@ function getPhysicalCounted(sheet)
   const invalidCounts = [];  
   var values_infoCounts = [], values_manualCounts = [], values_order = [], values_shipped = [], values_UoM_Conversion = [], values_assembly = [];
 
-  if (sheet.getSheetName() !== 'Imported Richmond Data (Loc: 100)') // Parksville and Rupert spreadsheets also have an Order and Shipped page that need to be analyzed
+  if (sheet.getSheetName() !== "Imported Richmond Data (Loc: 100)") // Parksville and Rupert spreadsheets also have an Order and Shipped page that need to be analyzed
   {
     const numRows_order = getLastRowSpecial(sheet.getSheetValues(4, 1, numRows, 1));
     const numRows_shipped = getLastRowSpecial(sheet.getSheetValues(5, 1, numRows, 1));
@@ -172,7 +172,7 @@ function getPhysicalCounted(sheet)
 */
 function getSKUs(spreadsheet)
 {
-  const inventorySheet = spreadsheet.getSheetByName('DataImport');
+  const inventorySheet = spreadsheet.getSheetByName("DataImport");
 
   return inventorySheet.getSheetValues(2, 7, inventorySheet.getLastRow() - 1, 1).flat();
 }
@@ -273,9 +273,9 @@ function importData(spreadsheet)
   if (arguments.length == 0)
     var spreadsheet = SpreadsheetApp.getActive()
 
-  const dataSheets = [spreadsheet.getSheetByName('Imported Richmond Data (Loc: 100)'), 
-                      spreadsheet.getSheetByName('Imported Parksville Data (Loc: 200)'),
-                      spreadsheet.getSheetByName('Imported Rupert Data (Loc: 300)')
+  const dataSheets = [spreadsheet.getSheetByName("Imported Richmond Data (Loc: 100)"), 
+                      spreadsheet.getSheetByName("Imported Parksville Data (Loc: 200)"),
+                      spreadsheet.getSheetByName("Imported Rupert Data (Loc: 300)")
   ]
 
   const formulas = [[[
@@ -358,7 +358,7 @@ function physCountRich()
 {
   const startTime = new Date().getTime(); // For the run time
   const spreadsheet = SpreadsheetApp.getActive()
-  const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet')
+  const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet")
   const numRows = adagioSheet.getLastRow() - 23;
   var richmondImportSheet;
   [richmondImportSheet,,] = importData(spreadsheet)
@@ -383,7 +383,7 @@ function physCountPark()
 {  
   const startTime = new Date().getTime(); // For the run time
   const spreadsheet = SpreadsheetApp.getActive()
-  const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet')
+  const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet")
   const numRows = adagioSheet.getLastRow() - 23;
   var parksImportSheet;
   [, parksImportSheet,] = importData(spreadsheet)
@@ -408,7 +408,7 @@ function physCountRupt()
 {
   const startTime = new Date().getTime(); // For the run time
   const spreadsheet = SpreadsheetApp.getActive()
-  const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet')
+  const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet")
   const numRows = adagioSheet.getLastRow() - 23;
   var rupertImportSheet;
   [,, rupertImportSheet] = importData(spreadsheet)
@@ -433,7 +433,7 @@ function runAll()
 { 
   const startTime = new Date().getTime(); // For the run time
   const spreadsheet = SpreadsheetApp.getActive()
-  const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
+  const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
   const numRows = adagioSheet.getLastRow() - 23;
   var richmondImportSheet, parksImportSheet, rupertImportSheet;
   [richmondImportSheet, parksImportSheet, rupertImportSheet] = importData(spreadsheet)
@@ -486,7 +486,7 @@ function stockTransfers()
 {
   const startTime = new Date().getTime(); // For the run time
   const spreadsheet = SpreadsheetApp.getActive()
-  const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
+  const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
   const numRows = adagioSheet.getLastRow() - 23;
   var parksImportSheet, rupertImportSheet;
   [, parksImportSheet, rupertImportSheet] = importData(spreadsheet)
