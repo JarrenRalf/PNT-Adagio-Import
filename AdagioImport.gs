@@ -1,4 +1,52 @@
 /**
+ * This function takes the data on the Adagio Transfer Sheet and it retrieves the cost from a CSV file in the google drive and 
+ * displays the resulting values on the Proposed Design page for inputting into Adagio.
+ * 
+ * @author Jarren Ralf
+ */
+function getCosts()
+{
+  const spreadsheet = SpreadsheetApp.getActive();
+  const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
+  const maxRows = adagioSheet.getMaxRows() - 23;
+  const numRows = Math.max(getLastRowSpecial(adagioSheet.getSheetValues(24,  2, maxRows, 1)), // Richmond Counts
+                           getLastRowSpecial(adagioSheet.getSheetValues(24,  7, maxRows, 1)), // Parksville Counts
+                           getLastRowSpecial(adagioSheet.getSheetValues(24, 12, maxRows, 1))) // Rupert Counts
+  if (numRows)
+  {
+    const proposedSheet = spreadsheet.getSheetByName('Proposed Design');
+    const numRowsInitially = proposedSheet.getLastRow() - 23;
+    const csvData = Utilities.parseCsv(DriveApp.getFilesByName("testinventory.csv").next().getBlob().getDataAsString());
+    const skuIdx = [0, 5, 10]; // Th index for the position of the SKU on the Adagio Transfer sheet := Richmond, Parksville, Prince Rupert
+    var costs, itemValues;
+
+    if (numRowsInitially > numRows)
+      proposedSheet.getRange(24, 2, numRowsInitially, 17).clearContent(); // Clear the previous values on this page
+
+    const adagioDataWithCost = adagioSheet.getSheetValues(24, 2, numRows, 14).map(item => {
+      costs = ['', '', '']; // Cost values for the particular item in Richmond, Parksville, Prince Rupert
+
+      for (var i = 0; i < 3; i++)
+      {
+        if (isNotBlank(item[skuIdx[i]]))
+        {
+          itemValues = csvData.find(sku => sku[8].toString().toUpperCase() === item[skuIdx[i]].toString().toUpperCase()) // Find the item in the testInventory csv
+
+          if (itemValues)
+            costs[i] = itemValues.pop(); // The cost is the final column
+        }
+      }
+
+      return [item[0], costs[0], item[1], item[2], item[3], item[4], item[5], costs[1], item[6], item[7], item[8], item[9], item[10], costs[2], item[11], item[12], item[13]]
+    })
+
+    proposedSheet.getRange(24, 2, numRows, 17).setValues(adagioDataWithCost)
+  }
+  else
+    Logger.log('There were no counts on the Adagio Transfer Sheet. The number of rows is 0: ' + numRows)
+}
+
+/**
 * This function gets the of the physical counts done by a particular location based on which google sheet is being analyzed.
 *
 * @param  {Sheet} sheet : The imported data sheet
