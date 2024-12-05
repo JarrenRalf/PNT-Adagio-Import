@@ -33,7 +33,7 @@ function getCosts()
           itemValues = csvData.find(sku => sku[8].toString().toUpperCase() === item[skuIdx[i]].toString().toUpperCase()) // Find the item in the testInventory csv
 
           if (itemValues)
-            costs[i] = itemValues.pop(); // The cost is the final column
+            costs[i] = itemValues[9]; // The cost is the final column
         }
       }
 

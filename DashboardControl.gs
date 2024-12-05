@@ -2323,8 +2323,9 @@ function updateDashboard()
     const today = new Date();
     const spreadsheet = SpreadsheetApp.getActive();
     const sheets = spreadsheet.getSheets();
-    const adagioSheet = sheets.shift();
-    const conversionSheet = sheets.shift();
+    const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
+    const proposedConversionSheet = spreadsheet.getSheetByName('ProposedConvertedExport');
+    const conversionSheet = spreadsheet.getSheetByName('ConvertedExport');
     const ONE_WEEK  = new Date(today.getFullYear(), today.getMonth(), today.getDate() -  7);
     const range = adagioSheet.getRange(11, 18, 3);
     const fontColours = range.getValues().map(date => [(new Date(date[0].split(' on ')[1]) <= ONE_WEEK) ? 'red' : 'black']);
@@ -2334,6 +2335,7 @@ function updateDashboard()
     adagioSheet.getRange('O2').setValue('Extend Dashboard')
 
     conversionSheet.getRange(2, 7).uncheck() // Uncheck the checkbox on the ConvertedExport page
+    proposedConversionSheet.getRange(2, 9).uncheck() // Uncheck the checkbox on the ConvertedExport page
 
     for (var j = 0; j < sheets.length; j++)
     {

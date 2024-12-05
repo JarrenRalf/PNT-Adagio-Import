@@ -63,7 +63,7 @@ function computeConversions_Assembly()
                 itemValues = csvData.find(sku => sku[8].toString().toUpperCase() === data[k][SKU].toString().toUpperCase()) // Find the item in the testInventory csv
                 data[k][locations[l]] = Number(data[k][locations[l]])
                 data[k][locations[l]] += assembledSkusAndQtys[assemblyData[i][ASSEMBLED_SKU].toString().toUpperCase()][l]*Number(assemblyData[i][CONVERSION_FACTOR])
-                exportData[l].push([data[k][SKU], (itemValues) ? itemValues.pop() : '', data[k][locations[l]]])
+                exportData[l].push([data[k][SKU], (itemValues) ? itemValues[9] : '', data[k][locations[l]]])
                 break;
               }
             }
@@ -93,7 +93,7 @@ function computeConversions_Assembly()
                     data[j][locations[l]] = 0
                     data[k][locations[l]] = Number(data[k][locations[l]])
                     data[k][locations[l]] += assembledSkusAndQtys[assemblyData[i][ASSEMBLED_SKU].toString().toUpperCase()][l]*Number(assemblyData[i][CONVERSION_FACTOR])
-                    exportData[l].push([data[j][SKU], (itemValues) ? itemValues.pop() : '', 0], [data[k][SKU], (itemValues) ? itemValues.pop() : '', data[k][locations[l]]])
+                    exportData[l].push([data[j][SKU], (itemValues) ? itemValues[9] : '', 0], [data[k][SKU], (itemValues) ? itemValues[9] : '', data[k][locations[l]]])
                     break;
                   }
                 }
@@ -185,7 +185,12 @@ function computeConversions_Assembly_Then_PackageSize()
                 itemValues = csvData.find(sku => sku[8].toString().toUpperCase() === data[k][SKU].toString().toUpperCase()) // Find the item in the testInventory csv
                 data[k][locations[l]] = Number(data[k][locations[l]])
                 data[k][locations[l]] += assembledSkusAndQtys[assemblyData[i][ASSEMBLED_SKU].toString().toUpperCase()][l]*Number(assemblyData[i][CONVERSION_FACTOR])
-                exportData[l].push([data[k][SKU], (itemValues) ? itemValues.pop() : '', data[k][locations[l]]])
+
+                Logger.log(l)
+                Logger.log(exportData)
+                exportData[l].push([data[k][SKU], (itemValues) ? itemValues[9] : '', data[k][locations[l]]])
+                Logger.log(exportData)
+
                 break;
               }
             }
@@ -215,7 +220,8 @@ function computeConversions_Assembly_Then_PackageSize()
                     data[j][locations[l]] = 0
                     data[k][locations[l]] = Number(data[k][locations[l]])
                     data[k][locations[l]] += assembledSkusAndQtys[assemblyData[i][ASSEMBLED_SKU].toString().toUpperCase()][l]*Number(assemblyData[i][CONVERSION_FACTOR])
-                    exportData[l].push([data[j][SKU], 0], (itemValues) ? itemValues.pop() : '', [data[k][SKU], data[k][locations[l]]])
+                    exportData[l].push([data[j][SKU], (itemValues) ? itemValues[9] : '', 0], [data[k][SKU], (itemValues) ? itemValues[9] : '', data[k][locations[l]]])
+
                     break;
                   }
                 }
@@ -248,6 +254,7 @@ function computeConversions_Assembly_Then_PackageSize()
         if (bothSKUsAreFound(pairOfSKUs)) // Once both of the SKUs are found, then get the conversions for all four locations
         {
           [data, exportData] = getConversions(data, exportData, conversionData[j], pairOfSKUs, SKU, CONVERSION_FACTOR, locations, csvData);
+
           pairOfSKUs.length = 0; // Empty the array by setting its length equal to 0
           break;
         }
@@ -465,7 +472,6 @@ function elapsedTime(startTime)
 */
 function getConversions(data, exportData, conversionData, pairOfSKUs, SKU, CONVERSION_FACTOR, locations, csvData)
 {
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   const SMALLER_PACK = 0; // For the jth row of the SKUsToWatch, the SKU on the LEFT  (Used as an index for the pairOfSKUs array)
   const  LARGER_PACK = 1; // For the jth row of the SKUsToWatch, the SKU on the RIGHT (Used as an index for the pairOfSKUs array)
   var itemValues1, itemValues2;
@@ -486,18 +492,18 @@ function getConversions(data, exportData, conversionData, pairOfSKUs, SKU, CONVE
           itemValues1 = csvData.find(sku => sku[8].toString().toUpperCase() === data[pairOfSKUs[LARGER_PACK]][SKU].toString().toUpperCase()) // Find the item in the testInventory csv
           itemValues2 = csvData.find(sku => sku[8].toString().toUpperCase() === data[pairOfSKUs[SMALLER_PACK]][SKU].toString().toUpperCase()) // Find the item in the testInventory csv
           data[pairOfSKUs[LARGER_PACK]][locations[l]] -= numPacksNeeded;
-          exportData[l].push([data[pairOfSKUs[LARGER_PACK]][SKU], (itemValues1) ? itemValues1[10] : '', data[pairOfSKUs[LARGER_PACK]][locations[l]]]);
+          exportData[l].push([data[pairOfSKUs[LARGER_PACK]][SKU], (itemValues1) ? itemValues1[9] : '', data[pairOfSKUs[LARGER_PACK]][locations[l]]]);
           data[pairOfSKUs[SMALLER_PACK]][locations[l]] += numPacksNeeded*conversionData[CONVERSION_FACTOR];
-          exportData[l].push([data[pairOfSKUs[SMALLER_PACK]][SKU], (itemValues2) ? itemValues2[10] : '', data[pairOfSKUs[SMALLER_PACK]][locations[l]]]);
+          exportData[l].push([data[pairOfSKUs[SMALLER_PACK]][SKU], (itemValues2) ? itemValues2[9] : '', data[pairOfSKUs[SMALLER_PACK]][locations[l]]]);
         }
         else // There aren't enough of the LARGER_PACK_SKU items to make the inventory of the SMALLER_PACK_SKU positive, but conversion is done nonetheless
         {
           itemValues1 = csvData.find(sku => sku[8].toString().toUpperCase() === data[pairOfSKUs[LARGER_PACK]][SKU].toString().toUpperCase()) // Find the item in the testInventory csv
           itemValues2 = csvData.find(sku => sku[8].toString().toUpperCase() === data[pairOfSKUs[SMALLER_PACK]][SKU].toString().toUpperCase()) // Find the item in the testInventory csv
           data[pairOfSKUs[SMALLER_PACK]][locations[l]] += data[pairOfSKUs[LARGER_PACK]][locations[l]]*conversionData[CONVERSION_FACTOR];
-          exportData[l].push([data[pairOfSKUs[SMALLER_PACK]][SKU], (itemValues2) ? itemValues2[10] : '', data[pairOfSKUs[SMALLER_PACK]][locations[l]]]);
+          exportData[l].push([data[pairOfSKUs[SMALLER_PACK]][SKU], (itemValues2) ? itemValues2[9] : '', data[pairOfSKUs[SMALLER_PACK]][locations[l]]]);
           data[pairOfSKUs[LARGER_PACK]][locations[l]] = 0;
-          exportData[l].push([data[pairOfSKUs[LARGER_PACK]][SKU], (itemValues1) ? itemValues1[10] : '',  data[pairOfSKUs[LARGER_PACK]][locations[l]]]);
+          exportData[l].push([data[pairOfSKUs[LARGER_PACK]][SKU], (itemValues1) ? itemValues1[9] : '',  data[pairOfSKUs[LARGER_PACK]][locations[l]]]);
         }
       }
       else if (isNegative(data[pairOfSKUs[LARGER_PACK]][locations[l]])) // The item with the larger pack is negative
@@ -507,18 +513,18 @@ function getConversions(data, exportData, conversionData, pairOfSKUs, SKU, CONVE
           itemValues1 = csvData.find(sku => sku[8].toString().toUpperCase() === data[pairOfSKUs[LARGER_PACK]][SKU].toString().toUpperCase()) // Find the item in the testInventory csv
           itemValues2 = csvData.find(sku => sku[8].toString().toUpperCase() === data[pairOfSKUs[SMALLER_PACK]][SKU].toString().toUpperCase()) // Find the item in the testInventory csv
           data[pairOfSKUs[LARGER_PACK]][locations[l]] += Math.floor(data[pairOfSKUs[SMALLER_PACK]][locations[l]]/conversionData[CONVERSION_FACTOR]); 
-          exportData[l].push([data[pairOfSKUs[LARGER_PACK]][SKU], (itemValues1) ? itemValues1[10] : '',  data[pairOfSKUs[LARGER_PACK]][locations[l]]]);
+          exportData[l].push([data[pairOfSKUs[LARGER_PACK]][SKU], (itemValues1) ? itemValues1[9] : '',  data[pairOfSKUs[LARGER_PACK]][locations[l]]]);
           data[pairOfSKUs[SMALLER_PACK]][locations[l]] %= conversionData[CONVERSION_FACTOR];
-          exportData[l].push([data[pairOfSKUs[SMALLER_PACK]][SKU], (itemValues2) ? itemValues2[10] : '', data[pairOfSKUs[SMALLER_PACK]][locations[l]]]);
+          exportData[l].push([data[pairOfSKUs[SMALLER_PACK]][SKU], (itemValues2) ? itemValues2[9] : '', data[pairOfSKUs[SMALLER_PACK]][locations[l]]]);
         }
         else // There aren't enough of the SMALLER_PACK_SKU items to make the inventory of the LARGER_PACK_SKU positive, but conversion is done nonetheless
         {
           itemValues1 = csvData.find(sku => sku[8].toString().toUpperCase() === data[pairOfSKUs[LARGER_PACK]][SKU].toString().toUpperCase()) // Find the item in the testInventory csv
           itemValues2 = csvData.find(sku => sku[8].toString().toUpperCase() === data[pairOfSKUs[SMALLER_PACK]][SKU].toString().toUpperCase()) // Find the item in the testInventory csv
           data[pairOfSKUs[SMALLER_PACK]][locations[l]] += data[pairOfSKUs[LARGER_PACK]][locations[l]]*conversionData[CONVERSION_FACTOR];
-          exportData[l].push([data[pairOfSKUs[SMALLER_PACK]][SKU], (itemValues2) ? itemValues2[10] : '', data[pairOfSKUs[SMALLER_PACK]][locations[l]]]);
+          exportData[l].push([data[pairOfSKUs[SMALLER_PACK]][SKU], (itemValues2) ? itemValues2[9] : '', data[pairOfSKUs[SMALLER_PACK]][locations[l]]]);
           data[pairOfSKUs[LARGER_PACK]][locations[l]] = 0;
-          exportData[l].push([data[pairOfSKUs[LARGER_PACK]][SKU], (itemValues1) ? itemValues1[10] : '',  data[pairOfSKUs[LARGER_PACK]][locations[l]]]);
+          exportData[l].push([data[pairOfSKUs[LARGER_PACK]][SKU], (itemValues1) ? itemValues1[9] : '',  data[pairOfSKUs[LARGER_PACK]][locations[l]]]);
         }
       }
     }
