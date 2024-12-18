@@ -5106,13 +5106,12 @@ function sendEmailToTrites()
   { 
     const spreadsheet = ss;
     const timeZone = spreadsheet.getSpreadsheetTimeZone();
-    const pntStoreLocation = (isParksvilleSpreadsheet(spreadsheet)) ? 'Parksville' : 'Prince Rupert'
-    const htmlOutput = HtmlService.createHtmlOutputFromFile('tritesStockCheckEmail')
     const emailTimestamp = "\n*Email Sent to Trites on " + Utilities.formatDate(new Date(), timeZone, "dd MMM yyyy")+"*";
     const emailTimestamp_TextStyle = SpreadsheetApp.newTextStyle().setBold(true).setFontFamily('Arial').setFontSize(10).setForegroundColor('#cc0000').setUnderline(true).build();
-    var range, notesRange, richText_Notes, richText_Notes_Runs, fullText, fullTextLength, backgroundColours = [];
+    var range, notesRange, richText_Notes, richText_Notes_Runs, fullText, fullTextLength, backgroundColours = [], row = []; // 
 
     const itemValues = [].concat.apply([], activeRanges.map(rng => {
+        row.push(rng.getRow()) // We will use this row number to hyperlink the user to this cell through the email url
         range = rng.offset(0, 1 - rng.getColumn(), rng.getNumRows(), 6);
         notesRange = rng.offset(0, 6 - rng.getColumn(), rng.getNumRows(), 1);
         backgroundColours.push(...range.getBackgrounds());
@@ -5122,49 +5121,13 @@ function sendEmailToTrites()
           fullTextLength = fullText.length;
           richText_Notes_Runs = note_RichText[0].getRuns().map(run => [run.getStartIndex(), run.getEndIndex(), run.getTextStyle()]);
 
-          // It would be nice to have a more compact way of doing this
-          switch (richText_Notes_Runs.length)
-          {
-            case 5:
-              return [SpreadsheetApp.newRichTextValue().setText(fullText + emailTimestamp)
-                .setTextStyle(richText_Notes_Runs[0][0], richText_Notes_Runs[0][1], richText_Notes_Runs[0][2])
-                .setTextStyle(richText_Notes_Runs[1][0], richText_Notes_Runs[1][1], richText_Notes_Runs[1][2])
-                .setTextStyle(richText_Notes_Runs[2][0], richText_Notes_Runs[2][1], richText_Notes_Runs[2][2])
-                .setTextStyle(richText_Notes_Runs[3][0], richText_Notes_Runs[3][1], richText_Notes_Runs[3][2])
-                .setTextStyle(richText_Notes_Runs[4][0], richText_Notes_Runs[4][1], richText_Notes_Runs[4][2])
-                .setTextStyle(fullTextLength + 1, fullTextLength + emailTimestamp.length, emailTimestamp_TextStyle)
-                .build()]
-            case 4:
-              return [SpreadsheetApp.newRichTextValue().setText(fullText + emailTimestamp)
-                .setTextStyle(richText_Notes_Runs[0][0], richText_Notes_Runs[0][1], richText_Notes_Runs[0][2])
-                .setTextStyle(richText_Notes_Runs[1][0], richText_Notes_Runs[1][1], richText_Notes_Runs[1][2])
-                .setTextStyle(richText_Notes_Runs[2][0], richText_Notes_Runs[2][1], richText_Notes_Runs[2][2])
-                .setTextStyle(richText_Notes_Runs[3][0], richText_Notes_Runs[3][1], richText_Notes_Runs[3][2])
-                .setTextStyle(fullTextLength + 1, fullTextLength + emailTimestamp.length, emailTimestamp_TextStyle)
-                .build()]
-            case 3:
-              return [SpreadsheetApp.newRichTextValue().setText(fullText + emailTimestamp)
-                .setTextStyle(richText_Notes_Runs[0][0], richText_Notes_Runs[0][1], richText_Notes_Runs[0][2])
-                .setTextStyle(richText_Notes_Runs[1][0], richText_Notes_Runs[1][1], richText_Notes_Runs[1][2])
-                .setTextStyle(richText_Notes_Runs[2][0], richText_Notes_Runs[2][1], richText_Notes_Runs[2][2])
-                .setTextStyle(fullTextLength + 1, fullTextLength + emailTimestamp.length, emailTimestamp_TextStyle)
-                .build()]
-            case 2:
-              return [SpreadsheetApp.newRichTextValue().setText(fullText + emailTimestamp)
-                .setTextStyle(richText_Notes_Runs[0][0], richText_Notes_Runs[0][1], richText_Notes_Runs[0][2])
-                .setTextStyle(richText_Notes_Runs[1][0], richText_Notes_Runs[1][1], richText_Notes_Runs[1][2])
-                .setTextStyle(fullTextLength + 1, fullTextLength + emailTimestamp.length, emailTimestamp_TextStyle)
-                .build()]
-            case 1:
-              return isNotBlank(fullText) ? 
-                [SpreadsheetApp.newRichTextValue().setText(fullText + emailTimestamp)
-                  .setTextStyle(richText_Notes_Runs[0][0], richText_Notes_Runs[0][1], richText_Notes_Runs[0][2])
-                  .setTextStyle(fullTextLength + 1, fullTextLength + emailTimestamp.length, emailTimestamp_TextStyle)
-                  .build()] 
-                : [SpreadsheetApp.newRichTextValue().setText("*Email Sent to Trites on " + Utilities.formatDate(new Date(), timeZone, "dd MMM yyyy")+"*").setTextStyle(emailTimestamp_TextStyle).build()] 
-            default:
-              return [note_RichText];
-          }
+          if (isNotBlank(fullText))
+            for (var i = 0, richTextBuilder = SpreadsheetApp.newRichTextValue().setText(fullText + emailTimestamp); i < 5; i++)
+              richTextBuilder.setTextStyle(richText_Notes_Runs[i][0], richText_Notes_Runs[i][1], richText_Notes_Runs[i][2])
+          else 
+            return [SpreadsheetApp.newRichTextValue().setText("*Email Sent to Trites on " + Utilities.formatDate(new Date(), timeZone, "dd MMM yyyy")+"*").setTextStyle(emailTimestamp_TextStyle).build()]
+          
+          return richTextBuilder.setTextStyle(fullTextLength + 1, fullTextLength + emailTimestamp.length, emailTimestamp_TextStyle).build();
         })
 
         notesRange.setRichTextValues(richText_Notes).setBackgrounds(notesRange.getBackgrounds());
@@ -5173,6 +5136,12 @@ function sendEmailToTrites()
       })
     );
 
+    const pntStoreLocation = (isParksvilleSpreadsheet(spreadsheet)) ? 'Parksville' : 'Prince Rupert'
+    const gid = spreadsheet.getSheetByName('Order').getSheetId();
+    const htmlTemplate = HtmlService.createTemplateFromFile('tritesStockCheckEmail')
+    htmlTemplate.storeLocation = pntStoreLocation;
+    htmlTemplate.transferSheetUrl = spreadsheet.getUrl() + '?gid=' + gid + '#gid=' + gid + '&range=I' + row.shift();
+    const htmlOutput = htmlTemplate.evaluate();
     const numItems = itemValues.length;
     
     for (var i = 0; i < numItems; i++)
