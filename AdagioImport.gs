@@ -1,46 +1,40 @@
 /**
  * This function takes the data on the Adagio Transfer Sheet and it retrieves the cost from a CSV file in the google drive and 
- * displays the resulting values on the Proposed Design page for inputting into Adagio.
+ * adds the cost to the information displayed.
  * 
  * @author Jarren Ralf
  */
 function getCosts()
 {
-  const spreadsheet = SpreadsheetApp.getActive();
-  const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
+  const adagioSheet = SpreadsheetApp.getActive().getSheetByName('Adagio Transfer Sheet');
   const maxRows = adagioSheet.getMaxRows() - 23;
   const numRows = Math.max(getLastRowSpecial(adagioSheet.getSheetValues(24,  2, maxRows, 1)), // Richmond Counts
-                           getLastRowSpecial(adagioSheet.getSheetValues(24,  7, maxRows, 1)), // Parksville Counts
-                           getLastRowSpecial(adagioSheet.getSheetValues(24, 12, maxRows, 1))) // Rupert Counts
+                           getLastRowSpecial(adagioSheet.getSheetValues(24,  8, maxRows, 1)), // Parksville Counts
+                           getLastRowSpecial(adagioSheet.getSheetValues(24, 14, maxRows, 1))) // Rupert Counts
   if (numRows)
   {
-    const proposedSheet = spreadsheet.getSheetByName('Proposed Design');
-    const numRowsInitially = proposedSheet.getLastRow() - 23;
-    const csvData = Utilities.parseCsv(DriveApp.getFilesByName("testinventory.csv").next().getBlob().getDataAsString());
-    const skuIdx = [0, 5, 10]; // Th index for the position of the SKU on the Adagio Transfer sheet := Richmond, Parksville, Prince Rupert
-    var costs, itemValues;
+    const csvData = Utilities.parseCsv(DriveApp.getFilesByName("inventory.csv").next().getBlob().getDataAsString());
+    const skuIdx = [0, 6, 12]; // Th index for the position of the SKU on the Adagio Transfer sheet := Richmond, Parksville, Prince Rupert
+    var costs = [], itemValues;
 
-    if (numRowsInitially > numRows)
-      proposedSheet.getRange(24, 2, numRowsInitially, 17).clearContent(); // Clear the previous values on this page
-
-    const adagioDataWithCost = adagioSheet.getSheetValues(24, 2, numRows, 14).map(item => {
-      costs = ['', '', '']; // Cost values for the particular item in Richmond, Parksville, Prince Rupert
+    const adagioDataWithCost = adagioSheet.getSheetValues(24, 2, numRows, 13).map(item => {
+      costs.length = 0; // Cost values for the particular item in Richmond, Parksville, Prince Rupert
 
       for (var i = 0; i < 3; i++)
       {
         if (isNotBlank(item[skuIdx[i]]))
         {
           itemValues = csvData.find(sku => sku[8].toString().toUpperCase() === item[skuIdx[i]].toString().toUpperCase()) // Find the item in the testInventory csv
-
-          if (itemValues)
-            costs[i] = itemValues[9]; // The cost is the final column
+          costs.push((itemValues) ? itemValues[9] : '') // The cost is the final column
         }
+        else
+          costs.push('')
       }
 
-      return [item[0], costs[0], item[1], item[2], item[3], item[4], item[5], costs[1], item[6], item[7], item[8], item[9], item[10], costs[2], item[11], item[12], item[13]]
+      return [item[0], costs[0], item[2], item[3], item[4], item[5], item[6], costs[1], item[8], item[9], item[10], item[11], item[12], costs[2]]
     })
 
-    proposedSheet.getRange(24, 2, numRows, 17).setValues(adagioDataWithCost)
+    adagioSheet.getRange(24, 2, numRows, 14).setValues(adagioDataWithCost)
   }
   else
     Logger.log('There were no counts on the Adagio Transfer Sheet. The number of rows is 0: ' + numRows)
@@ -74,13 +68,13 @@ function getPhysicalCounted(sheet)
             return true
           else
           {
-            invalidCounts.push([v[0], v[3], '', 'Order'])
+            invalidCounts.push([v[0], '', v[3], '', 'Order'])
             return false;
           }
         }
         else if (v[3] !== 'x') // An 'x' is placed in the actual counts column when the information is imported into Adagio
         {
-          invalidCounts.push([v[0], v[3], '', 'Order'])
+          invalidCounts.push([v[0], '', v[3], '', 'Order'])
           return false;
         }
         else
@@ -88,7 +82,7 @@ function getPhysicalCounted(sheet)
       }
       else
         return false;
-    }).map(w => [w[0], w[3], '', 'Order']);
+    }).map(w => [w[0], '', w[3], '', 'Order']);
 
     var values_shipped = sheet.getSheetValues(4, 5, numRows_shipped, 3).filter(v => {
       if (isNotBlank(v[2])) // Check if the quantity is blank
@@ -99,13 +93,13 @@ function getPhysicalCounted(sheet)
             return true
           else
           {
-            invalidCounts.push([v[0], v[2], '', 'Shipped'])
+            invalidCounts.push([v[0], '', v[2], '', 'Shipped'])
             return false;
           }
         }
         else if (v[2] !== 'x')
         {
-          invalidCounts.push([v[0], v[2], '', 'Shipped'])
+          invalidCounts.push([v[0], '', v[2], '', 'Shipped'])
           return false;
         }
         else
@@ -113,7 +107,7 @@ function getPhysicalCounted(sheet)
       }
       else
         return false;
-    }).map(w => [w[0], w[2], '', 'Shipped']);
+    }).map(w => [w[0], '', w[2], '', 'Shipped']);
   }
   else
   {
@@ -128,10 +122,10 @@ function getPhysicalCounted(sheet)
           return true
         else
         {
-          invalidCounts.push([v[0], v[1], '', 'UoM Conversion'])
+          invalidCounts.push([v[0], '', v[1], '', 'UoM Conversion'])
           return false
         }
-      }).map(w => [w[0], w[1], '', 'UoM Conversion']);
+      }).map(w => [w[0], '', w[1], '', 'UoM Conversion']);
     }
 
     if (numRows_assembly) // If false, that would mean that lastRow is zero and hence there are no counts to worry about
@@ -141,10 +135,10 @@ function getPhysicalCounted(sheet)
           return true
         else
         {
-          invalidCounts.push([v[0], v[1], '', 'Assembly'])
+          invalidCounts.push([v[0], '', v[1], '', 'Assembly'])
           return false
         }
-      }).map(w => [w[0], w[1], '', 'Assembly']);
+      }).map(w => [w[0], '', w[1], '', 'Assembly']);
     }
   }
 
@@ -161,13 +155,13 @@ function getPhysicalCounted(sheet)
           return true
         else
         {
-          invalidCounts.push([v[0], v[1], '', 'InfoCounts'])
+          invalidCounts.push([v[0], '', v[1], '', 'InfoCounts'])
           return false
         }
       }
       else
         return false
-    }).map(w => [w[0], w[1], '', 'InfoCounts']);
+    }).map(w => [w[0], '', w[1], '', 'InfoCounts']);
   }
 
   if (getLastRowSpecial(manualCounts_qty)) // If false, that would mean that lastRow is zero and hence there are no counts to worry about
@@ -182,24 +176,24 @@ function getPhysicalCounted(sheet)
             return true
           else
           {
-            invalidCounts.push([v[0], v[1], '', 'InfoCounts'])
+            invalidCounts.push([v[0], '', v[1], '', 'InfoCounts'])
             return false
           }
         }
         else
         {
-          invalidCounts.push([v[0], v[1], '', 'InfoCounts'])
+          invalidCounts.push([v[0], '', v[1], '', 'InfoCounts'])
           return false
         }
       }
       else
         return false
-    }).map(w => [w[0], w[1], '', 'Manual Counts']);
+    }).map(w => [w[0], '', w[1], '', 'Manual Counts']);
   }
 
   if (invalidCounts.length) // Check if there are any invalid counts
   {
-    invalidCounts.push(['', '', '', '']) // This row is used to separated valid counts from the invalid and therefore it allows the user use the ctrl + A command to select the valid counts
+    invalidCounts.push(['', '', '', '', '']) // This row is used to separated valid counts from the invalid and therefore it allows the user use the ctrl + A command to select the valid counts
     return invalidCounts.concat(values_UoM_Conversion, values_assembly, values_order, values_shipped, values_infoCounts, values_manualCounts)
   }
   else
@@ -412,11 +406,11 @@ function physCountRich()
   [richmondImportSheet,,] = importData(spreadsheet)
 
   if (numRows > 0)
-    adagioSheet.getRange(24, 2, numRows, 4).clearContent()
+    adagioSheet.getRange(24, 2, numRows, 5).clearContent()
 
   const richCounts = getPhysicalCounted(richmondImportSheet)
   if (richCounts != null)
-    adagioSheet.getRange(24, 2, richCounts.length, 4).setValues(richCounts)
+    adagioSheet.getRange(24, 2, richCounts.length, 5).setValues(richCounts)
 
   timeStamp(spreadsheet, 2, 2, adagioSheet);
   setElapsedTime(startTime, adagioSheet);
@@ -437,13 +431,13 @@ function physCountPark()
   [, parksImportSheet,] = importData(spreadsheet)
 
   if (numRows > 0)
-    adagioSheet.getRange(24, 7, numRows, 4).clearContent()
+    adagioSheet.getRange(24, 8, numRows, 5).clearContent()
 
   const parksCounts = getPhysicalCounted(parksImportSheet)
   if (parksCounts != null)
-    adagioSheet.getRange(24, 7, parksCounts.length, 4).setValues(parksCounts)
+    adagioSheet.getRange(24, 8, parksCounts.length, 5).setValues(parksCounts)
 
-  timeStamp(spreadsheet, 2, 7, adagioSheet);
+  timeStamp(spreadsheet, 2, 8, adagioSheet);
   setElapsedTime(startTime, adagioSheet);// To check the ellapsed times
 }
 
@@ -462,13 +456,13 @@ function physCountRupt()
   [,, rupertImportSheet] = importData(spreadsheet)
 
   if (numRows > 0)
-    adagioSheet.getRange(24, 12, numRows, 4).clearContent()
+    adagioSheet.getRange(24, 14, numRows, 5).clearContent()
 
   const ruptCounts = getPhysicalCounted(rupertImportSheet)
   if (ruptCounts != null)
-    adagioSheet.getRange(24, 12, ruptCounts.length, 4).setValues(ruptCounts)
+    adagioSheet.getRange(24, 14, ruptCounts.length, 5).setValues(ruptCounts)
 
-  timeStamp(spreadsheet, 2, 12, adagioSheet);
+  timeStamp(spreadsheet, 2, 14, adagioSheet);
   setElapsedTime(startTime, adagioSheet);// To check the ellapsed times
 }
 
@@ -491,25 +485,25 @@ function runAll()
 
   const richCounts = getPhysicalCounted(richmondImportSheet)
   if (richCounts != null)
-    adagioSheet.getRange(24, 2, richCounts.length, 4).setValues(richCounts)
+    adagioSheet.getRange(24, 2, richCounts.length, 5).setValues(richCounts)
   timeStamp(spreadsheet, 2, 2, adagioSheet);
 
   const parksCounts = getPhysicalCounted(parksImportSheet)
   if (parksCounts != null)
-    adagioSheet.getRange(24, 7, parksCounts.length, 4).setValues(parksCounts)
-  timeStamp(spreadsheet, 2, 7, adagioSheet);
+    adagioSheet.getRange(24, 8, parksCounts.length, 5).setValues(parksCounts)
+  timeStamp(spreadsheet, 2, 8, adagioSheet);
 
   const ruptCounts = getPhysicalCounted(rupertImportSheet)
   if (ruptCounts != null)
-    adagioSheet.getRange(24, 12, ruptCounts.length, 4).setValues(ruptCounts)
-  timeStamp(spreadsheet, 2, 12, adagioSheet);
+    adagioSheet.getRange(24, 14, ruptCounts.length, 5).setValues(ruptCounts)
+  timeStamp(spreadsheet, 2, 14, adagioSheet);
 
   const transfers = getStockTransfers([parksImportSheet, rupertImportSheet], spreadsheet)
   if (transfers != null)
-    adagioSheet.getRange(24, 17, transfers.length, 4).setValues(transfers)
-  timeStamp(spreadsheet, 2, 17, adagioSheet);
+    adagioSheet.getRange(24, 20, transfers.length, 4).setValues(transfers)
+  timeStamp(spreadsheet, 2, 20, adagioSheet);
 
-  timeStamp(spreadsheet, 2, 19, adagioSheet); // Run all timestamp
+  timeStamp(spreadsheet, 2, 22, adagioSheet); // Run all timestamp
   setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
 }
 
@@ -522,7 +516,7 @@ function runAll()
 */
 function setElapsedTime(startTime, adagioSheet)
 {
-  adagioSheet.getRange(1, 9).setValue((new Date().getTime() - startTime)/1000 + ' seconds');
+  adagioSheet.getRange(1, 11).setValue((new Date().getTime() - startTime)/1000 + ' seconds');
 }
 
 /**
@@ -544,8 +538,8 @@ function stockTransfers()
 
   const transfers = getStockTransfers([parksImportSheet, rupertImportSheet], spreadsheet)
   if (transfers != null)
-    adagioSheet.getRange(24, 17, transfers.length, 4).setValues(transfers)
-  timeStamp(spreadsheet, 2, 17, adagioSheet);
+    adagioSheet.getRange(24, 20, transfers.length, 4).setValues(transfers)
+  timeStamp(spreadsheet, 2, 20, adagioSheet);
   setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
 }
 

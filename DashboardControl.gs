@@ -27,7 +27,7 @@ function installedOnEdit(e)
     {
       spreadsheet.toast('Function Running...')
 
-      if (col == 6) // Richmond
+      if (col == 7) // Richmond
       {
         if (row == 15)
           richmond_applyFullSpreadsheetFormatting(range);
@@ -38,7 +38,7 @@ function installedOnEdit(e)
         else if (row == 18)
           richmond_updateSearchData(range);
       }
-      else if (col == 11) // Parksville
+      else if (col == 13) // Parksville
       {
         if (row == 15)
           parksville_applyFullSpreadsheetFormatting(range);
@@ -49,7 +49,7 @@ function installedOnEdit(e)
         else if (row == 18)
           parksville_updateSearchData(range);
       }
-      else if (col == 16) // Rupert
+      else if (col == 19) // Rupert
       {
         if (row == 15)
           rupert_applyFullSpreadsheetFormatting(range);
@@ -419,8 +419,6 @@ function computeOneConversion()
             }
           }
 
-          Logger.log(assembledItems)
-
           const assemblyPage = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk/edit').getSheetByName('Assembly')
           const row = assemblyPage.getLastRow() + 1;
           const numRows = assembledItems.length;
@@ -502,7 +500,7 @@ function copySelectedValuesV2(sheet, startRow, numCols)
 function extendDashboard()
 {
   const sheet = SpreadsheetApp.getActive().getActiveSheet();
-  const range = sheet.getRange('O2');
+  const range = sheet.getRange('R2');
 
   if (sheet.isRowHiddenByUser(15))
   {
@@ -540,7 +538,7 @@ function getTritesCounts()
       .offset(3, -1, numItems, 3).setValues(output)
 
     applyFullRowFormatting(tritesCountsSheet, 4, numItems);
-    timeStamp(spreadsheet, 10, 5, adagioSheet, "dd MMM HH:mm")
+    timeStamp(spreadsheet, 10, 6, adagioSheet, "dd MMM HH:mm")
     
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
@@ -2221,7 +2219,6 @@ function searchV2V2(e, spreadsheet, sheet, row, col)
       var backgroundColours = [].concat.apply([], colours); // Concatenate all of the item values as a 2-D array
       sheet.getRange('B9').activate(); // Move the user to the top of the search items
       itemSearchFullRange.clearContent().setBackground('white'); // Clear content and reset the text format
-      Logger.log(output)
       sheet.getRange(9, 1, numItems, 7).setBackgrounds(backgroundColours).setValues(output);
       (numItems !== 1) ? searchResultsDisplayRange.setValue(numItems + " results found.") : searchResultsDisplayRange.setValue(numItems + " result found.");
 
@@ -2324,18 +2321,24 @@ function updateDashboard()
     const spreadsheet = SpreadsheetApp.getActive();
     const sheets = spreadsheet.getSheets();
     const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
-    const proposedConversionSheet = spreadsheet.getSheetByName('ProposedConvertedExport');
-    const conversionSheet = spreadsheet.getSheetByName('ConvertedExport');
     const ONE_WEEK  = new Date(today.getFullYear(), today.getMonth(), today.getDate() -  7);
-    const range = adagioSheet.getRange(11, 18, 3);
+    const range = adagioSheet.getRange(11, 21, 3);
+    Logger.log(range.getA1Notation())
     const fontColours = range.getValues().map(date => [(new Date(date[0].split(' on ')[1]) <= ONE_WEEK) ? 'red' : 'black']);
+    range.getValues().map(date => {
+      Logger.log(date[0].split(' on '))
+      Logger.log(date[0].split(' on ')[1])
+      Logger.log(new Date(date[0].split(' on ')[1]))
+      Logger.log(new Date(date[0].split(' on ')[1]) <= ONE_WEEK)
+      [(new Date(date[0].split(' on ')[1]) <= ONE_WEEK) ? 'red' : 'black']
+    });
+    Logger.log(fontColours)
     range.setFontColors(fontColours);
-    adagioSheet.getRangeList(['E4:E10', 'J4:J11', 'O4:O11', 'E15', 'J15', 'O15']).getRanges().map(range => range.setValue("BUTTON"));
+    adagioSheet.getRangeList(['F4:F10', 'L4:L11', 'R4:R11', 'F15', 'L15', 'R15']).getRanges().map(range => range.setValue("BUTTON"));
     adagioSheet.hideRows(15, 5);
-    adagioSheet.getRange('O2').setValue('Extend Dashboard')
+    adagioSheet.getRange('R2').setValue('Extend Dashboard')
 
-    conversionSheet.getRange(2, 7).uncheck() // Uncheck the checkbox on the ConvertedExport page
-    proposedConversionSheet.getRange(2, 9).uncheck() // Uncheck the checkbox on the ConvertedExport page
+    spreadsheet.getSheetByName('ConvertedExport').getRange(2, 9).uncheck() // Uncheck the checkbox on the ConvertedExport page
 
     for (var j = 0; j < sheets.length; j++)
     {
@@ -2425,7 +2428,7 @@ function richmond_applyFullSpreadsheetFormatting(range)
     const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk/edit#gid=592450561');
     applyFullSpreadsheetFormatting();
-    timeStamp(spreadsheet, 15, 5, adagioSheet, "dd MMM HH:mm")
+    timeStamp(spreadsheet, 15, 6, adagioSheet, "dd MMM HH:mm")
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
   catch (e)
@@ -2451,7 +2454,7 @@ function richmond_clearInventory()
     const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk/edit#gid=592450561');
     clearInventory();
-    timeStamp(spreadsheet, 4, 5, adagioSheet, "dd MMM HH:mm")
+    timeStamp(spreadsheet, 4, 6, adagioSheet, "dd MMM HH:mm")
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
   catch (e)
@@ -2476,7 +2479,7 @@ function richmond_getCounts()
     const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk/edit#gid=592450561');
     getCounts();
-    timeStamp(spreadsheet, 6, 5, adagioSheet, "dd MMM HH:mm")
+    timeStamp(spreadsheet, 6, 6, adagioSheet, "dd MMM HH:mm")
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
   catch (e)
@@ -2501,7 +2504,7 @@ function richmond_clearManualCounts()
     const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk/edit#gid=592450561');
     clearManualCounts();
-    timeStamp(spreadsheet, 8, 5, adagioSheet, "dd MMM HH:mm")
+    timeStamp(spreadsheet, 8, 6, adagioSheet, "dd MMM HH:mm")
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
   catch (e)
@@ -2525,7 +2528,7 @@ function richmond_updateUPC_Database_ButtonClicked()
     const adagioSheet = SpreadsheetApp.getActive().getSheetByName('Adagio Transfer Sheet');
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1fSkuXdmLEjsGMWVSmaqbO_344VNBxTVjdXFL1y0lyHk/edit#gid=592450561');
     updateUPC_Database(true);
-    SpreadsheetApp.getActiveSheet().getRange(11, 18).setFontColor('black');
+    SpreadsheetApp.getActiveSheet().getRange(11, 21).setFontColor('black');
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
   catch (e)
@@ -2719,7 +2722,7 @@ function parksville_applyFullSpreadsheetFormatting(range)
     const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM/edit#gid=1340095049');
     applyFullSpreadsheetFormatting();
-    timeStamp(spreadsheet, 15, 10, adagioSheet, "dd MMM HH:mm")
+    timeStamp(spreadsheet, 15, 12, adagioSheet, "dd MMM HH:mm")
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
   catch (e)
@@ -2745,7 +2748,7 @@ function parksville_completeReceived()
     const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM/edit#gid=1340095049');
     completeReceived();
-    timeStamp(spreadsheet, 6, 10, adagioSheet, "dd MMM HH:mm")
+    timeStamp(spreadsheet, 6, 12, adagioSheet, "dd MMM HH:mm")
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
   catch (e)
@@ -2770,7 +2773,7 @@ function parksville_completeToRichmond()
     const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM/edit#gid=1340095049');
     completeToRichmond();
-    timeStamp(spreadsheet, 7, 10, adagioSheet, "dd MMM HH:mm")
+    timeStamp(spreadsheet, 7, 12, adagioSheet, "dd MMM HH:mm")
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
   catch (e)
@@ -2795,7 +2798,7 @@ function parksville_print_X_Order()
     const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM/edit#gid=1340095049');
     print_X_Order();
-    timeStamp(spreadsheet, 8, 10, adagioSheet, "dd MMM HH:mm"),
+    timeStamp(spreadsheet, 8, 12, adagioSheet, "dd MMM HH:mm"),
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
   catch (e)
@@ -2820,7 +2823,7 @@ function parksville_print_X_Shipped()
     const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM/edit#gid=1340095049');
     print_X_Shipped();
-    timeStamp(spreadsheet, 9, 10, adagioSheet, "dd MMM HH:mm")
+    timeStamp(spreadsheet, 9, 12, adagioSheet, "dd MMM HH:mm")
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
   catch (e)
@@ -2845,7 +2848,7 @@ function parksville_clearInventory()
     const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM/edit#gid=1340095049');
     clearInventory();
-    timeStamp(spreadsheet, 4, 10, adagioSheet, "dd MMM HH:mm")
+    timeStamp(spreadsheet, 4, 12, adagioSheet, "dd MMM HH:mm")
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
   catch (e)
@@ -2870,7 +2873,7 @@ function parksville_getCounts()
     const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM/edit#gid=1340095049');
     getCounts();
-    timeStamp(spreadsheet, 10, 10, adagioSheet, "dd MMM HH:mm")
+    timeStamp(spreadsheet, 10, 12, adagioSheet, "dd MMM HH:mm")
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
   catch (e)
@@ -2895,7 +2898,7 @@ function parksville_clearManualCounts()
     const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM/edit#gid=1340095049');
     clearManualCounts();
-    timeStamp(spreadsheet, 11, 10, adagioSheet, "dd MMM HH:mm")
+    timeStamp(spreadsheet, 11, 12, adagioSheet, "dd MMM HH:mm")
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
   catch (e)
@@ -2919,7 +2922,7 @@ function parksville_updateUPC_Database_ButtonClicked()
     const adagioSheet = SpreadsheetApp.getActive().getSheetByName('Adagio Transfer Sheet');
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/181NdJVJueFNLjWplRNsgNl0G-sEJVW3Oy4z9vzUFrfM/edit#gid=1340095049');
     updateUPC_Database(true);
-    SpreadsheetApp.getActiveSheet().getRange(12, 18).setFontColor('black');
+    SpreadsheetApp.getActiveSheet().getRange(12, 21).setFontColor('black');
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
   catch (e)
@@ -3092,7 +3095,7 @@ function rupert_applyFullSpreadsheetFormatting(range)
     const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c/edit#gid=407280159');
     applyFullSpreadsheetFormatting();
-    timeStamp(spreadsheet, 15, 15, adagioSheet, "dd MMM HH:mm")
+    timeStamp(spreadsheet, 15, 18, adagioSheet, "dd MMM HH:mm")
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
   catch (e)
@@ -3118,7 +3121,7 @@ function rupert_completeReceived()
     const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c/edit#gid=407280159');
     completeReceived();
-    timeStamp(spreadsheet, 6, 15, adagioSheet, "dd MMM HH:mm")
+    timeStamp(spreadsheet, 6, 18, adagioSheet, "dd MMM HH:mm")
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
   catch (e)
@@ -3143,7 +3146,7 @@ function rupert_completeToRichmond()
     const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c/edit#gid=407280159');
     completeToRichmond();
-    timeStamp(spreadsheet, 7, 15, adagioSheet, "dd MMM HH:mm")  
+    timeStamp(spreadsheet, 7, 18, adagioSheet, "dd MMM HH:mm")  
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
   catch (e)
@@ -3168,7 +3171,7 @@ function rupert_print_X_Order()
     const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c/edit#gid=407280159');
     print_X_Order();
-    timeStamp(spreadsheet, 8, 15, adagioSheet, "dd MMM HH:mm")
+    timeStamp(spreadsheet, 8, 18, adagioSheet, "dd MMM HH:mm")
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
   catch (e)
@@ -3193,7 +3196,7 @@ function rupert_print_X_Shipped()
     const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c/edit#gid=407280159');
     print_X_Shipped();
-    timeStamp(spreadsheet, 9, 15, adagioSheet, "dd MMM HH:mm")
+    timeStamp(spreadsheet, 9, 18, adagioSheet, "dd MMM HH:mm")
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
   catch (e)
@@ -3218,7 +3221,7 @@ function rupert_clearInventory()
     const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c/edit#gid=407280159');
     clearInventory();
-    timeStamp(spreadsheet, 4, 15, adagioSheet, "dd MMM HH:mm")
+    timeStamp(spreadsheet, 4, 18, adagioSheet, "dd MMM HH:mm")
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
   catch (e)
@@ -3243,7 +3246,7 @@ function rupert_getCounts()
     const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c/edit#gid=407280159');
     getCounts();
-    timeStamp(spreadsheet, 10, 15, adagioSheet, "dd MMM HH:mm")
+    timeStamp(spreadsheet, 10, 18, adagioSheet, "dd MMM HH:mm")
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
   catch (e)
@@ -3268,7 +3271,7 @@ function rupert_clearManualCounts()
     const adagioSheet = spreadsheet.getSheetByName("Adagio Transfer Sheet");
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c/edit#gid=407280159');
     clearManualCounts();
-    timeStamp(spreadsheet, 11, 15, adagioSheet, "dd MMM HH:mm")
+    timeStamp(spreadsheet, 11, 18, adagioSheet, "dd MMM HH:mm")
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
   catch (e)
@@ -3292,7 +3295,7 @@ function rupert_updateUPC_Database_ButtonClicked()
     const adagioSheet = SpreadsheetApp.getActive().getSheetByName('Adagio Transfer Sheet');
     ss = SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1IEJfA5x7sf54HBMpCz3TAosJup4TrjXdUOqm4KK3t9c/edit#gid=407280159');
     updateUPC_Database(true);
-    SpreadsheetApp.getActiveSheet().getRange(13, 18).setFontColor('black');
+    SpreadsheetApp.getActiveSheet().getRange(13, 21).setFontColor('black');
     setElapsedTime(startTime, adagioSheet); // To check the ellapsed times
   }
   catch (e)

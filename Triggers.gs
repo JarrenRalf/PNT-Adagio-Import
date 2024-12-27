@@ -6,10 +6,11 @@ function deleteTriggers()
 function createTriggers()
 {
   // This is an installable onEdit trigger
-  ScriptApp.newTrigger('installedOnEdit').forSpreadsheet('130AZ1zZ0ImnIB-uA8juMGUAfOswfxD7rH0ldVNk1Zq0').onEdit().create()
+  ScriptApp.newTrigger('installedOnEdit').forSpreadsheet('1ge94zxQh2WBtypaIoN2sF2kZWzCKnxzxAN1EduI0PH0').onEdit().create()
 
   // AdagioImport
   ScriptApp.newTrigger("runAll").timeBased().atHour(5).everyDays(1).create();
+  ScriptApp.newTrigger("getCosts").timeBased().atHour(6).everyDays(1).create();
 
   // SKU Unit Conversion
   ScriptApp.newTrigger("resetData").timeBased().atHour(4).everyDays(1).create(); // resetData must run before runAll 
