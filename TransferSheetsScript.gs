@@ -1794,7 +1794,7 @@ function copySelectedValues(sheet, startRow, numCols, qtyCol, isInfoCountsPage, 
 
         // Object.keys(groupedItems).forEach(key => items.push(...sortHoochies(groupedItems[key], 0, key)));
 
-        sheet.getRange(startRow, startCol, numItems, items[0].length).setNumberFormat('@').setValues(itemVals); // Move the item values to the destination sheet
+        sheet.getRange(startRow, startCol, numItems, itemVals[0].length).setNumberFormat('@').setValues(itemVals); // Move the item values to the destination sheet
       }
     }
 
@@ -2245,10 +2245,11 @@ function getCounts()
   infoCountsSheet.getRange(1, 2, 1, 2).setFormulas([['=COUNTA($C$4:$C$' + (numItems + 3) + ')','=' + numItems + '-Completed_InfoCounts']]);
 
   if (numItems > 0)
+  {
     infoCountsSheet.getRange(4, 1, numItems, 3).setValues(output);
-
-  applyFullRowFormatting(infoCountsSheet, 4, numItems, 3);
-
+    applyFullRowFormatting(infoCountsSheet, 4, numItems, 3);
+  }
+    
   if (isRichmondSpreadsheet(spreadsheet))
     searchDataSheet.getRange(3, 3, 1, 7)
       .setValues([[ '=Remaining_InfoCounts&\" items on the infoCounts page that haven\'t been counted\"', null, null, null, 
