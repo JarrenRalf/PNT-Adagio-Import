@@ -1409,7 +1409,7 @@ function clearInventory()
     inventorySheet.getRange('A8:I').clearContent();
     inventorySheet.getRange('A7:A').activate(); // This line activates the entire first column of the spreadsheet to verify the number of rows of the sheet
     inventorySheet.getRange(7, 1, numRows, data[0].length).setNumberFormat('@').setValues(data);
-    numRowsRange.setValues([[numRows, dateStamp(undefined, null, null, null, 'dd MMM HH:mm'), getRunTime(startTime)]]);
+    numRowsRange.setValues([[numRows - 1, dateStamp(undefined, null, null, null, 'dd MMM HH:mm'), getRunTime(startTime)]]);
 
     spreadsheet.getSheetByName("Assembly").clearContents();
     spreadsheet.getSheetByName("UoM Conversion").clearContents();
@@ -1429,13 +1429,13 @@ function clearInventory()
     inventorySheet.getRange(9, 1, numRows, data[0].length).setNumberFormat('@').setValues(data);
     const date1 = dateStamp(undefined, null, null, null, 'dd MMM HH:mm');
     const runTime1 = getRunTime(startTime);
-    numRowsRange.setValues([[numRows, date1, runTime1],[null, null, null]]); // The number of active items from Adagio, including "No TS"
+    numRowsRange.setValues([[numRows - 1, date1, runTime1],[null, null, null]]); // The number of active items from Adagio, including "No TS"
     
     const startTime2 = new Date().getTime();
     const searchData = data.filter(e => e[8] !== "No TS").map(f => [f[0], f[1], null, f[2], f[3], f[4], f[5]]); // Remove "No TS" items and keep units, descriptions and inventory
     const numItems = searchData.length;
     spreadsheet.getSheetByName("SearchData").clearContents().getRange(1, 1, numItems, searchData[0].length).setNumberFormat('@').setValues(searchData);
-    numRowsRange.setValues([[numRows, date1, runTime1],[numItems, dateStamp(undefined, null, null, null, 'dd MMM HH:mm'), getRunTime(startTime2)]]);
+    numRowsRange.setValues([[numRows - 1, date1, runTime1],[numItems - 1, dateStamp(undefined, null, null, null, 'dd MMM HH:mm'), getRunTime(startTime2)]]);
   }
 }
 
@@ -4370,7 +4370,7 @@ function search(e, spreadsheet, sheet)
           {
             const inventorySheet = spreadsheet.getSheetByName("INVENTORY");
             const numRows = inventorySheet.getLastRow() - 7;
-            const data = inventorySheet.getSheetValues(8, 1, numRows, 8);
+            const data = inventorySheet.getSheetValues(8, 1, numRows, 7);
             const numSearches = searches.length; // The number searches
             const output = [];
             var numSearchWords;
@@ -4563,7 +4563,7 @@ function search(e, spreadsheet, sheet)
               }
               else // Less than MAX_NUM_ITEMS items were found
                 sheet.getRange('B4').activate()                   // Move the user to the first result that was found in their search
-                  .offset(3, -1, MAX_NUM_ITEMS, 7).clearContent() // Clear the entire item display range
+                  .offset(0, -1, MAX_NUM_ITEMS, 7).clearContent() // Clear the entire item display range
                   .offset(0, 0, numItems, 7).setValues(output)    // Display all of the items found
                   .offset(-3, 0, 1, 1).setValue((numItems !== 1) ? numItems + " results found." : numItems + " result found.") // Display message stating how many results were found
                   .offset(1, 0, 2, 1).setValue((new Date().getTime() - startTime)/1000 + " s"); // Function runtime
