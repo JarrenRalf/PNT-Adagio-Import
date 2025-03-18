@@ -2266,7 +2266,7 @@ function sendErrorEmail(error)
     templateHtml.scriptURL   = "https://script.google.com/home/projects/178jXC1SLz1GQpIOiNLgRAzE4j4A-F1jt4OatEQ3BLLwaO3nH4rZrRDRm/edit";
     var emailBody = templateHtml.evaluate().append(formattedError).getContent();
     
-    MailApp.sendEmail({      to: 'lb_blitz_allstar@hotmail.com',
+    MailApp.sendEmail({      to: 'jarren@pacificnetandtwine.com',
                         subject: 'Adrian\'s Adagio Update Sheet Script Failure', 
                        htmlBody: emailBody
     });
