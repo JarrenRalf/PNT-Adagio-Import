@@ -457,6 +457,49 @@ function addToOppositeStoreShippedPage()
 }
 
 /**
+ * This function take the items that are selected by the user and it adds them to the Purchase Order spreadsheet.
+ * 
+ * @param {Number} exportNum : The number referring to which export sheet to add the purchase order items to,
+ * @author Jarren Ralf
+ */
+function addToPurchaseOrderSpreadsheet(exportNum)
+{
+  const activeRanges = SpreadsheetApp.getActiveRangeList().getRanges(); // The selected ranges on the item search sheet
+
+  if (SpreadsheetApp.getActiveSheet().getSheetName() === "Order" && Math.min(...activeRanges.map(rng => rng.getRow())) > 3) // If the user has not selected an item, alert them with an error message
+  { 
+    const exportData = [].concat.apply([], activeRanges.map(rng => rng.offset(0, 3 - rng.getColumn(), rng.getNumRows(), 3).getValues())).map(row => ['R', row[2].split(' - ')[row[2].split(' - ').length - 1], row[0], row[2]]);
+    const exportSheet = SpreadsheetApp.openById('1Fx_0LCt8_j1VeM6w0vCup_1GXjrHT5gBfUaojzvP46Y').getSheetByName('Export ' + exportNum);
+    exportSheet.getRange(exportSheet.getLastRow() + 1, 1, exportData.length, 4).setNumberFormat('@').setHorizontalAlignment('left')
+      .setFontColor('black').setFontFamily('Arial').setFontLine('none').setFontSize(10).setFontStyle('normal').setFontWeight('bold').setVerticalAlignment('middle').setBackground(null).setValues(exportData)
+
+    ss.toast('The selected items were added to the Purchase Order spreadsheet on the Export ' + exportNum + ' tab.')
+  }
+  else
+    Browser.msgBox('Please select an item or items on the Order page.')
+}
+
+/**
+ * This function take the items that are selected by the user and it adds them to the Purchase Order spreadsheet on the Export 1 page.
+ * 
+ * @author Jarren Ralf
+ */
+function addToPurchaseOrderSpreadsheet_Export_1()
+{
+  addToPurchaseOrderSpreadsheet(1)
+}
+
+/**
+ * This function take the items that are selected by the user and it adds them to the Purchase Order spreadsheet on the Export 2 page.
+ * 
+ * @author Jarren Ralf
+ */
+function addToPurchaseOrderSpreadsheet_Export_2()
+{
+  addToPurchaseOrderSpreadsheet(2)
+}
+
+/**
  * Apply the proper formatting to the Order, Shipped, Received, ItemsToRichmond, Manual Counts, or InfoCounts page.
  *
  * @param {Sheet}   sheet  : The current sheet that needs a formatting adjustment
