@@ -130,10 +130,11 @@ function computeOneConversion()
               if (isNotBlank(qty) || !isNaN(qty)) // Valid number
               {
                 const inventorySheet = spreadsheet.getSheetByName("DataImport");
-                const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
+                const numItems = inventorySheet.getLastRow() - 1;
+                const inventory = inventorySheet.getSheetValues(2, 3, numItems, 5);
                 var convertedItems = []
 
-                for (var j = 0; j < inventory.length; j++)
+                for (var j = 0; j < numItems; j++)
                 {
                   if (packagedItems[0][0].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
                   {
@@ -142,7 +143,7 @@ function computeOneConversion()
                   }
                 }
 
-                for (var j = 0; j < inventory.length; j++)
+                for (var j = 0; j < numItems; j++)
                 {
                   if (packagedItems[0][6].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
                   {
@@ -170,10 +171,11 @@ function computeOneConversion()
           else
           {
             const inventorySheet = spreadsheet.getSheetByName("DataImport");
-            const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
+            const numItems = inventorySheet.getLastRow() - 1;
+            const inventory = inventorySheet.getSheetValues(2, 3, numItems, 5);
             var convertedItems = [];
 
-            for (var j = 0; j < inventory.length; j++)
+            for (var j = 0; j < numItems; j++)
             {
               if (packagedItems[0][0].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
               {
@@ -182,7 +184,7 @@ function computeOneConversion()
               }
             }
 
-            for (var j = 0; j < inventory.length; j++)
+            for (var j = 0; j < numItems; j++)
             {
               if (packagedItems[0][6].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
               {
@@ -225,10 +227,11 @@ function computeOneConversion()
               if (isNotBlank(qty) || !isNaN(qty)) // Valid number
               {
                 const inventorySheet = spreadsheet.getSheetByName("DataImport");
-                const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
+                const numItems = inventorySheet.getLastRow() - 1;
+                const inventory = inventorySheet.getSheetValues(2, 3, numItems, 5);
                 var convertedItems = []
 
-                for (var j = 0; j < inventory.length; j++)
+                for (var j = 0; j < numItems; j++)
                 {
                   if (packagedItems[0][6].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
                   {
@@ -237,7 +240,7 @@ function computeOneConversion()
                   }
                 }
 
-                for (var j = 0; j < inventory.length; j++)
+                for (var j = 0; j < numItems; j++)
                 {
                   if (packagedItems[0][0].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
                   {
@@ -265,10 +268,11 @@ function computeOneConversion()
           else
           {
             const inventorySheet = spreadsheet.getSheetByName("DataImport");
-            const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
+            const numItems = inventorySheet.getLastRow() - 1;
+            const inventory = inventorySheet.getSheetValues(2, 3, numItems, 5);
             var convertedItems = [];
 
-            for (var j = 0; j < inventory.length; j++)
+            for (var j = 0; j < numItems; j++)
             {
               if (packagedItems[0][6].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
               {
@@ -277,7 +281,7 @@ function computeOneConversion()
               }
             }
 
-            for (var j = 0; j < inventory.length; j++)
+            for (var j = 0; j < numItems; j++)
             {
               if (packagedItems[0][0].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
               {
@@ -318,7 +322,8 @@ function computeOneConversion()
 
       if (isNotBlank(sku))
       {
-        const assemblyItems = sheet.getSheetValues(3, 1, lastRow - 2, 8).filter(item => item[6] == sku)
+        const numAssemblies = lastRow - 2;
+        const assemblyItems = sheet.getSheetValues(3, 1, numAssemblies, 8).filter(item => item[6] == sku)
         const quantity = sheet.getSheetValues(1, 9, 1, 1)[0][0]
       
         if (quantity == 0) // The user didn't not enter the quantity in the cell at the top of the page
@@ -334,10 +339,11 @@ function computeOneConversion()
             if (isNotBlank(qty) || !isNaN(qty)) // Valid number
             {
               const inventorySheet = spreadsheet.getSheetByName("DataImport");
-              const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
+              const numItems = inventorySheet.getLastRow() - 1;
+              const inventory = inventorySheet.getSheetValues(2, 3, numItems, 5);
               var assembledItems = []
 
-              for (var j = 0; j < inventory.length; j++)
+              for (var j = 0; j < numItems; j++)
               {
                 if (assemblyItems[0][6].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
                 {
@@ -346,7 +352,7 @@ function computeOneConversion()
                 }
               }
 
-              for (var j = 0; j < inventory.length; j++)
+              for (var j = 0; j < numItems; j++)
               {
                 if (assemblyItems[0][0].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
                 {
@@ -355,9 +361,9 @@ function computeOneConversion()
                 }
               }
 
-              for (var i = 1; i < assemblyItems.length; i++)
+              for (var i = 1; i < numAssemblies; i++)
               {
-                for (var j = 0; j < inventory.length; j++)
+                for (var j = 0; j < numItems; j++)
                 {
                   if (assemblyItems[i][0].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
                   {
@@ -386,10 +392,11 @@ function computeOneConversion()
         else
         {
           const inventorySheet = spreadsheet.getSheetByName("DataImport");
-          const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
+          const numItems = inventorySheet.getLastRow() - 1;
+          const inventory = inventorySheet.getSheetValues(2, 3, numItems, 5);
           var assembledItems = []
 
-          for (var j = 0; j < inventory.length; j++)
+          for (var j = 0; j < numItems; j++)
           {
             if (assemblyItems[0][6].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
             {
@@ -398,7 +405,7 @@ function computeOneConversion()
             }
           }
 
-          for (var j = 0; j < inventory.length; j++)
+          for (var j = 0; j < numItems; j++)
           {
             if (assemblyItems[0][0].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
             {
@@ -407,9 +414,9 @@ function computeOneConversion()
             }
           }
 
-          for (var i = 1; i < assemblyItems.length; i++)
+          for (var i = 1; i < numAssemblies; i++)
           {
-            for (var j = 0; j < inventory.length; j++)
+            for (var j = 0; j < numItems; j++)
             {
               if (assemblyItems[i][0].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
               {
@@ -449,10 +456,11 @@ function copySelectedValuesV2(sheet, startRow, numCols)
 {
   var  activeSheet = SpreadsheetApp.getActiveSheet();
   var activeRanges = activeSheet.getActiveRangeList().getRanges(); // The selected ranges on the item search sheet
+  var numActiveRanges = activeRanges.length;
   var firstRows = [], lastRows = [], numRows = [], itemValues = [[[]]];
   
   // Find the first row and last row in the the set of all active ranges
-  for (var r = 0; r < activeRanges.length; r++)
+  for (var r = 0; r < numActiveRanges; r++)
   {
     firstRows[r] = activeRanges[r].getRow();
      lastRows[r] = activeRanges[r].getLastRow()
@@ -464,7 +472,7 @@ function copySelectedValuesV2(sheet, startRow, numCols)
 
   if (row > 8 && lastRow <= finalDataRow) // If the user has not selected an item, alert them with an error message
   {   
-    for (var r = 0; r < activeRanges.length; r++)
+    for (var r = 0; r < numActiveRanges; r++)
     {
          numRows[r] = lastRows[r] - firstRows[r] + 1;
       itemValues[r] = activeSheet.getSheetValues(firstRows[r], 2, numRows[r], numCols);
@@ -552,6 +560,36 @@ function getTritesCounts()
 }
 
 /**
+ * This function returns true if the presented number is a UPC-A, false otherwise.
+ * 
+ * @param {Number} upcNumber : The UPC-A number
+ * @returns Whether the given value is a UPC-A or not
+ * @author Jarren Ralf
+ */
+function isUPC_A(upcNumber)
+{
+  for (var i = 0, sum = 0, upc = upcNumber.toString(); i < upc.length - 1; i++)
+    sum += (i % 2 === 0) ? Number(upc[i])*3 : Number(upc[i])
+
+  return upc.endsWith(Math.ceil(sum/10)*10 - sum)
+}
+
+/**
+ * This function returns true if the presented number is a EAN_13, false otherwise.
+ * 
+ * @param {Number} upcNumber : The EAN_13 number
+ * @returns Whether the given value is a EAN_13 or not
+ * @author Jarren Ralf
+ */
+function isEAN_13(upcNumber)
+{
+  for (var i = 0, sum = 0, upc = upcNumber.toString(); i < upc.length - 1; i++)
+    sum += (i % 2 === 0) ? Number(upc[i]) : Number(upc[i])*3
+
+  return upc.endsWith(Math.ceil(sum/10)*10 - sum) && upc.length === 13
+}
+
+/**
 * This function moves all of the selected values on the tritesCounts page to the Manual Counts page
 *
 * @author Jarren Ralf
@@ -583,17 +621,45 @@ function pasteMultipleSKUsOnSearchPage(range, sheet, spreadsheet)
 
   if (values.length !== 0) // Don't run function if every value is blank, probably means the user pressed the delete key on a large selection
   {
+    spreadsheet.toast('Searching...')
     const inventorySheet = spreadsheet.getSheetByName("DataImport");
-    const data = inventorySheet.getSheetValues(2, 1, inventorySheet.getLastRow() - 1, 7);
-    var someSKUsNotFound = false, skus;
+    const numRows = inventorySheet.getLastRow() - 1;
+    const data = inventorySheet.getSheetValues(2, 1, numRows, 7);
+    var someSKUsNotFound = false, someUPCsNotFound = false, skus, itemNumber;
 
-    if (values[0][0].toString().includes(' - ')) // Strip the sku from the first part of the google description
+    if (/^\d+$/.test(values[0][0]) && (isUPC_A(values[0][0]) || isEAN_13(values[0][0]))) // Check if the values pasted are UPC codes
+    {
+      const upcDatabase = Utilities.parseCsv(DriveApp.getFilesByName("BarcodeInput.csv").next().getBlob().getDataAsString());
+      const numRows_UPC = upcDatabase.length;
+
+      skus = values.map(item => {
+
+        for (var i = 0; i < numRows_UPC; i++)
+        {
+          if (upcDatabase[i][0] == item[0])
+          {
+            itemNumber = upcDatabase[i][1].toString().toUpperCase();
+
+            for (var j = 0; j < numRows; j++)
+            {
+              if (data[j][6] == itemNumber)
+                return [data[j][0], data[j][1], data[j][2], data[j][3], data[j][4], data[j][5], data[j][6]];
+            }
+          }
+        }
+
+        someUPCsNotFound = true;
+
+        return ['UPC Not Found:', item[0], '', '', '', '', '']
+      });
+    }
+    else if (values[0][0].toString().includes(' - ')) // Strip the sku from the first part of the google description
     {
       skus = values.map(item => {
       
-        for (var i = 0; i < data.length; i++)
+        for (var i = 0; i < numRows; i++)
         {
-          if (data[i][6] == item[0].toString().split(' - ').pop().toUpperCase())
+          if (data[i][6] == item[0].toString().split(' - ').pop().toUpperCase() || data[i][1].includes(item[0].toString()))
             return data[i]
         }
 
@@ -606,9 +672,9 @@ function pasteMultipleSKUsOnSearchPage(range, sheet, spreadsheet)
     {
       skus = values.map(sku => (sku[0].substring(0,4) + sku[0].substring(5,9) + sku[0].substring(10)).trim()).map(item => {
       
-        for (var i = 0; i < data.length; i++)
+        for (var i = 0; i < numRows; i++)
         {
-          if (data[i][6] == item.toString().toUpperCase())
+          if (data[i][6] == item.toString().toUpperCase() || data[i][1].includes(item[0].toString()))
             return data[i]
         }
 
@@ -621,9 +687,9 @@ function pasteMultipleSKUsOnSearchPage(range, sheet, spreadsheet)
     {
       skus = values.map(item => {
       
-        for (var i = 0; i < data.length; i++)
+        for (var i = 0; i < numRows; i++)
         {
-          if (data[i][6] == item[0].toString().toUpperCase())
+          if (data[i][6] == item[0].toString().toUpperCase() || data[i][1].includes(item[0].toString()))
             return data[i]
         }
 
@@ -664,6 +730,37 @@ function pasteMultipleSKUsOnSearchPage(range, sheet, spreadsheet)
         .offset( 6, 0, 1, 1).setValue((new Date().getTime() - startTime)/1000 + " seconds")
         .offset(numSkusNotFound + 2, 0, numSkusFound, 7).activate()
     }
+    else if (someUPCsNotFound)
+    {
+      const upcsNotFound = [];
+      var isUpcFound;
+
+      const upcsFound = skus.filter(item => {
+        isUpcFound = item[0] !== 'UPC Not Found:'
+
+        if (!isUpcFound)
+          upcsNotFound.push(item)
+
+        return isUpcFound;
+      })
+
+      const numUpcsFound = upcsFound.length;
+      const numUpcsNotFound = upcsNotFound.length;
+      const items = [].concat.apply([], [upcsNotFound, upcsFound]); // Concatenate all of the item values as a 2-D array
+      const numItems = items.length
+      const horizontalAlignments = new Array(numItems).fill(['center', 'left', 'center', 'center', 'center', 'center', 'center'])
+      const WHITE = new Array(7).fill('white')
+      const YELLOW = new Array(7).fill('#ffe599')
+      const colours = [].concat.apply([], [new Array(numUpcsNotFound).fill(YELLOW), new Array(numUpcsFound).fill(WHITE)]); // Concatenate all of the item values as a 2-D array
+
+      sheet.getRange(9, 1, sheet.getMaxRows() - 2, 7).clearContent().setBackground('white').setFontColor('black').setBorder(true, true, true, true, false, false)
+        .offset(0, 0, numItems, 7)
+          .setFontFamily('Arial').setFontWeight('bold').setFontSize(10).setHorizontalAlignments(horizontalAlignments).setBackgrounds(colours)
+          .setBorder(false, null, false, null, false, false).setValues(items)
+        .offset(-8, 0, 1, 1).setValue((numUpcsFound !== 1) ? numUpcsFound + " results found." : numUpcsFound + " result found.")
+        .offset( 6, 0, 1, 1).setValue((new Date().getTime() - startTime)/1000 + " seconds")
+        .offset(numUpcsNotFound + 2, 0, (numUpcsFound !== 0) ? numUpcsFound : 1, 7).activate()
+    }
     else // All SKUs were succefully found
     {
       const numItems = skus.length
@@ -676,6 +773,8 @@ function pasteMultipleSKUsOnSearchPage(range, sheet, spreadsheet)
         .offset(-8, 0, 1, 1).setValue((numItems !== 1) ? numItems + " results found." : numItems + " result found.")
         .offset( 6, 0, 1, 1).setValue((new Date().getTime() - startTime)/1000 + " seconds");
     }
+
+    spreadsheet.toast('Searching Complete.')
   }
 }
 
@@ -698,6 +797,7 @@ function scanAssemblies(range, sheet, spreadsheet)
     spreadsheet.toast('', 'Item Found in UPC Database...')
     const quantity = range.offset(0, 2).getValue()
     const assemblyItems = range.offset(2, -6, sheet.getLastRow() - 2, 8).getValues().filter(sku => sku[6] == item[1].toString().toUpperCase())
+    const numAssemblies = assembledItems.length;
     
     if (assemblyItems != null)
     {
@@ -714,10 +814,11 @@ function scanAssemblies(range, sheet, spreadsheet)
           if (isNotBlank(qty) || !isNaN(qty)) // Valid number
           {
             const inventorySheet = spreadsheet.getSheetByName("DataImport");
-            const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
+            const numItems = inventorySheet.getLastRow() - 1;
+            const inventory = inventorySheet.getSheetValues(2, 3, numItems, 5);
             var assembledItems = []
 
-            for (var j = 0; j < inventory.length; j++)
+            for (var j = 0; j < numItems; j++)
             {
               if (assemblyItems[0][6].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
               {
@@ -726,7 +827,7 @@ function scanAssemblies(range, sheet, spreadsheet)
               }
             }
 
-            for (var j = 0; j < inventory.length; j++)
+            for (var j = 0; j < numItems; j++)
             {
               if (assemblyItems[0][0].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
               {
@@ -735,9 +836,9 @@ function scanAssemblies(range, sheet, spreadsheet)
               }
             }
 
-            for (var i = 1; i < assemblyItems.length; i++)
+            for (var i = 1; i < numAssemblies; i++)
             {
-              for (var j = 0; j < inventory.length; j++)
+              for (var j = 0; j < numItems; j++)
               {
                 if (assemblyItems[i][0].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
                 {
@@ -766,10 +867,11 @@ function scanAssemblies(range, sheet, spreadsheet)
       else
       {
         const inventorySheet = spreadsheet.getSheetByName("DataImport");
+        const numItems = inventorySheet.getLastRow() - 1;
         const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
         var assembledItems = []
 
-        for (var j = 0; j < inventory.length; j++)
+        for (var j = 0; j < numItems; j++)
         {
           if (assemblyItems[0][6].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
           {
@@ -778,7 +880,7 @@ function scanAssemblies(range, sheet, spreadsheet)
           }
         }
 
-        for (var j = 0; j < inventory.length; j++)
+        for (var j = 0; j < numItems; j++)
         {
           if (assemblyItems[0][0].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
           {
@@ -787,9 +889,9 @@ function scanAssemblies(range, sheet, spreadsheet)
           }
         }
 
-        for (var i = 1; i < assemblyItems.length; i++)
+        for (var i = 1; i < numAssemblies; i++)
         {
-          for (var j = 0; j < inventory.length; j++)
+          for (var j = 0; j < numItems; j++)
           {
             if (assemblyItems[i][0].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
             {
@@ -867,12 +969,13 @@ function scanConversions(range, sheet, spreadsheet, col)
                 if (isNotBlank(qty) || !isNaN(qty)) // Valid number
                 {
                   const inventorySheet = spreadsheet.getSheetByName("DataImport");
-                  const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
+                  const numItems = inventorySheet.getLastRow() - 1;
+                  const inventory = inventorySheet.getSheetValues(2, 3, numItems, 5);
                   const sku1 = col - 1, sku2 = 7 - col; // Select the appropriate column numbers
                   const numPackages = (sku2 !== 6) ? qty*packagedItems[0][4] : qty/packagedItems[0][4]; // The appropriate conversion value
                   var convertedItems = []
 
-                  for (var j = 0; j < inventory.length; j++)
+                  for (var j = 0; j < numItems; j++)
                   {
                     if (packagedItems[0][sku1].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
                     {
@@ -881,7 +984,7 @@ function scanConversions(range, sheet, spreadsheet, col)
                     }
                   }
 
-                  for (var j = 0; j < inventory.length; j++)
+                  for (var j = 0; j < numItems; j++)
                   {
                     if (packagedItems[0][sku2].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
                     {
@@ -909,12 +1012,13 @@ function scanConversions(range, sheet, spreadsheet, col)
             else
             {
               const inventorySheet = spreadsheet.getSheetByName("DataImport");
-              const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
+              const numItems = inventorySheet.getLastRow() - 1
+              const inventory = inventorySheet.getSheetValues(2, 3, numItems, 5);
               const sku1 = col - 1, sku2 = 7 - col;
               const numPackages = (sku2 !== 6) ? quantity*packagedItems[0][4] : quantity/packagedItems[0][4]; // The appropriate conversion value
               var convertedItems = [];
 
-              for (var j = 0; j < inventory.length; j++)
+              for (var j = 0; j < numItems; j++)
               {
                 if (packagedItems[0][sku1].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
                 {
@@ -923,7 +1027,7 @@ function scanConversions(range, sheet, spreadsheet, col)
                 }
               }
 
-              for (var j = 0; j < inventory.length; j++)
+              for (var j = 0; j < numItems; j++)
               {
                 if (packagedItems[0][sku2].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
                 {
@@ -963,12 +1067,13 @@ function scanConversions(range, sheet, spreadsheet, col)
                 if (isNotBlank(qty) || !isNaN(qty)) // Valid number
                 {
                   const inventorySheet = spreadsheet.getSheetByName("DataImport");
-                  const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
+                  const numItems = inventorySheet.getLastRow() - 1;
+                  const inventory = inventorySheet.getSheetValues(2, 3, numItems, 5);
                   const sku1 = col - 1, sku2 = 7 - col;
                   const numPackages = (sku2 !== 6) ? qty*packagedItems[1][4] : qty/packagedItems[1][4];
                   var convertedItems = []
 
-                  for (var j = 0; j < inventory.length; j++)
+                  for (var j = 0; j < numItems; j++)
                   {
                     if (packagedItems[1][sku1].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
                     {
@@ -977,7 +1082,7 @@ function scanConversions(range, sheet, spreadsheet, col)
                     }
                   }
 
-                  for (var j = 0; j < inventory.length; j++)
+                  for (var j = 0; j < numItems; j++)
                   {
                     if (packagedItems[1][sku2].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
                     {
@@ -1005,12 +1110,13 @@ function scanConversions(range, sheet, spreadsheet, col)
             else
             {
               const inventorySheet = spreadsheet.getSheetByName("DataImport");
-              const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
+              const numItems = inventorySheet.getLastRow() - 1;
+              const inventory = inventorySheet.getSheetValues(2, 3, numItems, 5);
               const sku1 = col - 1, sku2 = 7 - col;
               const numPackages = (sku2 !== 6) ? quantity*packagedItems[1][4] : quantity/packagedItems[1][4];
               var convertedItems = [];
 
-              for (var j = 0; j < inventory.length; j++)
+              for (var j = 0; j < numItems; j++)
               {
                 if (packagedItems[1][sku1].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
                 {
@@ -1019,7 +1125,7 @@ function scanConversions(range, sheet, spreadsheet, col)
                 }
               }
 
-              for (var j = 0; j < inventory.length; j++)
+              for (var j = 0; j < numItems; j++)
               {
                 if (packagedItems[1][sku2].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
                 {
@@ -1065,12 +1171,13 @@ function scanConversions(range, sheet, spreadsheet, col)
               if (isNotBlank(qty) || !isNaN(qty)) // Valid number
               {
                 const inventorySheet = spreadsheet.getSheetByName("DataImport");
-                const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
+                const numItems = inventorySheet.getLastRow() - 1;
+                const inventory = inventorySheet.getSheetValues(2, 3, numItems, 5);
                 const sku1 = col - 1, sku2 = 7 - col;
                 const numPackages = (sku2 !== 6) ? qty*packagedItems[0][4] : qty/packagedItems[0][4]; // The appropriate conversion value
                 var convertedItems = []
 
-                for (var j = 0; j < inventory.length; j++)
+                for (var j = 0; j < numItems; j++)
                 {
                   if (packagedItems[0][sku1].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
                   {
@@ -1079,7 +1186,7 @@ function scanConversions(range, sheet, spreadsheet, col)
                   }
                 }
 
-                for (var j = 0; j < inventory.length; j++)
+                for (var j = 0; j < numItems; j++)
                 {
                   if (packagedItems[0][sku2].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
                   {
@@ -1107,12 +1214,13 @@ function scanConversions(range, sheet, spreadsheet, col)
           else
           {
             const inventorySheet = spreadsheet.getSheetByName("DataImport");
-            const inventory = inventorySheet.getSheetValues(2, 3, inventorySheet.getLastRow() - 1, 5);
+            const numItems = inventorySheet.getLastRow() - 1;
+            const inventory = inventorySheet.getSheetValues(2, 3, numItems, 5);
             const sku1 = col - 1, sku2 = 7 - col;
             const numPackages = (sku2 !== 6) ? quantity*packagedItems[0][4] : quantity/packagedItems[0][4]; // The appropriate conversion value
             var convertedItems = [];
 
-            for (var j = 0; j < inventory.length; j++)
+            for (var j = 0; j < numItems; j++)
             {
               if (packagedItems[0][sku1].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
               {
@@ -1121,7 +1229,7 @@ function scanConversions(range, sheet, spreadsheet, col)
               }
             }
 
-            for (var j = 0; j < inventory.length; j++)
+            for (var j = 0; j < numItems; j++)
             {
               if (packagedItems[0][sku2].toString().toUpperCase() == inventory[j][4].toString().toUpperCase())
               {
@@ -1204,15 +1312,20 @@ function searchV2(e, spreadsheet, sheet)
         if (checkBoxes[5][0] == true)
           dataSheets.push(spreadsheet.getSheetByName("Imported Rupert Data (Loc: 300)"))
 
+        const numSheets = dataSheets.length;
         const data = dataSheets.map(sheet => sheet.getSheetValues(1, 1, sheet.getLastRow(), sheet.getLastColumn()));
         const numSearches = searches.length; // The number of searches
-        var numSearchWords, numRich = 0, numParks = 0, numRupt = 0;
+        var numSearchWords, numRich = 0, numParks = 0, numRupt = 0, numRows, numCols;
 
-        for (var loc = 0; loc < data.length; loc++) // Loop through the locations
+        for (var loc = 0; loc < numSheets; loc++) // Loop through the locations
         {
-          for (var i = 3; i < data[loc].length; i++) // Loop through all of the data for the given location
+          numRows = data[loc].length;
+
+          for (var i = 3; i < numRows; i++) // Loop through all of the data for the given location
           {
-            for (var c = 0; c < data[loc][0].length; c++) // Loop through all of the columns for the given location data
+            numCols = data[loc][0].length;
+
+            for (var c = 0; c < numCols; c++) // Loop through all of the columns for the given location data
             {
               if (data[loc][2][c] === 'Description') // Only check the description columns for the given searches and search words
               {
@@ -1361,7 +1474,8 @@ function searchV2(e, spreadsheet, sheet)
       else
       {
         const inventorySheet = spreadsheet.getSheetByName("DataImport");
-        const data = inventorySheet.getSheetValues(2, 1, inventorySheet.getLastRow() - 1, 7);
+        const numItems = inventorySheet.getLastRow() - 1;
+        const data = inventorySheet.getSheetValues(2, 1, numItems, 7);
         const numSearches = searches.length; // The number searches
         var numSearchWords;
 
@@ -1372,8 +1486,9 @@ function searchV2(e, spreadsheet, sheet)
           else
           {
             const tritesData = data.filter(item => item[5] > 0);
+            const numTritesItems = tritesData.length
 
-            for (var i = 0; i < tritesData.length; i++) // Loop through all of the descriptions from the search data
+            for (var i = 0; i < numTritesItems; i++) // Loop through all of the descriptions from the search data
             {
               loop: for (var j = 0; j < numSearches; j++) // Loop through the number of searches
               {
@@ -1402,6 +1517,7 @@ function searchV2(e, spreadsheet, sheet)
         else if (searches[0][0].toLowerCase() === 'all' && searches[0][1].toLowerCase() === 'hoochies')
         {
           const hoochieData = data.filter(item => item[6].toString().substring(0, 2) == '16');
+          const numRows = hoochieData.length;
           const hoochiePrefixes = ['16060005', '16010005', '16050005', '16020000', '16020010', '16060065', '16060010', '16070000', '16075300', '16070975',
                                    '16030000', '16060175', '16200030', '16200000', '16200025', '16200065', '16200021', '16200022', '16200061'];
           const numTypesOfHoochies = hoochiePrefixes.length;
@@ -1409,7 +1525,7 @@ function searchV2(e, spreadsheet, sheet)
 
           for (var j = 0; j < numTypesOfHoochies; j++) // Loop through the number of searches
           {
-            for (var i = 0; i < hoochieData.length; i++) // Loop through all of the descriptions from the search data
+            for (var i = 0; i < numRows; i++) // Loop through all of the descriptions from the search data
               if (hoochieData[i][6].toString().substring(0, 8) === hoochiePrefixes[j] && !hoochieData[i][1].toString().toLowerCase().includes('rig')) // Does the i-th sku contain begin with the j-th hoochie prefix 
                 hoochies[j].push(hoochieData[i]); // The description also does not contain the word "rig"
 
@@ -1420,7 +1536,7 @@ function searchV2(e, spreadsheet, sheet)
         }
         else
         {
-          for (var i = 0; i < data.length; i++) // Loop through all of the descriptions from the search data
+          for (var i = 0; i < numItems; i++) // Loop through all of the descriptions from the search data
           {
             loop: for (var j = 0; j < numSearches; j++) // Loop through the number of searches
             {
@@ -1447,6 +1563,7 @@ function searchV2(e, spreadsheet, sheet)
     else // The word 'not' was found in the search string
     {
       var dontIncludeTheseWords = searchesOrNot[1].split(/\s+/);
+      var numWordsToNotInclude = dontIncludeTheseWords.length;
 
       if (checkBoxes[0][1] == true) // Compute the sheet search
       {
@@ -1460,14 +1577,19 @@ function searchV2(e, spreadsheet, sheet)
           dataSheets.push(spreadsheet.getSheetByName("Imported Rupert Data (Loc: 300)"))
 
         const data = dataSheets.map(sheet => sheet.getSheetValues(1, 1, sheet.getLastRow(), sheet.getLastColumn()));
+        const numSheets = dataSheets.length;
         const numSearches = searches.length; // The number of searches
-        var numSearchWords, numRich = 0, numParks = 0, numRupt = 0;
+        var numSearchWords, numRich = 0, numParks = 0, numRupt = 0, numRows, numCols;
 
-        for (var loc = 0; loc < data.length; loc++) // Loop through the locations
+        for (var loc = 0; loc < numSheets; loc++) // Loop through the locations
         {
-          for (var i = 3; i < data[loc].length; i++) // Loop through all of the data for the given location
+          numRows = data[loc].length;
+
+          for (var i = 3; i < numRows; i++) // Loop through all of the data for the given location
           {
-            for (var c = 0; c < data[loc][0].length; c++) // Loop through all of the columns for the given location data
+            numCols = data[loc][0].length;
+
+            for (var c = 0; c < numCols; c++) // Loop through all of the columns for the given location data
             {
               if (data[loc][2][c] === 'Description') // Only check the description columns for the given searches and search words
               {
@@ -1616,7 +1738,8 @@ function searchV2(e, spreadsheet, sheet)
       else
       {
         const inventorySheet = spreadsheet.getSheetByName("DataImport");
-        const data = inventorySheet.getSheetValues(2, 1, inventorySheet.getLastRow() - 1, 7);
+        const numItems = inventorySheet.getLastRow() - 1
+        const data = inventorySheet.getSheetValues(2, 1, numItems, 7);
         const numSearches = searches.length; // The number searches
         var numSearchWords;
 
@@ -1627,8 +1750,9 @@ function searchV2(e, spreadsheet, sheet)
           else
           {
             const tritesData = data.filter(item => item[5] > 0);
+            const numTritesItems = tritesData.length;
 
-            for (var i = 0; i < tritesData.length; i++) // Loop through all of the descriptions from the search data
+            for (var i = 0; i < numTritesItems; i++) // Loop through all of the descriptions from the search data
             {
               loop: for (var j = 0; j < numSearches; j++) // Loop through the number of searches
               {
@@ -1643,11 +1767,11 @@ function searchV2(e, spreadsheet, sheet)
                   {
                     if (k === numSearchWords) // The last search word was succesfully found in the ith item, and thus, this item is returned in the search
                     {
-                      for (var l = 0; l < dontIncludeTheseWords.length; l++)
+                      for (var l = 0; l < numWordsToNotInclude; l++)
                       {
                         if (!tritesData[i][1].toString().toLowerCase().includes(dontIncludeTheseWords[l]))
                         {
-                          if (l === dontIncludeTheseWords.length - 1)
+                          if (l === numWordsToNotInclude - 1)
                           {
                             output.push(tritesData[i]);
                             break loop;
@@ -1667,7 +1791,7 @@ function searchV2(e, spreadsheet, sheet)
         }
         else
         {
-          for (var i = 0; i < data.length; i++) // Loop through all of the descriptions from the search data
+          for (var i = 0; i < numItems; i++) // Loop through all of the descriptions from the search data
           {
             loop: for (var j = 0; j < numSearches; j++) // Loop through the number of searches
             {
@@ -1679,11 +1803,11 @@ function searchV2(e, spreadsheet, sheet)
                 {
                   if (k === numSearchWords) // The last search word was succesfully found in the ith item, and thus, this item is returned in the search
                   {
-                    for (var l = 0; l < dontIncludeTheseWords.length; l++)
+                    for (var l = 0; l < numWordsToNotInclude; l++)
                     {
                       if (!data[i][1].toString().toLowerCase().includes(dontIncludeTheseWords[l]))
                       {
-                        if (l === dontIncludeTheseWords.length - 1)
+                        if (l === numWordsToNotInclude - 1)
                         {
                           output.push(data[i]);
                           break loop;
@@ -1767,7 +1891,7 @@ function searchV2(e, spreadsheet, sheet)
  * @param   {Number}         col     : The column number that was just edited
  * @author Jarren Ralf 
  */
-function searchV2V2(e, spreadsheet, sheet, row, col)
+function searchV2V2(e, spreadsheet, sheet)
 {
   const startTime = new Date().getTime();
   const searchResultsDisplayRange = sheet.getRange(1, 1); // The range that will display the number of items found by the search
@@ -2320,6 +2444,7 @@ function updateDashboard()
     const today = new Date();
     const spreadsheet = SpreadsheetApp.getActive();
     const sheets = spreadsheet.getSheets();
+    const numSheets = sheets.length
     const adagioSheet = spreadsheet.getSheetByName('Adagio Transfer Sheet');
     const ONE_WEEK  = new Date(today.getFullYear(), today.getMonth(), today.getDate() -  7);
     const range = adagioSheet.getRange(11, 21, 3);
@@ -2340,7 +2465,7 @@ function updateDashboard()
 
     spreadsheet.getSheetByName('ConvertedExport').getRange(2, 9).uncheck() // Uncheck the checkbox on the ConvertedExport page
 
-    for (var j = 0; j < sheets.length; j++)
+    for (var j = 0; j < numSheets; j++)
     {
       if (sheets[j].getSheetName() == 'Imported Richmond Data (Loc: 100)' || sheets[j].getSheetName() == 'Imported Parksville Data (Loc: 200)' || 
           sheets[j].getSheetName() == 'Imported Rupert Data (Loc: 300)'   || sheets[j].getSheetName() == 'DataImport')

@@ -37,26 +37,29 @@ function computeConversions_Assembly()
   {
     const   spreadsheet = SpreadsheetApp.getActive();
     const  assemblyData = spreadsheet.getSheetByName("SKUsToWatch_ASSEMBLY").getDataRange().getValues();
+    const numAssemblies = assemblyData.length;
     const   exportSheet = spreadsheet.getSheetByName("ConvertedExport");
     const errorLogSheet = spreadsheet.getSheetByName("ErrorLog_Assembly");
     const csvData = Utilities.parseCsv(DriveApp.getFilesByName("inventory.csv").next().getBlob().getDataAsString());
     
     var data = spreadsheet.getSheetByName("DataImport").getDataRange().getValues();
+    var numItems = data.length;
     var assembledSkusAndQtys = {}, skusNotFound = [], exportData = [[],[],[]], itemValues;
 
     // Set the appropriate indices based on the position of the following Strings in the header of the data 
     const locations = [data[0].indexOf('Richmond'), data[0].indexOf('Parksville'), data[0].indexOf('Rupert')];
+    const numLocations = locations.length;
     const SKU = data[0].indexOf('Item #');
 
-    for (var i = 2; i < assemblyData.length; i++)
+    for (var i = 2; i < numAssemblies; i++)
     {
       if (assembledSkusAndQtys.hasOwnProperty(assemblyData[i][ASSEMBLED_SKU].toString().toUpperCase())) // The assembly SKU is already in the list
       {
-        for (var l = 0; l < locations.length; l++)
+        for (var l = 0; l < numLocations; l++)
         {
           if (assembledSkusAndQtys[assemblyData[i][ASSEMBLED_SKU].toString().toUpperCase()][l] < 0) // Need to compute an assembly
           {
-            for (var k = 1; k < data.length; k++)
+            for (var k = 1; k < numItems; k++)
             {
               if (data[k][SKU] == assemblyData[i][COMPONENT_SKU])
               {
@@ -75,17 +78,17 @@ function computeConversions_Assembly()
       }
       else if (isNotBlank(assemblyData[i][ASSEMBLED_SKU])) // New assembly
       {
-        for (var j = 1; j < data.length; j++)
+        for (var j = 1; j < numItems; j++)
         {
           if (data[j][SKU] == assemblyData[i][ASSEMBLED_SKU])
           {
             assembledSkusAndQtys[assemblyData[i][ASSEMBLED_SKU].toString().toUpperCase()] = [Number(data[j][locations[0]]), Number(data[j][locations[1]]), Number(data[j][locations[2]])]
 
-            for (var l = 0; l < locations.length; l++)
+            for (var l = 0; l < numLocations; l++)
             {
               if (data[j][locations[l]] < 0) // Need to compute an assembly
               {
-                for (var k = 1; k < data.length; k++)
+                for (var k = 1; k < numItems; k++)
                 {
                   if (data[k][SKU] == assemblyData[i][COMPONENT_SKU])
                   {
@@ -157,28 +160,32 @@ function computeConversions_Assembly_Then_PackageSize()
   {
     const    spreadsheet = SpreadsheetApp.getActive();
     const conversionData = spreadsheet.getSheetByName("SKUsToWatch").getDataRange().getValues();
+    const numConversions = conversionData.length;
     const   assemblyData = spreadsheet.getSheetByName("SKUsToWatch_ASSEMBLY").getDataRange().getValues();
+    const  numAssemblies = assemblyData.length;
     const    exportSheet = spreadsheet.getSheetByName("ConvertedExport");
     const  errorLogSheet = spreadsheet.getSheetByName("ErrorLog");
     const  errorLogAssemblySheet = spreadsheet.getSheetByName("ErrorLog_Assembly");
     const csvData = Utilities.parseCsv(DriveApp.getFilesByName("inventory.csv").next().getBlob().getDataAsString());
 
     var data = spreadsheet.getSheetByName("DataImport").getDataRange().getValues();
+    var numItems = data.length;
     var assembledSkusAndQtys = {}, pairOfSKUs = [], skusNotFound = [], skusNotFound_Assembly = [], exportData = [[],[],[]], nonNegativeQty = [[],[],[]], itemValues;
 
     // Set the appropriate indices based on the position of the following Strings in the header of the data 
     const locations = [data[0].indexOf('Richmond'), data[0].indexOf('Parksville'), data[0].indexOf('Rupert')];
+    const numLocations = locations.length;
     const SKU = data[0].indexOf('Item #');
 
-    for (var i = 2; i < assemblyData.length; i++)
+    for (var i = 2; i < numAssemblies; i++)
     {
       if (assembledSkusAndQtys.hasOwnProperty(assemblyData[i][ASSEMBLED_SKU].toString().toUpperCase())) // The assembly SKU is already in the list
       {
-        for (var l = 0; l < locations.length; l++)
+        for (var l = 0; l < numLocations; l++)
         {
           if (assembledSkusAndQtys[assemblyData[i][ASSEMBLED_SKU].toString().toUpperCase()][l] < 0) // Need to compute an assembly
           {
-            for (var k = 1; k < data.length; k++)
+            for (var k = 1; k < numItems; k++)
             {
               if (data[k][SKU] == assemblyData[i][COMPONENT_SKU])
               {
@@ -198,17 +205,17 @@ function computeConversions_Assembly_Then_PackageSize()
       }
       else if (isNotBlank(assemblyData[i][ASSEMBLED_SKU])) // New assembly
       {
-        for (var j = 1; j < data.length; j++)
+        for (var j = 1; j < numItems; j++)
         {
           if (data[j][SKU] == assemblyData[i][ASSEMBLED_SKU])
           {
             assembledSkusAndQtys[assemblyData[i][ASSEMBLED_SKU].toString().toUpperCase()] = [Number(data[j][locations[0]]), Number(data[j][locations[1]]), Number(data[j][locations[2]])]
 
-            for (var l = 0; l < locations.length; l++)
+            for (var l = 0; l < numLocations; l++)
             {
               if (data[j][locations[l]] < 0) // Need to compute an assembly
               {
-                for (var k = 1; k < data.length; k++)
+                for (var k = 1; k < numItems; k++)
                 {
                   if (data[k][SKU] == assemblyData[i][COMPONENT_SKU])
                   {
@@ -236,13 +243,13 @@ function computeConversions_Assembly_Then_PackageSize()
       }
     }
     
-    for (var j = 2; j < conversionData.length; j++)
+    for (var j = 2; j < numConversions; j++)
     {
       // If one of the SKUs or the conversion factor is blank, then skip this iterate
       if (isBlank(conversionData[j][SMALLER_PACK_SKU]) || isBlank(conversionData[j][LARGER_PACK_SKU]) || isBlank(conversionData[j][CONVERSION_FACTOR]))
         continue;
       
-      for (var i = 1; i < data.length; i++)
+      for (var i = 1; i < numItems; i++)
       {
         if (data[i][SKU] == conversionData[j][SMALLER_PACK_SKU] || data[i][SKU] == conversionData[j][LARGER_PACK_SKU]) // Locate both SKUs from the conversion sheet
            (data[i][SKU] == conversionData[j][SMALLER_PACK_SKU]) ? pairOfSKUs[0] = i : pairOfSKUs[1] = i;              // Contol the orientation of the pairOfSKUs array
@@ -310,24 +317,26 @@ function computeConversions_PackageSize()
   {
     const spreadsheet = SpreadsheetApp.getActive();
     const conversionData = spreadsheet.getSheetByName("SKUsToWatch").getDataRange().getValues();
+    const numConversions = conversionData.length;
     const    exportSheet = spreadsheet.getSheetByName("ConvertedExport");
     const  errorLogSheet = spreadsheet.getSheetByName("ErrorLog");
     const csvData = Utilities.parseCsv(DriveApp.getFilesByName("inventory.csv").next().getBlob().getDataAsString());
     
     var data = spreadsheet.getSheetByName("DataImport").getDataRange().getValues();
+    var numItems = data.length;
     var  pairOfSKUs = [], skusNotFound = [], exportData = [[],[],[]];
 
     // Set the appropriate indices based on the position of the following Strings in the header of the data 
     const locations = [data[0].indexOf('Richmond'), data[0].indexOf('Parksville'), data[0].indexOf('Rupert')];
     const SKU = data[0].indexOf('Item #');
     
-    for (var j = 2; j < conversionData.length; j++)
+    for (var j = 2; j < numConversions; j++)
     {
       // If one of the SKUs or the conversion factor is blank, then skip this iterate
       if (isBlank(conversionData[j][SMALLER_PACK_SKU]) || isBlank(conversionData[j][LARGER_PACK_SKU]) || isBlank(conversionData[j][CONVERSION_FACTOR]))
         continue;
       
-      for (var i = 1; i < data.length; i++)
+      for (var i = 1; i < numItems; i++)
       {
         if (data[i][SKU] == conversionData[j][SMALLER_PACK_SKU] || data[i][SKU] == conversionData[j][LARGER_PACK_SKU]) // Locate both SKUs from the conversion sheet
            (data[i][SKU] == conversionData[j][SMALLER_PACK_SKU]) ? pairOfSKUs[0] = i : pairOfSKUs[1] = i;              // Contol the orientation of the pairOfSKUs array
@@ -383,24 +392,26 @@ function computeConversions_Yeti()
     const spreadsheet = SpreadsheetApp.getActive();
     const yetiSKUsToWatchSheet = spreadsheet.getSheetByName("Yeti SKUsToWatch")
     const conversionData = getYetiSeasonalSKUs(yetiSKUsToWatchSheet, spreadsheet);
+    const numConversions = conversionData.length;
     const    exportSheet = spreadsheet.getSheetByName("ConvertedExport");
     const  errorLogSheet = spreadsheet.getSheetByName("Yeti ErrorLog");
     const csvData = Utilities.parseCsv(DriveApp.getFilesByName("inventory.csv").next().getBlob().getDataAsString());
     
     var data = spreadsheet.getSheetByName("DataImport").getDataRange().getValues();
+    var numItems = data.length;
     var  pairOfSKUs = [], skusNotFound = [], exportData = [[],[],[]];
 
     // Set the appropriate indices based on the position of the following Strings in the header of the data 
     const locations = [data[0].indexOf('Richmond'), data[0].indexOf('Parksville'), data[0].indexOf('Rupert')];
     const SKU  = data[0].indexOf('Item #');
 
-    for (var j = 2; j < conversionData.length; j++)
+    for (var j = 2; j < numConversions; j++)
     {
       // If one of the SKUs is blank, then skip this iterate
       if (isBlank(conversionData[j][SEASONAL_SKU]) || isBlank(conversionData[j][DISCONT_SKU]))
         continue;
       
-      for (var i = 1; i < data.length; i++)
+      for (var i = 1; i < numItems; i++)
       {
         if (data[i][SKU] == conversionData[j][SEASONAL_SKU] || data[i][SKU] == conversionData[j][DISCONT_SKU]) // Locate both SKUs from the conversation sheet
           (data[i][SKU] == conversionData[j][SEASONAL_SKU]) ? pairOfSKUs[0] = i : pairOfSKUs[1] = i;           // Contol the orientation of the pairOfSKUs array
@@ -471,9 +482,10 @@ function getConversions(data, exportData, conversionData, pairOfSKUs, SKU, CONVE
 {
   const SMALLER_PACK = 0; // For the jth row of the SKUsToWatch, the SKU on the LEFT  (Used as an index for the pairOfSKUs array)
   const  LARGER_PACK = 1; // For the jth row of the SKUsToWatch, the SKU on the RIGHT (Used as an index for the pairOfSKUs array)
+  const numLocations = locations.length;
   var itemValues1, itemValues2;
 
-  for (l = 0; l < locations.length; l++)
+  for (l = 0; l < numLocations; l++)
   {
     data[pairOfSKUs[SMALLER_PACK]][locations[l]] = Number(data[pairOfSKUs[SMALLER_PACK]][locations[l]]) // Make sure this variable is a NUMBER and not a string
     data[pairOfSKUs [LARGER_PACK]][locations[l]] = Number(data[pairOfSKUs [LARGER_PACK]][locations[l]]) // Make sure this variable is a NUMBER and not a string
@@ -546,9 +558,10 @@ function getConversions_Yeti(data, exportData, pairOfSKUs, SKU, locations, csvDa
 {
   const  ACTIVE = 0; // For the jth row of the SKUsToWatch, the SKU on the LEFT  (Used as an index for the pairOfSKUs array)
   const DISCONT = 1; // For the jth row of the SKUsToWatch, the SKU on the RIGHT (Used as an index for the pairOfSKUs array)
+  const numLocations = locations.length;
   var itemValues1, itemValues2;
 
-  for (l = 0; l < locations.length; l++)
+  for (l = 0; l < numLocations; l++)
   {
     data[pairOfSKUs[ACTIVE]][locations[l]] = Number(data[pairOfSKUs[ACTIVE]][locations[l]]); // Make sure this variable is a NUMBER and not a string
 
@@ -583,7 +596,8 @@ function getYetiSeasonalSKUs(yetiSKUsToWatchSheet, spreadsheet)
     .map(col => [col[1], col[0].toString()]);
   const inventorySheet = spreadsheet.getSheetByName("DataImport"); 
   const lastRow_Yeti = yetiSKUsToWatchSheet.getLastRow();
-  const yetiSKUsToWatch = yetiSKUsToWatchSheet.getSheetValues(3, 1, lastRow_Yeti - 2, 1).flat()
+  const numRows_Yeti = lastRow_Yeti - 2;
+  const yetiSKUsToWatch = yetiSKUsToWatchSheet.getSheetValues(3, 1, numRows_Yeti, 1).flat()
   const allSeasonalYetiSKUs = inventorySheet.getSheetValues(2, 2, inventorySheet.getLastRow() - 1, 6)
     .filter(item => item[5].toString().includes('8015') && 
                    (item[5].endsWith('SC1') || item[5].endsWith('SC2') || item[5].endsWith('SC3') || item[5].endsWith('SC4'))) // Seasonal colours either end with SC1, SC2, SC3, or SC4
@@ -618,7 +632,7 @@ function getYetiSeasonalSKUs(yetiSKUsToWatchSheet, spreadsheet)
   const yetiSKUsToWatch_AllData = yetiSKUsToWatch_Range.getValues();
 
   // Fill in any missing UPC Codes
-  for (var i = 2; i < yetiSKUsToWatch.length; i++)
+  for (var i = 2; i < numRows_Yeti; i++)
     yetiSKUsToWatch_AllData[i][3] = upcDatabase_YetiOnly.filter(upcCode => upcCode[0] == yetiSKUsToWatch_AllData[i][0] && !upcCode[1].toString().includes('629034')).map(upc => upc[1]).flat().join(', ');
 
   yetiSKUsToWatch_Range.setValues(yetiSKUsToWatch_AllData);

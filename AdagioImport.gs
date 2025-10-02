@@ -229,12 +229,13 @@ function getSKUs(spreadsheet)
 */
 function getStockTransfers(sheets, spreadsheet)
 {
+  const numSheets = sheets.length;
   const store_location = ['200', '300']
   const all_skus = getSKUs(spreadsheet) // An array of every sku in the Adagio database
   const invalidTransfers = [];
   var numRows, numRows_Received, numRows_ItemsToRichmond, values_Received = [[], []], values_ItemsToRichmond = [[], []];
 
-  for (var s = 0; s < sheets.length; s++) // Loop through 2 sheets, for parksville and rupert data
+  for (var s = 0; s < numSheets; s++) // Loop through 2 sheets, for parksville and rupert data
   {
     numRows = sheets[s].getLastRow() - 2;
     numRows_Received = getLastRowSpecial(sheets[s].getSheetValues(4, 12, numRows, 1));
@@ -320,6 +321,8 @@ function importData(spreadsheet)
                       spreadsheet.getSheetByName("Imported Rupert Data (Loc: 300)")
   ]
 
+  const numDataSheets = dataSheets.length;
+
   // To revert back to the way it was: Find/Replace "[^ - ]+$" with "[^-]+$"
 
   /* On 2025-05-27 the following two sku numbers, 20300140-10 and KS2482-3, where showing up on the Adagio Transfer Sheet as 10 and 3, respectively.
@@ -376,7 +379,7 @@ function importData(spreadsheet)
 
   var numCols, range, newValues;
 
-  for (var sheet = 0; sheet < dataSheets.length; sheet++) // Loop through the data sheets
+  for (var sheet = 0; sheet < numDataSheets; sheet++) // Loop through the data sheets
   {
     numCols = dataSheets[sheet].getLastColumn();
     dataSheets[sheet].getRange(4, 1, dataSheets[sheet].getLastRow() - 2, numCols).clearContent().offset(0, 0, 1, numCols).setValues(formulas[sheet]) // Clear the content and set the formulas
