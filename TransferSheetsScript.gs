@@ -2048,15 +2048,17 @@ function downloadInflowBarcodes()
     return item;
   })
 
+  const numCols = data[0].length;
+
   for (var row = 0, csv = "Name,Barcode\r\n"; row < numRows; row++)
   {
-    for (var col = 0; col < data[row].length; col++)
+    for (var col = 0; col < numCols; col++)
     {
       if (data[row][col].toString().indexOf(",") != - 1)
         data[row][col] = "\"" + data[row][col] + "\"";
     }
 
-    csv += (row < data.length - 1) ? data[row].join(",") + "\r\n" : data[row];
+    csv += (row < numRows - 1) ? data[row].join(",") + "\r\n" : data[row];
   }
 
   return ContentService.createTextOutput(csv).setMimeType(ContentService.MimeType.CSV).downloadAsFile('inFlow_ProductDetails.csv');
@@ -2072,17 +2074,18 @@ function downloadInflowPickList()
 {
   const sheet = ss.getSheetByName("inFlowPick");
   const numRows = sheet.getLastRow() - 2;
-  const data = sheet.getSheetValues(3, 1, numRows, sheet.getLastColumn() - 1)
+  const numCols = sheet.getLastColumn() - 1;
+  const data = sheet.getSheetValues(3, 1, numRows, numCols)
 
   for (var row = 0, csv = "OrderNumber,Customer,ItemName,ItemQuantity\r\n"; row < numRows; row++)
   {
-    for (var col = 0; col < data[row].length; col++)
+    for (var col = 0; col < numCols; col++)
     {
       if (data[row][col].toString().indexOf(",") != - 1)
         data[row][col] = "\"" + data[row][col] + "\"";
     }
 
-    csv += (row < data.length - 1) ? data[row].join(",") + "\r\n" : data[row];
+    csv += (row < numRows - 1) ? data[row].join(",") + "\r\n" : data[row];
   }
 
   return ContentService.createTextOutput(csv).setMimeType(ContentService.MimeType.CSV).downloadAsFile('inFlow_SalesOrder.csv');
@@ -2112,10 +2115,11 @@ function downloadInflowStockLevels()
   })
 
   const numRows = data.length;
+  const numCols = data[0].length;
 
   for (var row = 0, csv = "Item,Location,Quantity\r\n"; row < numRows; row++)
   {
-    for (var col = 0; col < data[row].length; col++)
+    for (var col = 0; col < numCols; col++)
     {
       if (data[row][col].toString().indexOf(",") != - 1)
         data[row][col] = "\"" + data[row][col] + "\"";
@@ -2398,6 +2402,7 @@ function getPhysicalCounted_CountLog(sheets, DATE, recentCounts)
   const  BACK_ORDER_COL = 5;
   const currentStockCol = 2;
   const numSheets = sheets.length;
+  const numRecentCounts = recentCounts.length;
   var sku, numRows, sheetName, descripCol, numCols, quantityColIndex, data, countedItems = [];
 
   for (var s = 0; s < numSheets; s++)
@@ -2431,13 +2436,13 @@ function getPhysicalCounted_CountLog(sheets, DATE, recentCounts)
         // Check if the entry is a number, then if Order or Shipped sheet, then check if actual and current stock are different, and don't include Back Orders if on the Order sheet
         if (!(isNaN(parseInt(data[i][quantityColIndex]))) && ((descripCol === 1) || ((data[i][quantityColIndex] != data[i][currentStockCol]) && (numCols != 6 || data[i][BACK_ORDER_COL] != "B/O"))))
         {
-          for (var j = 0; j < recentCounts.length; j++)
+          for (var j = 0; j < numRecentCounts; j++)
           {
             if (recentCounts[j][1] == data[i][0]) // The item hasn't been counted in the last 2 days
               break;
           }
 
-          if (j === recentCounts.length) // The item was not found in the recent counts, therefore add it to the log
+          if (j === numRecentCounts) // The item was not found in the recent counts, therefore add it to the log
           {
             sku = data[i][0].split(' - ').pop(); 
 
@@ -2596,9 +2601,10 @@ function itemScan(e, spreadsheet, sheet, sheetName)
           }
           else if (sheetName === "Order")
           {
-            const orderPageValues = sheet.getSheetValues(4, 5, lastRow - 3, 1);
+            const numRows_OrderSheet = lastRow - 3;
+            const orderPageValues = sheet.getSheetValues(4, 5, numRows_OrderSheet, 1);
 
-            for (var j = 0; j < orderPageValues.length; j++)
+            for (var j = 0; j < numRows_OrderSheet; j++)
             {
               if (orderPageValues[j][0] == upcDatabase[i][2])
               {
@@ -2608,7 +2614,7 @@ function itemScan(e, spreadsheet, sheet, sheetName)
               }
             }
 
-            if (j === orderPageValues.length) // Item not found on order page
+            if (j === numRows_OrderSheet) // Item not found on order page
             {
               sheet.getRange(row, 4, 1, 4).setValues([[upcDatabase[i][1], upcDatabase[i][2], null, upcDatabase[i][3]]])
               applyFullRowFormatting(sheet, row, 1, 11)
@@ -2619,9 +2625,10 @@ function itemScan(e, spreadsheet, sheet, sheetName)
           else if (sheetName === "Received")
           {
             const shippedPage = spreadsheet.getSheetByName("Shipped");
-            const shippedPageValues = shippedPage.getSheetValues(4, 5, lastRow - 3, 1);
+            const numRows_ShippedSheet = lastRow - 3;
+            const shippedPageValues = shippedPage.getSheetValues(4, 5, numRows_ShippedSheet, 1);
 
-            for (var j = 0; j < shippedPageValues.length; j++)
+            for (var j = 0; j < numRows_ShippedSheet; j++)
             {
               if (shippedPageValues[j][0] == upcDatabase[i][2])
               {
@@ -3069,7 +3076,7 @@ function manualScan(e, spreadsheet, sheet)
                     } 
                   }
 
-                  if (j === manualCountsValues.length) // Item was not found on the manual counts page
+                  if (j === numRows) // Item was not found on the manual counts page
                   {
                     manualCountsPage.getRange(row, 1, 1, 5).setNumberFormats([['@', '@', '#.#', '@', '#']])
                       .setValues([[upcDatabase[i][2], upcDatabase[i][3], 1, '\'' + String(1), new Date().getTime()]])
@@ -3601,7 +3608,7 @@ function manualScan(e, spreadsheet, sheet)
                         }
                       }
 
-                      if (j === manualCountsValues.length) // Item was not found on the manual counts page
+                      if (j === numRows) // Item was not found on the manual counts page
                         barcodeInputRange.offset(0, 0, 2, 2).setValues([['', ''], [upcDatabase[i][2] + '\nwill be added to the Manual Counts page at line :\n' + row + '\nCurrent Stock :\n' + upcDatabase[i][3], '']]);
 
                       break;
@@ -3962,7 +3969,7 @@ function moveSelectedItemsFromCarrierNotAssigned()
         {
           const chosenShipment = currentShipmentList[index];
           var shipmentRow = allCarriers.find(carrier => carrier[1] === chosenShipment)[2];
-          var range, col, column_1, range_NumRows, items, backgroundColours_Dates, backgroundColours_Notes, richTextValues, notesRange, 
+          var range, col, column_1, range_NumRows, items, numItems, backgroundColours_Dates, backgroundColours_Notes, richTextValues, notesRange, 
             values = [], dateColours = [], notesColours = [], notesRichText = [], isCarrierNotAssigned = true, isNewShipment = false;
 
           if (typeof shipmentRow === 'string') // We must create a new carrier line
@@ -3987,21 +3994,23 @@ function moveSelectedItemsFromCarrierNotAssigned()
               
           }
 
+          const numActiveRanges = activeRanges.length;
           shipmentRow++;
           
-          while (activeRanges.length > 0) // Loop through the active ranges
+          while (numActiveRanges > 0) // Loop through the active ranges
           {
             range = (isNewShipment) ? activeRanges.pop().offset(1, 0) : activeRanges.pop();
             col = range.getColumn();
             column_1 = 1 - col;
             range_NumRows = range.getNumRows();
             items = range.offset(0, column_1, range_NumRows, numCols).getValues().map(carrier => {if (carrier[9] !== 'Carrier Not Assigned') isCarrierNotAssigned = false; carrier[9] = chosenShipment; return carrier});
+            numItems = items.length;
             backgroundColours_Dates = range.offset(0, column_1, range_NumRows, 1).getBackgrounds();
             notesRange = range.offset(0, 6 - col, range_NumRows, 1);
             backgroundColours_Notes = notesRange.getBackgrounds();
             richTextValues = notesRange.getRichTextValues();
             
-            while (items.length > 0)
+            while (numItems > 0)
             {
               values.push(items.pop());
               dateColours.push(backgroundColours_Dates.pop());
@@ -4121,9 +4130,10 @@ function populateManualScan(ss, sheet, rowNum, newItemDescription)
   else // There are existing items on the manual counts page
   {
     const row = lastRow + 1;
-    const manualCountsValues = manualCountsPage.getSheetValues(4, 1, row - 4, 4);
+    const numRows = row - 4;
+    const manualCountsValues = manualCountsPage.getSheetValues(4, 1, numRows, 4);
 
-    for (var j = 0; j < manualCountsValues.length; j++) // Loop through the manual counts page
+    for (var j = 0; j < numRows; j++) // Loop through the manual counts page
     {
       if (manualCountsValues[j][0] === itemValues[0]) // The description matches
       {
@@ -4135,7 +4145,7 @@ function populateManualScan(ss, sheet, rowNum, newItemDescription)
       }
     }
 
-    if (j === manualCountsValues.length) // Item was not found on the manual counts page
+    if (j === numRows) // Item was not found on the manual counts page
       barcodeInputRange.setValue(itemValues[0] + '\nwill be added to the Manual Counts page at line :\n' + row + '\nCurrent Stock :\n' + itemValues[currentStock]);
   }
 
@@ -4446,7 +4456,7 @@ function search(e, spreadsheet, sheet)
             const data = inventorySheet.getSheetValues(8, 1, numRows, 7);
             const numSearches = searches.length; // The number searches
             const output = [];
-            var numSearchWords;
+            var numSearchWords, numWordsToNotInlude;
 
             if (searchesOrNot.length === 1) // The word 'not' WASN'T found in the string
             {
@@ -4552,11 +4562,13 @@ function search(e, spreadsheet, sheet)
                         {
                           if (k === numSearchWords) // The last search word was succesfully found in the ith item, and thus, this item is returned in the search
                           {
-                            for (var l = 0; l < dontIncludeTheseWords.length; l++)
+                            numWordsToNotInlude = dontIncludeTheseWords.length;
+
+                            for (var l = 0; l < numWordsToNotInlude; l++)
                             {
                               if (!data[i][1].toString().toLowerCase().includes(dontIncludeTheseWords[l]))
                               {
-                                if (l === dontIncludeTheseWords.length - 1)
+                                if (l === numWordsToNotInlude - 1)
                                 {
                                   output.push(data[i]);
                                   break loop;
@@ -4588,11 +4600,13 @@ function search(e, spreadsheet, sheet)
                       {
                         if (k === numSearchWords) // The last search word was succesfully found in the ith item, and thus, this item is returned in the search
                         {
-                          for (var l = 0; l < dontIncludeTheseWords.length; l++)
+                          numWordsToNotInlude = dontIncludeTheseWords.length;
+
+                          for (var l = 0; l < numWordsToNotInlude; l++)
                           {
                             if (!data[i][1].toString().toLowerCase().includes(dontIncludeTheseWords[l]))
                             {
-                              if (l === dontIncludeTheseWords.length - 1)
+                              if (l === numWordsToNotInlude - 1)
                               {
                                 output.push(data[i]);
                                 break loop;
@@ -4665,7 +4679,7 @@ function search(e, spreadsheet, sheet)
             const descriptions = searchDataSheet.getSheetValues(2, 2, numDescriptions, 1); // All the descriptions (ONLY) from the SearchData sheet
             const numSearches = searches.length; // The number searches
             const firstOutput = [], itemIndices = [];
-            var numSearchWords;
+            var numSearchWords, numWordsToNotInlude;
 
             if (searchesOrNot.length === 1) // The word 'not' WASN'T found in the string
             {
@@ -4771,11 +4785,13 @@ function search(e, spreadsheet, sheet)
                       {
                         if (k === numSearchWords) // The last search word was succesfully found in the ith item, and thus, this item is returned in the search
                         {
-                          for (var l = 0; l < dontIncludeTheseWords.length; l++)
+                          numWordsToNotInlude = dontIncludeTheseWords.length;
+
+                          for (var l = 0; l < numWordsToNotInlude; l++)
                           {
                             if (!tritesData[i][0].toString().toLowerCase().includes(dontIncludeTheseWords[l]))
                             {
-                              if (l === dontIncludeTheseWords.length - 1)
+                              if (l === numWordsToNotInlude - 1)
                               {
                                 firstOutput.push([tritesData[i][0]]);
                                 itemIndices.push(i);
@@ -4808,11 +4824,13 @@ function search(e, spreadsheet, sheet)
                       {
                         if (k === numSearchWords) // The last search word was succesfully found in the ith item, and thus, this item is returned in the search
                         {
-                          for (var l = 0; l < dontIncludeTheseWords.length; l++)
+                          numWordsToNotInlude = dontIncludeTheseWords.length;
+
+                          for (var l = 0; l < numWordsToNotInlude; l++)
                           {
                             if (!descriptions[i][0].toString().toLowerCase().includes(dontIncludeTheseWords[l]))
                             {
-                              if (l === dontIncludeTheseWords.length - 1)
+                              if (l === numWordsToNotInlude - 1)
                               {
                                 firstOutput.push([descriptions[i][0]]);
                                 itemIndices.push(i);
